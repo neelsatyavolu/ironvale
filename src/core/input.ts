@@ -72,16 +72,16 @@ const SHARED: Pick<
 };
 
 /**
- * Trackpad preset: the right hand only has to move on the pad. Firing sits under
- * the left thumb (Space) so the player never has to press and drag at once, and
- * aiming is a toggle on Q. Clicking still fires for players who prefer it.
+ * Trackpad preset: click to fire and Space to jump, as on a mouse. Aiming
+ * is a toggle on Q, because a two-finger click cannot be held while the same hand
+ * moves the view.
  */
 export const BINDING_PRESETS: Readonly<Record<ControlPreset, Bindings>> = {
   trackpad: {
     ...SHARED,
-    fire: ['Space', 'Mouse0'],
+    fire: ['Mouse0'],
     aim: ['KeyQ', 'Mouse2'],
-    jump: ['KeyF'],
+    jump: ['Space'],
     crouch: ['KeyC'],
     holdBreath: ['ShiftLeft'],
   },

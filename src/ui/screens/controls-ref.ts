@@ -8,7 +8,7 @@ import '../styles/sheet.css';
 
 const SCHEME: Readonly<Record<ControlPreset, string>> = {
   trackpad:
-    'On a trackpad your right hand only moves the view, so firing sits under your left thumb on Space and aiming is a toggle on Q. A click and a two-finger click still fire and aim if you prefer them, and a two-finger scroll changes weapon.',
+    'On a trackpad a click fires and Space jumps. Aiming is a toggle on Q, because a two-finger click is hard to hold while you look around; a two-finger click still aims if you prefer it, and a two-finger scroll changes weapon.',
   mouse:
     'The mouse preset is the usual layout: left click fires, right click aims while you hold it, and the wheel changes weapon.',
 };

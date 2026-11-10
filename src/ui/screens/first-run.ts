@@ -36,7 +36,7 @@ export function createFirstRun(actions: { play(): void; useMouse(): void }): Fir
       h(
         'p',
         'iv-note',
-        'Fire with your left thumb on Space so your right hand only has to look. You can change any of this in Settings.',
+        'Click to fire and press Q to raise the sights, so you never have to hold a two-finger click. You can change any of this in Settings.',
       ),
       h(
         'dl',

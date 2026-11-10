@@ -46,9 +46,9 @@ describe('bindingRows', () => {
   });
 
   it('lists every key bound to an action, in binding order', () => {
-    expect(find('trackpad', 'Fire')?.keys).toEqual(['Space', 'Click']);
+    expect(find('trackpad', 'Fire')?.keys).toEqual(['Click']);
     expect(find('trackpad', 'Aim')?.keys).toEqual(['Q', 'Two-finger click']);
-    expect(find('trackpad', 'Jump')?.keys).toEqual(['F']);
+    expect(find('trackpad', 'Jump')?.keys).toEqual(['Space']);
     expect(find('mouse', 'Jump')?.keys).toEqual(['Space']);
     expect(find('mouse', 'Crouch')?.keys).toEqual(['C', 'Control']);
     expect(find('mouse', 'Pause')?.keys).toEqual(['Esc', 'P']);

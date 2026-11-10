@@ -60,9 +60,9 @@ There are two presets. The game starts on Trackpad; switch under Settings or on 
 | --- | --- | --- |
 | Look | Move on the pad | Move the mouse |
 | Move | W A S D or the arrow keys | W A S D or the arrow keys |
-| Fire | Space, or click | Left click |
+| Fire | Click | Left click |
 | Aim | Q (toggle), or two-finger click | Right click (hold) |
-| Jump | F | Space |
+| Jump | Space | Space |
 | Crouch | C | C or Control |
 | Sprint | Shift | Shift |
 | Hold breath while aiming | Shift | Shift |
@@ -72,7 +72,7 @@ There are two presets. The game starts on Trackpad; switch under Settings or on 
 | Scores | Tab | Tab |
 | Pause | Esc or P | Esc or P |
 
-The Trackpad preset exists because pressing and dragging on a pad at once is awkward: your right hand only moves the view and your left thumb fires. In menus, the arrow keys move, Enter selects and Esc goes back. The backquote key shows a frame-time readout during a match.
+The Trackpad preset differs in one way: aiming is a toggle on Q, because a two-finger click is hard to hold while you look around. In menus, the arrow keys move, Enter selects and Esc goes back. The backquote key shows a frame-time readout during a match.
 
 ## Quality settings
 
