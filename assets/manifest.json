@@ -1,0 +1,56 @@
+{
+  "assets": [
+    {
+      "id": "hdri-test",
+      "kind": "hdri",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+      "files": {
+        "hdr@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+          "path": "hdri/kloofendal_48d_partly_cloudy_puresky_1k.hdr"
+        },
+        "hdr@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+          "path": "hdri/kloofendal_48d_partly_cloudy_puresky_2k.hdr"
+        },
+        "sky": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/kloofendal_48d_partly_cloudy_puresky.jpg",
+          "path": "hdri/kloofendal_48d_partly_cloudy_puresky_sky.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-test-concrete",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/concrete_floor_worn_001",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_arm_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_diff_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_arm_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/arm_2k.jpg"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "assets": [
+    {
+      "id": "mdl-gun-m1garand",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/m1-garand-us-rifle-caliber-30-m1-1be4bb0f8c05423abdccb50b779de6e6",
+      "credit": "\"M1 Garand ( US Rifle, Caliber .30, M1)\" by Sky_Hunter (https://sketchfab.com/Sky_Hunter), CC BY 4.0, https://sketchfab.com/3d-models/m1-garand-us-rifle-caliber-30-m1-1be4bb0f8c05423abdccb50b779de6e6. Modified: rescaled, split into moving parts, rear aperture opened, wood regraded, textures recompressed.",
+      "files": { "gltf": { "path": "guns/m1garand.glb", "local": true } }
+    },
+    {
+      "id": "mdl-gun-m24",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/r700v2-d748f463852144c7a982b3e170e7d000",
+      "credit": "\"R700V2\" by Domevans (https://sketchfab.com/domevans), CC BY 4.0, https://sketchfab.com/3d-models/r700v2-d748f463852144c7a982b3e170e7d000. Modified: rescaled, stock widened and repainted, trigger and scope lenses split out, textures recompressed.",
+      "files": { "gltf": { "path": "guns/m24.glb", "local": true } }
+    }
+  ]
+}

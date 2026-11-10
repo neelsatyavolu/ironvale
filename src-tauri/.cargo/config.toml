@@ -1,0 +1,3 @@
+# This is built on a laptop that has overheated on full-core compiles: keep cargo to six jobs.
+[build]
+jobs = 6

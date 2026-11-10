@@ -1,0 +1,292 @@
+{
+  "assets": [
+    {
+      "id": "hdri-railyard",
+      "kind": "hdri",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/freight_station",
+      "files": {
+        "hdr@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/freight_station_1k.hdr",
+          "path": "hdri/freight_station_1k.hdr"
+        },
+        "hdr@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/freight_station_2k.hdr",
+          "path": "hdri/freight_station_2k.hdr"
+        },
+        "sky": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/freight_station.jpg",
+          "path": "hdri/freight_station_sky.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-railyard-asphalt",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/asphalt_02",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+          "path": "pbr/asphalt_02/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+          "path": "pbr/asphalt_02/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_arm_1k.jpg",
+          "path": "pbr/asphalt_02/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_diff_2k.jpg",
+          "path": "pbr/asphalt_02/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_nor_gl_2k.jpg",
+          "path": "pbr/asphalt_02/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_arm_2k.jpg",
+          "path": "pbr/asphalt_02/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-railyard-concrete",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/concrete_floor_worn_001",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_arm_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_diff_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_arm_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-railyard-container",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/container_side",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/container_side/container_side_diff_1k.jpg",
+          "path": "pbr/container_side/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/container_side/container_side_nor_gl_1k.jpg",
+          "path": "pbr/container_side/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/container_side/container_side_arm_1k.jpg",
+          "path": "pbr/container_side/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/container_side/container_side_diff_2k.jpg",
+          "path": "pbr/container_side/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/container_side/container_side_nor_gl_2k.jpg",
+          "path": "pbr/container_side/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/container_side/container_side_arm_2k.jpg",
+          "path": "pbr/container_side/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-railyard-cladding",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/box_profile_metal_sheet",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/box_profile_metal_sheet/box_profile_metal_sheet_diff_1k.jpg",
+          "path": "pbr/box_profile_metal_sheet/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/box_profile_metal_sheet/box_profile_metal_sheet_nor_gl_1k.jpg",
+          "path": "pbr/box_profile_metal_sheet/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/box_profile_metal_sheet/box_profile_metal_sheet_arm_1k.jpg",
+          "path": "pbr/box_profile_metal_sheet/arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-railyard-wall",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/concrete_wall_008",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_008/concrete_wall_008_diff_1k.jpg",
+          "path": "pbr/concrete_wall_008/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_008/concrete_wall_008_nor_gl_1k.jpg",
+          "path": "pbr/concrete_wall_008/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_008/concrete_wall_008_arm_1k.jpg",
+          "path": "pbr/concrete_wall_008/arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-railyard-ballast",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/gravel_stones",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/gravel_stones/gravel_stones_diff_1k.jpg",
+          "path": "pbr/gravel_stones/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/gravel_stones/gravel_stones_nor_gl_1k.jpg",
+          "path": "pbr/gravel_stones/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/gravel_stones/gravel_stones_arm_1k.jpg",
+          "path": "pbr/gravel_stones/arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "mdl-railyard-barrel",
+      "kind": "model",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/Barrel_01",
+      "files": {
+        "gltf": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/Barrel_01/Barrel_01_1k.gltf",
+          "path": "models/Barrel_01/Barrel_01_1k.gltf"
+        },
+        "bin": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/Barrel_01/Barrel_01.bin",
+          "path": "models/Barrel_01/Barrel_01.bin"
+        },
+        "explosive_diff_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Barrel_01/Barrel_01_explosive_diff_1k.jpg",
+          "path": "models/Barrel_01/textures/Barrel_01_explosive_diff_1k.jpg"
+        },
+        "explosive_nor_gl_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Barrel_01/Barrel_01_explosive_nor_gl_1k.jpg",
+          "path": "models/Barrel_01/textures/Barrel_01_explosive_nor_gl_1k.jpg"
+        },
+        "explosive_arm_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Barrel_01/Barrel_01_explosive_arm_1k.jpg",
+          "path": "models/Barrel_01/textures/Barrel_01_explosive_arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "mdl-railyard-barrel-rusty",
+      "kind": "model",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/barrel_03",
+      "files": {
+        "gltf": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/barrel_03/barrel_03_1k.gltf",
+          "path": "models/barrel_03/barrel_03_1k.gltf"
+        },
+        "diff_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/barrel_03/barrel_03_diff_1k.jpg",
+          "path": "models/barrel_03/textures/barrel_03_diff_1k.jpg"
+        },
+        "bin": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/barrel_03/barrel_03.bin",
+          "path": "models/barrel_03/barrel_03.bin"
+        },
+        "nor_gl_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/barrel_03/barrel_03_nor_gl_1k.jpg",
+          "path": "models/barrel_03/textures/barrel_03_nor_gl_1k.jpg"
+        },
+        "arm_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/barrel_03/barrel_03_arm_1k.jpg",
+          "path": "models/barrel_03/textures/barrel_03_arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "mdl-railyard-barrier",
+      "kind": "model",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/concrete_road_barrier_02",
+      "files": {
+        "gltf": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/concrete_road_barrier_02/concrete_road_barrier_02_1k.gltf",
+          "path": "models/concrete_road_barrier_02/concrete_road_barrier_02_1k.gltf"
+        },
+        "bin": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/concrete_road_barrier_02/concrete_road_barrier_02.bin",
+          "path": "models/concrete_road_barrier_02/concrete_road_barrier_02.bin"
+        },
+        "arm_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/concrete_road_barrier_02/concrete_road_barrier_02_arm_1k.jpg",
+          "path": "models/concrete_road_barrier_02/textures/concrete_road_barrier_02_arm_1k.jpg"
+        },
+        "nor_gl_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/concrete_road_barrier_02/concrete_road_barrier_02_nor_gl_1k.jpg",
+          "path": "models/concrete_road_barrier_02/textures/concrete_road_barrier_02_nor_gl_1k.jpg"
+        },
+        "diff_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/concrete_road_barrier_02/concrete_road_barrier_02_diff_1k.jpg",
+          "path": "models/concrete_road_barrier_02/textures/concrete_road_barrier_02_diff_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "mdl-railyard-propane",
+      "kind": "model",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/propane_tank",
+      "files": {
+        "gltf": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/propane_tank/propane_tank_1k.gltf",
+          "path": "models/propane_tank/propane_tank_1k.gltf"
+        },
+        "nor_gl_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/propane_tank/propane_tank_nor_gl_1k.jpg",
+          "path": "models/propane_tank/textures/propane_tank_nor_gl_1k.jpg"
+        },
+        "diff_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/propane_tank/propane_tank_diff_1k.jpg",
+          "path": "models/propane_tank/textures/propane_tank_diff_1k.jpg"
+        },
+        "arm_1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/propane_tank/propane_tank_arm_1k.jpg",
+          "path": "models/propane_tank/textures/propane_tank_arm_1k.jpg"
+        },
+        "bin": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/propane_tank/propane_tank.bin",
+          "path": "models/propane_tank/propane_tank.bin"
+        }
+      }
+    }
+  ]
+}

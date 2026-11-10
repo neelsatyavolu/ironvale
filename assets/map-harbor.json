@@ -1,0 +1,296 @@
+{
+  "assets": [
+    {
+      "id": "hdri-harbor-venice-sunset",
+      "kind": "hdri",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/venice_sunset",
+      "files": {
+        "hdr@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/venice_sunset_1k.hdr",
+          "path": "hdri/venice_sunset_1k.hdr"
+        },
+        "hdr@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/venice_sunset_2k.hdr",
+          "path": "hdri/venice_sunset_2k.hdr"
+        },
+        "sky": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/venice_sunset.jpg",
+          "path": "hdri/venice_sunset_sky.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-harbor-cobble",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/cobblestone_05",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/cobblestone_05/cobblestone_05_diff_1k.jpg",
+          "path": "pbr/cobblestone_05/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/cobblestone_05/cobblestone_05_nor_gl_1k.jpg",
+          "path": "pbr/cobblestone_05/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/cobblestone_05/cobblestone_05_arm_1k.jpg",
+          "path": "pbr/cobblestone_05/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_05/cobblestone_05_diff_2k.jpg",
+          "path": "pbr/cobblestone_05/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_05/cobblestone_05_nor_gl_2k.jpg",
+          "path": "pbr/cobblestone_05/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_05/cobblestone_05_arm_2k.jpg",
+          "path": "pbr/cobblestone_05/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-harbor-plaster-yellow",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/yellow_plaster",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/yellow_plaster/yellow_plaster_diff_1k.jpg",
+          "path": "pbr/yellow_plaster/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/yellow_plaster/yellow_plaster_nor_gl_1k.jpg",
+          "path": "pbr/yellow_plaster/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/yellow_plaster/yellow_plaster_arm_1k.jpg",
+          "path": "pbr/yellow_plaster/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/yellow_plaster/yellow_plaster_diff_2k.jpg",
+          "path": "pbr/yellow_plaster/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/yellow_plaster/yellow_plaster_nor_gl_2k.jpg",
+          "path": "pbr/yellow_plaster/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/yellow_plaster/yellow_plaster_arm_2k.jpg",
+          "path": "pbr/yellow_plaster/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-harbor-plaster-white",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_plaster_rough_01",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/white_plaster_rough_01/white_plaster_rough_01_diff_1k.jpg",
+          "path": "pbr/white_plaster_rough_01/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/white_plaster_rough_01/white_plaster_rough_01_nor_gl_1k.jpg",
+          "path": "pbr/white_plaster_rough_01/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/white_plaster_rough_01/white_plaster_rough_01_arm_1k.jpg",
+          "path": "pbr/white_plaster_rough_01/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_rough_01/white_plaster_rough_01_diff_2k.jpg",
+          "path": "pbr/white_plaster_rough_01/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_rough_01/white_plaster_rough_01_nor_gl_2k.jpg",
+          "path": "pbr/white_plaster_rough_01/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_rough_01/white_plaster_rough_01_arm_2k.jpg",
+          "path": "pbr/white_plaster_rough_01/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-harbor-stone",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/old_stone_wall",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/old_stone_wall/old_stone_wall_diff_1k.jpg",
+          "path": "pbr/old_stone_wall/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/old_stone_wall/old_stone_wall_nor_gl_1k.jpg",
+          "path": "pbr/old_stone_wall/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/old_stone_wall/old_stone_wall_arm_1k.jpg",
+          "path": "pbr/old_stone_wall/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/old_stone_wall/old_stone_wall_diff_2k.jpg",
+          "path": "pbr/old_stone_wall/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/old_stone_wall/old_stone_wall_nor_gl_2k.jpg",
+          "path": "pbr/old_stone_wall/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/old_stone_wall/old_stone_wall_arm_2k.jpg",
+          "path": "pbr/old_stone_wall/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-harbor-roof-tiles",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/clay_roof_tiles_02",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/clay_roof_tiles_02/clay_roof_tiles_02_diff_1k.jpg",
+          "path": "pbr/clay_roof_tiles_02/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/clay_roof_tiles_02/clay_roof_tiles_02_nor_gl_1k.jpg",
+          "path": "pbr/clay_roof_tiles_02/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/clay_roof_tiles_02/clay_roof_tiles_02_arm_1k.jpg",
+          "path": "pbr/clay_roof_tiles_02/arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-harbor-planks",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/weathered_planks",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/weathered_planks/weathered_planks_diff_1k.jpg",
+          "path": "pbr/weathered_planks/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/weathered_planks/weathered_planks_nor_gl_1k.jpg",
+          "path": "pbr/weathered_planks/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/weathered_planks/weathered_planks_arm_1k.jpg",
+          "path": "pbr/weathered_planks/arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-harbor-blue-planks",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/blue_painted_planks",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/blue_painted_planks/blue_painted_planks_diff_1k.jpg",
+          "path": "pbr/blue_painted_planks/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/blue_painted_planks/blue_painted_planks_nor_gl_1k.jpg",
+          "path": "pbr/blue_painted_planks/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/blue_painted_planks/blue_painted_planks_arm_1k.jpg",
+          "path": "pbr/blue_painted_planks/arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "mdl-harbor-barrel",
+      "kind": "model",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/wine_barrel_01",
+      "files": {
+        "gltf": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wine_barrel_01/wine_barrel_01_1k.gltf",
+          "path": "models/wine_barrel_01/wine_barrel_01_1k.gltf"
+        },
+        "bin": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wine_barrel_01/wine_barrel_01.bin",
+          "path": "models/wine_barrel_01/wine_barrel_01.bin"
+        },
+        "diff": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_barrel_01/wine_barrel_01_diff_1k.jpg",
+          "path": "models/wine_barrel_01/textures/wine_barrel_01_diff_1k.jpg"
+        },
+        "nor": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_barrel_01/wine_barrel_01_nor_gl_1k.jpg",
+          "path": "models/wine_barrel_01/textures/wine_barrel_01_nor_gl_1k.jpg"
+        },
+        "arm": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_barrel_01/wine_barrel_01_arm_1k.jpg",
+          "path": "models/wine_barrel_01/textures/wine_barrel_01_arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "mdl-harbor-crate",
+      "kind": "model",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/wooden_crate_02",
+      "files": {
+        "gltf": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_crate_02/wooden_crate_02_1k.gltf",
+          "path": "models/wooden_crate_02/wooden_crate_02_1k.gltf"
+        },
+        "bin": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_crate_02/wooden_crate_02.bin",
+          "path": "models/wooden_crate_02/wooden_crate_02.bin"
+        },
+        "diff": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_02/wooden_crate_02_diff_1k.jpg",
+          "path": "models/wooden_crate_02/textures/wooden_crate_02_diff_1k.jpg"
+        },
+        "nor": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_02/wooden_crate_02_nor_gl_1k.jpg",
+          "path": "models/wooden_crate_02/textures/wooden_crate_02_nor_gl_1k.jpg"
+        },
+        "arm": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_02/wooden_crate_02_arm_1k.jpg",
+          "path": "models/wooden_crate_02/textures/wooden_crate_02_arm_1k.jpg"
+        }
+      }
+    },
+    {
+      "id": "mdl-harbor-bench",
+      "kind": "model",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/painted_wooden_bench",
+      "files": {
+        "gltf": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_bench/painted_wooden_bench_1k.gltf",
+          "path": "models/painted_wooden_bench/painted_wooden_bench_1k.gltf"
+        },
+        "bin": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_bench/painted_wooden_bench.bin",
+          "path": "models/painted_wooden_bench/painted_wooden_bench.bin"
+        },
+        "diff": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_diff_1k.jpg",
+          "path": "models/painted_wooden_bench/textures/painted_wooden_bench_diff_1k.jpg"
+        },
+        "nor": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_nor_gl_1k.jpg",
+          "path": "models/painted_wooden_bench/textures/painted_wooden_bench_nor_gl_1k.jpg"
+        },
+        "arm": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_arm_1k.jpg",
+          "path": "models/painted_wooden_bench/textures/painted_wooden_bench_arm_1k.jpg"
+        }
+      }
+    }
+  ]
+}

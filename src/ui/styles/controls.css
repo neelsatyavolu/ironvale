@@ -1,0 +1,206 @@
+/* Segmented control */
+.iv-seg {
+  display: inline-flex;
+  height: 36px;
+  border: 1px solid var(--field);
+  border-radius: 4px;
+}
+
+.iv-seg__item {
+  min-width: 48px;
+  padding: 0 12px;
+  border: 0;
+  border-left: 1px solid var(--line-2);
+  background: transparent;
+  font: 500 14px/1 var(--sans);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ease),
+    color 150ms var(--ease);
+}
+
+.iv-root .iv-seg__item {
+  color: var(--mute);
+}
+
+.iv-seg__item:first-child {
+  border-left: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.iv-seg__item:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+.iv-seg__item:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.iv-root .iv-seg__item[aria-checked='true'] {
+  background: var(--ink);
+  color: var(--canvas);
+}
+
+.iv-seg--wide {
+  display: flex;
+}
+
+.iv-seg--wide .iv-seg__item {
+  flex: 1 1 0;
+}
+
+/* Switch: a state word and a square that fills when on. */
+.iv-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  padding: 0 0 0 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.iv-toggle__state {
+  color: var(--mute);
+  font: 400 12px/1 var(--mono);
+}
+
+.iv-toggle__box {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border: 1px solid var(--field);
+  border-radius: 9px;
+  transition:
+    background-color 150ms var(--ease),
+    border-color 150ms var(--ease);
+}
+
+.iv-toggle__box::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--mute);
+  transition:
+    transform 150ms var(--ease),
+    background-color 150ms var(--ease);
+}
+
+.iv-toggle[aria-checked='true'] .iv-toggle__state {
+  color: var(--ink);
+}
+
+.iv-toggle[aria-checked='true'] .iv-toggle__box {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.iv-toggle[aria-checked='true'] .iv-toggle__box::after {
+  background: var(--canvas);
+  transform: translateX(14px);
+}
+
+/* Slider: a hairline track, the travelled part in ink, the value in mono beside it. */
+.iv-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.iv-slider__input {
+  --fill: 0%;
+  width: 152px;
+  height: 36px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 4px;
+}
+
+.iv-slider__input::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(to right, var(--ink) var(--fill), var(--line-2) var(--fill));
+}
+
+.iv-slider__input::-webkit-slider-thumb {
+  width: 8px;
+  height: 16px;
+  margin-top: -7px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--ink);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.iv-slider__input::-moz-range-track {
+  height: 2px;
+  background: linear-gradient(to right, var(--ink) var(--fill), var(--line-2) var(--fill));
+}
+
+.iv-slider__input::-moz-range-thumb {
+  width: 8px;
+  height: 16px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.iv-slider__value {
+  min-width: 48px;
+  color: var(--ink);
+  font: 400 13px/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Settings row */
+.iv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--line);
+}
+
+.iv-row__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  padding: 6px 0;
+}
+
+.iv-row > :last-child {
+  flex: none;
+}
+
+.iv-row__label {
+  font: 500 14px/1.4 var(--sans);
+}
+
+.iv-row__note {
+  color: var(--mute);
+  font-size: 13px;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+@media (pointer: coarse) {
+  .iv-seg,
+  .iv-toggle,
+  .iv-slider__input {
+    height: 44px;
+  }
+}

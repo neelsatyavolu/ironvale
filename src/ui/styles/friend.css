@@ -1,0 +1,194 @@
+/* Play with a friend: host or join, pass a code, set the match up. Follows the menu's rhythm. */
+.iv-friend__head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 640px;
+  margin-bottom: 48px;
+}
+
+.iv-friend__view {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.iv-friend__cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.iv-friend__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.iv-friend .iv-section > .iv-note,
+.iv-friend .iv-section > .iv-seg,
+.iv-friend .iv-section > .iv-slider {
+  margin-top: 12px;
+}
+
+.iv-friend .iv-section > .iv-seg + .iv-note {
+  margin-top: 8px;
+}
+
+.iv-friend__name {
+  max-width: 304px;
+  margin-top: 12px;
+}
+
+.iv-friend__name + .iv-note {
+  margin-top: 8px;
+}
+
+.iv-friend__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.iv-friend__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-2);
+}
+
+.iv-friend__status {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+}
+
+/* Text entry. The interface has no selection anywhere else, so allow it here. */
+.iv-input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--field);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  font: 400 15px/1.4 var(--sans);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.iv-input::placeholder {
+  color: var(--mute);
+}
+
+.iv-input:disabled {
+  border-color: var(--line-2);
+  color: var(--mute);
+}
+
+.iv-input--code {
+  max-width: 200px;
+  font: 400 16px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.iv-input--code::placeholder {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.iv-input--block {
+  height: auto;
+  padding: 8px 12px;
+  resize: none;
+  font: 400 13px/1.65 var(--mono);
+  word-break: break-all;
+}
+
+/* A code to copy out: read-only, set in a well. */
+.iv-input--well {
+  margin-top: 12px;
+  border-color: var(--line-2);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--body);
+}
+
+/* The room code is the one loud thing on its screen. */
+.iv-friend__room {
+  margin: 16px 0 0;
+  font: 400 48px/1 var(--mono);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.iv-friend__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+  gap: 16px 24px;
+  margin-top: 12px;
+}
+
+.iv-friend__fact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.iv-friend__value {
+  font: 500 16px/1.35 var(--sans);
+}
+
+.iv-friend__ready {
+  margin: 0;
+  color: var(--mute);
+  font: 400 12px/1.4 var(--mono);
+}
+
+.iv-friend__ready.is-ready {
+  color: var(--ink);
+}
+
+.iv-root .iv-friend__error {
+  margin: 16px 0 0;
+  max-width: 640px;
+  font-size: 13px;
+}
+
+.iv-friend .iv-btn:disabled {
+  border-color: var(--line-2);
+  background: transparent;
+  color: var(--stone);
+  cursor: default;
+}
+
+@media (max-width: 900px) {
+  .iv-friend__cols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
+@media (max-width: 720px) {
+  .iv-friend__head {
+    margin-bottom: 32px;
+  }
+
+  .iv-friend__row {
+    flex-wrap: wrap;
+  }
+
+  .iv-friend__room {
+    font-size: 40px;
+  }
+}

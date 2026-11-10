@@ -1,0 +1,201 @@
+.iv-menu__head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 640px;
+}
+
+.iv-menu__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 48px;
+  margin-top: 48px;
+}
+
+.iv-menu__options {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.iv-menu__options .iv-seg,
+.iv-menu__options .iv-slider {
+  margin-top: 12px;
+}
+
+.iv-menu__options .iv-note {
+  margin-top: 8px;
+  min-height: 21px;
+}
+
+/* Map cards */
+.iv-maps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.iv-map {
+  display: grid;
+  grid-template-columns: 152px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  padding: 8px 20px 8px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  background: var(--card);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ease),
+    border-color 150ms var(--ease);
+}
+
+.iv-map:hover {
+  background: var(--hover);
+}
+
+.iv-map[aria-checked='true'] {
+  border-color: var(--ink);
+}
+
+.iv-map__thumb {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--hover);
+}
+
+.iv-map:hover .iv-map__thumb {
+  background: #21211f;
+}
+
+.iv-map__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.iv-map__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.iv-map__name {
+  font: 400 24px/1.25 var(--serif);
+}
+
+.iv-map__tagline {
+  color: var(--mute);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Radio mark: a ring that fills when the map is chosen. */
+.iv-map__mark {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--field);
+  border-radius: 50%;
+}
+
+.iv-map[aria-checked='true'] .iv-map__mark {
+  border-color: var(--ink);
+  background: var(--ink);
+  box-shadow: inset 0 0 0 3px var(--card);
+}
+
+.iv-map[aria-checked='true']:hover .iv-map__mark {
+  box-shadow: inset 0 0 0 3px var(--hover);
+}
+
+.iv-slider--wide {
+  display: flex;
+}
+
+.iv-slider--wide .iv-slider__input {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.iv-slider--wide .iv-slider__value {
+  min-width: 32px;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.iv-menu__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-2);
+}
+
+.iv-btn--wide {
+  min-width: 152px;
+}
+
+.iv-menu__error {
+  margin: 0 0 0 12px;
+  color: var(--danger);
+  font: 400 12px/1.4 var(--mono);
+}
+
+.iv-menu__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  margin-top: auto;
+  padding-top: 32px;
+}
+
+@media (max-height: 800px) {
+  .iv-menu__grid {
+    margin-top: 32px;
+  }
+
+  .iv-menu__actions {
+    margin-top: 24px;
+  }
+
+  .iv-menu__foot {
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .iv-menu__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
+@media (max-width: 560px) {
+  .iv-map {
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    gap: 12px;
+    padding-right: 12px;
+  }
+
+  .iv-map__name {
+    font-size: 18px;
+  }
+
+  .iv-menu__actions {
+    flex-wrap: wrap;
+  }
+
+  .iv-menu__foot .iv-keys {
+    display: none;
+  }
+}

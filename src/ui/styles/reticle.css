@@ -1,0 +1,101 @@
+/* Crosshair, hit marker and the damage ring, all centred on the view. */
+.iv-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.iv-cross {
+  position: absolute;
+  transition: opacity 120ms linear;
+}
+
+.iv-cross.is-hidden {
+  opacity: 0;
+}
+
+.iv-cross i {
+  position: absolute;
+  background: var(--hud-ink);
+  outline: 1px solid rgba(9, 9, 8, 0.4);
+}
+
+/* Four short ticks with an open centre. */
+.iv-cross i:nth-child(1),
+.iv-cross i:nth-child(2) {
+  left: -1px;
+  width: 2px;
+  height: 6px;
+}
+
+.iv-cross i:nth-child(1) {
+  top: -11px;
+}
+
+.iv-cross i:nth-child(2) {
+  top: 5px;
+}
+
+.iv-cross i:nth-child(3),
+.iv-cross i:nth-child(4) {
+  top: -1px;
+  width: 6px;
+  height: 2px;
+}
+
+.iv-cross i:nth-child(3) {
+  left: -11px;
+}
+
+.iv-cross i:nth-child(4) {
+  left: 5px;
+}
+
+.iv-hitmark {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  width: 32px;
+  height: 32px;
+  opacity: 0;
+  overflow: visible;
+  fill: none;
+  stroke: var(--hud-ink);
+  stroke-width: 1.75;
+  stroke-linecap: square;
+  filter: drop-shadow(0 0 1px rgba(9, 9, 8, 0.7));
+}
+
+.iv-hitmark.is-kill {
+  stroke: var(--danger);
+  stroke-width: 2.25;
+}
+
+.iv-hurt {
+  position: absolute;
+  top: -11em;
+  left: -11em;
+  width: 22em;
+  height: 22em;
+}
+
+.iv-hurt__arc {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  overflow: visible;
+  fill: none;
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+  transition: rotate 60ms linear;
+}
+
+.iv-hurt__arc path {
+  vector-effect: non-scaling-stroke;
+}

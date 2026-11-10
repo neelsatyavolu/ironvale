@@ -1,0 +1,30 @@
+{
+  "assets": [
+    {
+      "id": "mdl-char-soldier",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/ukrainian-soldier-94f74f6bdd994733a8a40c7ff088e12f",
+      "credit": "Soldier model based on \"Ukrainian Soldier\" by doctortex (https://sketchfab.com/doctortex), CC BY 4.0, https://sketchfab.com/3d-models/ukrainian-soldier-94f74f6bdd994733a8a40c7ff088e12f. Changes: rescaled, textures merged into one atlas and recoloured per team, animated with clips retargeted from the Universal Animation Library by Quaternius (CC0, https://quaternius.com/packs/universalanimationlibrary.html).",
+      "files": {
+        "gltf": {
+          "path": "characters/soldier.glb",
+          "local": true
+        }
+      }
+    },
+    {
+      "id": "mdl-char-carbine",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/m4a1-carbine-9bb8f18ad94d4b468e447a2d43bd08b9",
+      "credit": "Soldier rifle based on \"M4A1 Carbine\" by MrM0lten (https://sketchfab.com/MrM0lten), CC BY 4.0, https://sketchfab.com/3d-models/m4a1-carbine-9bb8f18ad94d4b468e447a2d43bd08b9. Changes: reduced to about 3,200 triangles from the game's first-person version, small moving parts left out, textures merged into one atlas.",
+      "files": {
+        "gltf": {
+          "path": "characters/carbine.glb",
+          "local": true
+        }
+      }
+    }
+  ]
+}

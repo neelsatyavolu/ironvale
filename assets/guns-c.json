@@ -1,0 +1,43 @@
+{
+  "assets": [
+    {
+      "id": "mdl-gun-m4a1",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/m4a1-carbine-9bb8f18ad94d4b468e447a2d43bd08b9",
+      "credit": "\"M4A1 Carbine\" by MrM0lten (https://sketchfab.com/MrM0lten), CC BY 4.0, https://sketchfab.com/3d-models/m4a1-carbine-9bb8f18ad94d4b468e447a2d43bd08b9. Carry handle and loose cartridge removed, trigger, charging handle and bolt carrier split into moving parts, textures recompressed.",
+      "files": {
+        "gltf": {
+          "path": "guns/m4a1.glb",
+          "local": true
+        }
+      }
+    },
+    {
+      "id": "mdl-gun-m249",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/lmg-8c24d7374ea64bdab1c30f49c69d5ed8",
+      "credit": "\"LMG\" by DJMaesen (https://sketchfab.com/bumstrum), CC BY 4.0, https://sketchfab.com/3d-models/lmg-8c24d7374ea64bdab1c30f49c69d5ed8. Repacked into separate moving parts, rear sight aperture widened, textures recompressed.",
+      "files": {
+        "gltf": {
+          "path": "guns/m249.glb",
+          "local": true
+        }
+      }
+    },
+    {
+      "id": "mdl-fp-arms",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/first-person-arms-e3c42c05b22944e5839deb8e003f0987",
+      "credit": "\"First Person arms\" by DJMaesen (https://sketchfab.com/bumstrum), CC BY 4.0, https://sketchfab.com/3d-models/first-person-arms-e3c42c05b22944e5839deb8e003f0987. Textures recompressed.",
+      "files": {
+        "gltf": {
+          "path": "guns/arms.glb",
+          "local": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+/* Scope */
+.iv-scope {
+  --lens: min(46vh, 46vw);
+  position: absolute;
+  inset: 0;
+}
+
+.iv-scope__mask {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent calc(var(--lens) - 1px), #050505 var(--lens));
+}
+
+.iv-scope__lens {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--lens) * 2);
+  height: calc(var(--lens) * 2);
+  transform: translate(-50%, -50%);
+}
+
+/* The glass softens and darkens toward the tube wall. */
+.iv-scope__blur,
+.iv-scope__shade {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.iv-scope__blur {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  mask-image: radial-gradient(closest-side, transparent 84%, #000 97%);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 84%, #000 97%);
+}
+
+.iv-scope__shade {
+  background: radial-gradient(closest-side, rgba(5, 5, 5, 0) 70%, rgba(5, 5, 5, 0.35) 90%, rgba(5, 5, 5, 0.85) 100%);
+}
+
+.iv-scope__reticle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #050505;
+  stroke: none;
+}
+
+.iv-scope__wire,
+.iv-scope__post {
+  fill: none;
+  stroke: #050505;
+  vector-effect: non-scaling-stroke;
+}
+
+.iv-scope__wire {
+  stroke-width: 1;
+}
+
+.iv-scope__post {
+  stroke-width: 4;
+}

@@ -1,0 +1,3942 @@
+{
+ "assets": [
+  {
+   "id": "snd-m4a1-shot-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/737569/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-shot-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-shot-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-shot-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-shot-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/427596/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-shot-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-shot-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-shot-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-tail",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-tail.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-dist-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-dist-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-dist-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/427597/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-dist-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-dry",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725402/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-dry.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-magOut",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725397/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-magOut.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-magIn",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725397/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-magIn.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-boltBack",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263513/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-boltBack.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-boltForward",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725397/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-boltForward.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m4a1-mech",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263513/",
+   "files": {
+    "audio": {
+     "path": "sounds/m4a1-mech.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-shot-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/385785/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-shot-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-shot-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-shot-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-shot-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460851/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-shot-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-tail",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-tail.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-dist-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-dist-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-dry",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460852/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-dry.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-clipInsert",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460855/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-clipInsert.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-boltForward",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460855/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-boltForward.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-boltBack",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460848/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-boltBack.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-clipPing",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725398/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-clipPing.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1garand-mech",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460850/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1garand-mech.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-shot-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-shot-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-shot-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-shot-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-shot-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-shot-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-tail",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-tail.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-dist-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-dist-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-dry",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725402/",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-dry.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-magOut",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/842995/",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-magOut.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-magIn",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/842993/",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-magIn.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-boltBack",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263513/",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-boltBack.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-boltForward",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263513/",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-boltForward.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-mp5-mech",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263513/",
+   "files": {
+    "audio": {
+     "path": "sounds/mp5-mech.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-shot-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/702672/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-shot-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-shot-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-shot-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-shot-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-shot-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-tail",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-tail.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-dist-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-dist-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-dist-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/159706/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-dist-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-dry",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/702662/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-dry.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-pumpBack-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/755495/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-pumpBack-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-pumpBack-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/755495/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-pumpBack-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-pumpBack-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/755495/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-pumpBack-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-pumpForward-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/755495/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-pumpForward-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-pumpForward-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/755495/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-pumpForward-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-pumpForward-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/755495/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-pumpForward-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-shellInsert-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/500293/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-shellInsert-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-shellInsert-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/500293/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-shellInsert-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-r870-shellInsert-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/108793/",
+   "files": {
+    "audio": {
+     "path": "sounds/r870-shellInsert-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-shot-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/692209/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-shot-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-shot-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-shot-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-shot-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-shot-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-tail",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-tail.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-dist-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-dist-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-dry",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460852/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-dry.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-boltLift",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/370345/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-boltLift.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-boltBack",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/370345/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-boltBack.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-boltForward",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/370345/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-boltForward.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-boltClose",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/370345/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-boltClose.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-shellInsert-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/508747/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-shellInsert-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m24-shellInsert-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/508747/",
+   "files": {
+    "audio": {
+     "path": "sounds/m24-shellInsert-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-shot-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/693856/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-shot-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-shot-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/693856/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-shot-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-shot-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/693856/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-shot-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-tail",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/693856/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-tail.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-dist-1",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/568007/",
+   "credit": "\"249 single shot.wav\" by Baelphazoar, https://freesound.org/s/568007/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-dist-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-dist-2",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/568007/",
+   "credit": "\"249 single shot.wav\" by Baelphazoar, https://freesound.org/s/568007/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-dist-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-dry",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725402/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-dry.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-beltOpen",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460848/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-beltOpen.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-beltClose",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/386777/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-beltClose.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-magOut",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/386777/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-magOut.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-magIn",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/386777/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-magIn.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-boltBack",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263513/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-boltBack.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-boltForward",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/725397/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-boltForward.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m249-mech",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263513/",
+   "files": {
+    "audio": {
+     "path": "sounds/m249-mech.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-shot-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/740897/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-shot-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-shot-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-shot-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-shot-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-shot-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-tail",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-tail.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-dist-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-dist-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-dry",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/104412/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-dry.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-magOut",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/104407/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-magOut.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-magIn",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/171209/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-magIn.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-boltBack",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/104409/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-boltBack.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-slideRelease",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/104408/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-slideRelease.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-boltForward",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/104408/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-boltForward.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-m1911-mech",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/104408/",
+   "files": {
+    "audio": {
+     "path": "sounds/m1911-mech.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-crack-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-crack-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-crack-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-crack-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-crack-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-crack-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-crack-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-crack-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-whiz-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-whiz-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-whiz-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-whiz-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-whiz-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-whiz-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bullet-whiz-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/bullet-whiz-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ricochet-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/523404/",
+   "files": {
+    "audio": {
+     "path": "sounds/ricochet-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ricochet-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/523403/",
+   "files": {
+    "audio": {
+     "path": "sounds/ricochet-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ricochet-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/ricochet-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-concrete-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489918/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-concrete-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-concrete-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489919/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-concrete-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-concrete-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489920/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-concrete-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-concrete-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489921/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-concrete-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-concrete-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489922/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-concrete-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182240/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182240/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182240/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182240/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182240/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-hollow-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182262/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-hollow-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-hollow-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182262/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-hollow-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-hollow-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182262/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-hollow-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-metal-hollow-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182262/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-metal-hollow-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-wood-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319226/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-wood-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-wood-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319227/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-wood-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-wood-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319228/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-wood-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-wood-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319223/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-wood-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-dirt-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319229/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-dirt-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-dirt-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319222/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-dirt-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-dirt-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319229/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-dirt-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-dirt-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319222/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-dirt-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-water-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/50623/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-water-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-water-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/50623/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-water-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-water-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/737644/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-water-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-water-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/737644/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-water-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-water-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/737644/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-water-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-glass-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/221528/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-glass-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-glass-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/686849/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-glass-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-glass-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/758207/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-glass-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-glass-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/465946/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-glass-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-flesh-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/138478/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-flesh-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-flesh-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/138479/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-flesh-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-flesh-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/138480/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-flesh-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-impact-flesh-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/138481/",
+   "files": {
+    "audio": {
+     "path": "sounds/impact-flesh-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-pistol-hard-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/210102/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-pistol-hard-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-pistol-hard-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/210102/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-pistol-hard-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-pistol-hard-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/210102/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-pistol-hard-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-pistol-soft-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/210102/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-pistol-soft-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-pistol-soft-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/210102/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-pistol-soft-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-pistol-soft-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/210102/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-pistol-soft-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-rifle-hard-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460859/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-rifle-hard-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-rifle-hard-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460859/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-rifle-hard-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-rifle-hard-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460859/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-rifle-hard-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-rifle-soft-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460859/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-rifle-soft-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-rifle-soft-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460859/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-rifle-soft-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-rifle-soft-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/460859/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-rifle-soft-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-shotgun-hard-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/773860/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-shotgun-hard-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-shotgun-hard-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/773860/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-shotgun-hard-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-shotgun-hard-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/773860/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-shotgun-hard-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-shotgun-soft-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/773860/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-shotgun-soft-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-shotgun-soft-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/773860/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-shotgun-soft-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-casing-shotgun-soft-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/773860/",
+   "files": {
+    "audio": {
+     "path": "sounds/casing-shotgun-soft-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166509/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166509/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166509/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166509/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166509/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-walk-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166509/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/521590/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/521590/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/521590/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/521590/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/521590/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-concrete-run-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/521590/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-concrete-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-walk-1",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-walk-2",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-walk-3",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-walk-4",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-walk-5",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-walk-6",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-run-1",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-run-2",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-run-3",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-run-4",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-run-5",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-cobble-run-6",
+   "kind": "sound",
+   "license": "CC-BY 4.0",
+   "source": "https://freesound.org/s/322565/",
+   "credit": "\"Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound\" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0",
+   "files": {
+    "audio": {
+     "path": "sounds/step-cobble-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/637556/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/637556/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/637556/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/637556/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/637556/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-walk-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/637556/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/648336/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/648336/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/648336/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/648336/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/648336/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-asphalt-run-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/648336/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-asphalt-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/384873/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/384873/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/384873/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/384873/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/384873/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-walk-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/384873/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/456038/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/456038/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/456038/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/456038/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/456038/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-gravel-run-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/456038/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-gravel-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166511/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166511/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166511/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166511/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166511/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-walk-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/166511/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319225/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319225/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319225/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319225/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319225/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-dirt-run-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/319225/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-dirt-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-walk-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-grass-run-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/770095/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-grass-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-walk-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-sand-run-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/705743/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-sand-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-wood-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/533044/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-wood-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/463665/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/463665/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/463665/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/463665/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/463665/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-walk-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/463665/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-walk-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/786977/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/786977/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/786977/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/786977/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/786977/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-metal-run-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/786977/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-metal-run-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-walk-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-walk-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-walk-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-walk-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-walk-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-walk-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-walk-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-walk-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-walk-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-walk-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-run-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-run-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-run-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-run-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-run-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-run-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-run-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-run-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-step-water-run-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/861369/",
+   "files": {
+    "audio": {
+     "path": "sounds/step-water-run-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-land-hard-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/646658/",
+   "files": {
+    "audio": {
+     "path": "sounds/land-hard-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-land-hard-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/646660/",
+   "files": {
+    "audio": {
+     "path": "sounds/land-hard-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-land-soft-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/646662/",
+   "files": {
+    "audio": {
+     "path": "sounds/land-soft-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-land-soft-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/646664/",
+   "files": {
+    "audio": {
+     "path": "sounds/land-soft-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-land-gravel-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/819656/",
+   "files": {
+    "audio": {
+     "path": "sounds/land-gravel-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-land-wood-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/422857/",
+   "files": {
+    "audio": {
+     "path": "sounds/land-wood-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-jump-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/jump-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-jump-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/jump-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-cloth-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/19291/",
+   "files": {
+    "audio": {
+     "path": "sounds/cloth-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-cloth-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/19291/",
+   "files": {
+    "audio": {
+     "path": "sounds/cloth-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-cloth-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/cloth-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-cloth-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/cloth-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-gear-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/gear-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-gear-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/gear-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-gear-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/gear-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-gear-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/gear-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-gear-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/gear-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-gear-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/517150/",
+   "files": {
+    "audio": {
+     "path": "sounds/gear-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-equip-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/620935/",
+   "files": {
+    "audio": {
+     "path": "sounds/equip-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-equip-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/620935/",
+   "files": {
+    "audio": {
+     "path": "sounds/equip-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-hurt-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/547208/",
+   "files": {
+    "audio": {
+     "path": "sounds/hurt-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-hurt-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/547191/",
+   "files": {
+    "audio": {
+     "path": "sounds/hurt-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-hurt-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/547195/",
+   "files": {
+    "audio": {
+     "path": "sounds/hurt-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-hurt-4",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/547199/",
+   "files": {
+    "audio": {
+     "path": "sounds/hurt-4.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-hurt-5",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/547203/",
+   "files": {
+    "audio": {
+     "path": "sounds/hurt-5.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-hurt-6",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/547206/",
+   "files": {
+    "audio": {
+     "path": "sounds/hurt-6.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-bodyfall",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/504626/",
+   "files": {
+    "audio": {
+     "path": "sounds/bodyfall.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-breath",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/554907/",
+   "files": {
+    "audio": {
+     "path": "sounds/breath.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-heartbeat",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/43621/",
+   "files": {
+    "audio": {
+     "path": "sounds/heartbeat.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ui-hover",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/ui-hover.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ui-click",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/ui-click.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ui-confirm",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/ui-confirm.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ui-back",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/ui-back.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ui-hit",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/ui-hit.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-ui-kill",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/ui-kill.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-amb-harbor",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/254125/",
+   "files": {
+    "audio": {
+     "path": "sounds/amb-harbor.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-amb-forest",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/636425/",
+   "files": {
+    "audio": {
+     "path": "sounds/amb-forest.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-amb-industrial",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/475688/",
+   "files": {
+    "audio": {
+     "path": "sounds/amb-industrial.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-amb-wind",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/506910/",
+   "files": {
+    "audio": {
+     "path": "sounds/amb-wind.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-amb-rain",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/217236/",
+   "files": {
+    "audio": {
+     "path": "sounds/amb-rain.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-amb-rain-roof",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/521773/",
+   "files": {
+    "audio": {
+     "path": "sounds/amb-rain-roof.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-loop-generator",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/516759/",
+   "files": {
+    "audio": {
+     "path": "sounds/loop-generator.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-loop-water-lap",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/528067/",
+   "files": {
+    "audio": {
+     "path": "sounds/loop-water-lap.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-loop-metal-creak",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/172411/",
+   "files": {
+    "audio": {
+     "path": "sounds/loop-metal-creak.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-loop-birds",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/776075/",
+   "files": {
+    "audio": {
+     "path": "sounds/loop-birds.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-gull-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263786/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-gull-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-gull-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263786/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-gull-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-gull-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/263786/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-gull-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-clang-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182262/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-clang-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-clang-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182262/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-clang-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-clang-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/182262/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-clang-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-branch-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/452570/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-branch-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-branch-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/251464/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-branch-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-branch-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/364699/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-branch-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-creak-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/172411/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-creak-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-creak-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/172411/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-creak-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-fence-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/189219/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-fence-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-oneshot-fence-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/189219/",
+   "files": {
+    "audio": {
+     "path": "sounds/oneshot-fence-2.mp3",
+     "local": true
+    }
+   }
+  }
+ ]
+}

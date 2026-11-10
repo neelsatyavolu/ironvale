@@ -1,0 +1,324 @@
+/* The in-match overlay. Sizes are in em so the whole HUD steps up with the viewport. */
+.iv-hud {
+  --hud-ink: #f2f0ea;
+  --hud-dim: rgba(242, 240, 234, 0.8);
+  --hud-shade: rgba(9, 9, 8, 0.5);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--hud-ink);
+  font: 400 16px/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  /* A tight dark edge keeps thin figures readable over bright sky and wet ground. */
+  text-shadow:
+    0 0 1px rgba(9, 9, 8, 0.95),
+    0 0 3px var(--hud-shade),
+    0 1px 5px var(--hud-shade);
+}
+
+.iv-hud__safe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  /* Ultrawide: keep the corners within a 2:1 frame so nothing drifts out of view. */
+  width: min(100vw, 200vh);
+  transform: translateX(-50%);
+}
+
+/* Low health: dark red at the edges and colour drains from the scene. */
+.iv-hud__vignette {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(96, 8, 4, 0) 46%, rgba(96, 8, 4, 0.4) 80%, rgba(64, 4, 2, 0.82) 100%);
+  transition: opacity 300ms linear;
+}
+
+.iv-hud__desat {
+  position: absolute;
+  inset: 0;
+  transition: background-color 300ms linear;
+}
+
+/* Down: dim the scene so the message reads on any background. */
+.iv-hud.is-dead .iv-hud__desat {
+  background: rgba(9, 9, 8, 0.5);
+}
+
+/* Corner figures */
+.iv-fig {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375em;
+}
+
+.iv-fig__label {
+  color: var(--hud-dim);
+  font-size: 0.75em;
+  font-weight: 500;
+}
+
+.iv-fig__value {
+  font-size: 1.75em;
+  letter-spacing: -0.02em;
+}
+
+.iv-hud__status {
+  position: absolute;
+  top: 1.5em;
+  left: 1.5em;
+  display: flex;
+  gap: 2em;
+}
+
+.iv-health {
+  position: absolute;
+  bottom: 1.5em;
+  left: 1.5em;
+}
+
+.iv-health__bar {
+  display: block;
+  width: 7.5em;
+  height: 2px;
+  margin-top: 0.125em;
+  background: rgba(9, 9, 8, 0.45);
+  outline: 1px solid rgba(9, 9, 8, 0.2);
+}
+
+.iv-health__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--hud-ink);
+  transform-origin: left center;
+  transition: transform 150ms var(--ease);
+}
+
+.iv-health.is-low .iv-fig__value {
+  color: var(--warn);
+}
+
+.iv-health.is-low .iv-health__fill {
+  background: var(--warn);
+}
+
+.iv-ammo {
+  position: absolute;
+  right: 1.5em;
+  bottom: 1.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5em;
+}
+
+.iv-ammo__count {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+
+.iv-ammo__mag {
+  font-size: 3em;
+  letter-spacing: -0.04em;
+}
+
+.iv-ammo__slash,
+.iv-ammo__reserve {
+  color: var(--hud-dim);
+  font-size: 1.125em;
+}
+
+.iv-ammo__slash {
+  margin-right: -0.2em;
+}
+
+.iv-ammo.is-empty .iv-ammo__mag {
+  color: var(--warn);
+}
+
+.iv-ammo__weapon {
+  color: var(--hud-dim);
+  font-size: 0.75em;
+  font-weight: 500;
+}
+
+/* Kill feed */
+.iv-feed {
+  position: absolute;
+  top: 1.5em;
+  right: 1.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125em;
+}
+
+.iv-feed__row {
+  display: flex;
+  gap: 0.75em;
+  /* Names carry the weight; the weapon stays full ink so it reads over cloud. */
+  color: var(--hud-ink);
+  animation: iv-feed-in 200ms var(--ease);
+}
+
+.iv-feed__name {
+  color: var(--hud-ink);
+  font-weight: 500;
+}
+
+@keyframes iv-feed-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* Notes near the line of sight */
+.iv-hud__reload {
+  position: absolute;
+  top: calc(50% + 3em);
+  left: 50%;
+  opacity: 0;
+  color: var(--hud-ink);
+  font-size: 0.75em;
+  font-weight: 500;
+  transform: translateX(-50%);
+  transition: opacity 120ms linear;
+}
+
+.iv-hud__reload.is-on {
+  opacity: 1;
+}
+
+.iv-toast {
+  position: absolute;
+  bottom: 22%;
+  left: 50%;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75em;
+  opacity: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.iv-toast__name {
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+.iv-toast__class {
+  color: var(--hud-dim);
+  font-size: 0.75em;
+}
+
+.iv-death {
+  position: absolute;
+  top: 36%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75em;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+  animation: iv-enter 200ms var(--ease);
+}
+
+.iv-death p {
+  margin: 0;
+}
+
+.iv-death__title {
+  font: 400 2.5em/1.1 var(--serif);
+  letter-spacing: -0.01em;
+}
+
+.iv-death__cause,
+.iv-death__next {
+  font-size: 0.8125em;
+  line-height: 1.4;
+}
+
+.iv-death__cause {
+  color: var(--hud-dim);
+}
+
+/* Two-player: countdown and notices, under the performance readout. */
+.iv-net {
+  position: absolute;
+  top: 4.5em;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.iv-net__start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.iv-net__count {
+  font-size: 3em;
+  letter-spacing: -0.04em;
+}
+
+.iv-net__notice {
+  margin: 0;
+  font-size: 0.8125em;
+  line-height: 1.4;
+}
+
+.iv-net__notice:empty {
+  display: none;
+}
+
+.iv-perf {
+  position: absolute;
+  top: 1.5em;
+  left: 50%;
+  color: var(--hud-dim);
+  font-size: 0.75em;
+  transform: translateX(-50%);
+  white-space: pre;
+}
+
+@media (min-height: 900px) {
+  .iv-hud {
+    font-size: 18px;
+  }
+}
+
+@media (min-height: 1200px) {
+  .iv-hud {
+    font-size: 20px;
+  }
+}
+
+@media (min-height: 1500px) {
+  .iv-hud {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .iv-hud {
+    font-size: 14px;
+  }
+}

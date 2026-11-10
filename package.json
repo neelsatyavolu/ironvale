@@ -1,0 +1,37 @@
+{
+  "name": "ironvale",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5311 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5198 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "assets": "node scripts/fetch-assets.mjs",
+    "shot": "node scripts/shot.mjs",
+    "tauri": "tauri",
+    "app:dev": "nice -n 15 tauri dev",
+    "app:build": "nice -n 15 tauri build --target universal-apple-darwin --config \"$(node scripts/dev/app-csp.mjs)\"",
+    "build:site": "node scripts/build-site.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
+    "three": "^0.187.0",
+    "three-mesh-bvh": "^0.9.18"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "@tauri-apps/cli": "^2.12.4",
+    "@types/three": "^0.187.0",
+    "playwright": "^1.65.0",
+    "sharp": "^0.35.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
+  },
+  "license": "MIT"
+}

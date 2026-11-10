@@ -1,0 +1,253 @@
+/* Ledger tokens (dark). The game draws its own scene, so the interface does not follow the system theme. */
+.iv-root {
+  --canvas: #0e0e0d;
+  --card: #141413;
+  --hover: #1a1a18;
+  --ink: #f2f0ea;
+  --body: rgba(242, 240, 234, 0.86);
+  --mute: rgba(242, 240, 234, 0.55);
+  --stone: rgba(242, 240, 234, 0.28);
+  --line: rgba(242, 240, 234, 0.08);
+  --line-2: rgba(242, 240, 234, 0.18);
+  --field: rgba(242, 240, 234, 0.42);
+  --primary: #f2f0ea;
+  --primary-on: #0e0e0d;
+  --primary-hover: #e4e1d9;
+  --accent: #4c8dff;
+  --accent-hover: #6fa3ff;
+  --accent-on: #0e0e0d;
+  --wash: rgba(76, 141, 255, 0.1);
+  --selection: rgba(76, 141, 255, 0.35);
+  --danger: #ee5a4b;
+  --warn: #d9a23a;
+  --scrim: rgba(9, 9, 8, 0.7);
+  --serif: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--ink);
+  font: 400 15px/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.iv-root *,
+.iv-root *::before,
+.iv-root *::after {
+  box-sizing: border-box;
+}
+
+.iv-root ::selection {
+  background: var(--selection);
+}
+
+.iv-root [hidden] {
+  display: none !important;
+}
+
+.iv-root :focus {
+  outline: none;
+}
+
+.iv-root :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.iv-root button {
+  font: inherit;
+  color: inherit;
+}
+
+/* A full-viewport screen that takes the pointer. */
+.iv-screen {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  pointer-events: auto;
+  animation: iv-enter 200ms var(--ease);
+}
+
+.iv-screen--solid {
+  background: var(--canvas);
+}
+
+.iv-screen--scrim {
+  background: var(--scrim);
+}
+
+@keyframes iv-enter {
+  from {
+    opacity: 0;
+  }
+}
+
+.iv-page {
+  max-width: 1168px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 48px 24px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.iv-display {
+  margin: 0;
+  font: 400 72px/1.04 var(--serif);
+  letter-spacing: -0.015em;
+}
+
+.iv-title {
+  margin: 0;
+  font: 400 40px/1.1 var(--serif);
+  letter-spacing: -0.01em;
+}
+
+.iv-headline {
+  margin: 0;
+  font: 400 24px/1.25 var(--serif);
+}
+
+.iv-lede {
+  margin: 0;
+  color: var(--body);
+  font: 400 20px/1.5 var(--serif);
+}
+
+.iv-label {
+  color: var(--mute);
+  font: 400 12px/1.4 var(--mono);
+}
+
+.iv-note {
+  margin: 0;
+  color: var(--mute);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Buttons */
+.iv-btn {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: transparent;
+  font: 500 14px/1 var(--sans);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ease),
+    border-color 150ms var(--ease);
+}
+
+.iv-btn:hover {
+  background: var(--hover);
+}
+
+.iv-root .iv-btn--accent {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.iv-btn--accent:hover {
+  background: var(--accent-hover);
+}
+
+.iv-root .iv-btn--primary {
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--primary-on);
+}
+
+.iv-btn--primary:hover {
+  background: var(--primary-hover);
+}
+
+/* Section rule: a strong hairline with a label and, on the right, a live value. */
+.iv-section {
+  min-width: 0;
+}
+
+.iv-rule {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-2);
+  font: 400 12px/1.4 var(--mono);
+}
+
+.iv-rule__label {
+  color: var(--ink);
+}
+
+.iv-rule__meta {
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hints along the bottom of a screen */
+.iv-keys {
+  display: flex;
+  gap: 24px;
+  color: var(--mute);
+  font: 400 12px/1.4 var(--mono);
+}
+
+.iv-keys b {
+  color: var(--body);
+  font-weight: 400;
+}
+
+@media (max-height: 800px) {
+  .iv-page {
+    padding-top: 32px;
+  }
+
+  .iv-display {
+    font-size: 56px;
+  }
+}
+
+@media (min-height: 1000px) {
+  .iv-page {
+    padding-top: 96px;
+    padding-bottom: 32px;
+  }
+}
+
+@media (max-width: 720px) {
+  .iv-page {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .iv-display {
+    font-size: 44px;
+  }
+}
+
+@media (pointer: coarse) {
+  .iv-btn {
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iv-root *,
+  .iv-root *::before,
+  .iv-root *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
