@@ -21,7 +21,12 @@
 }
 
 /* The glass softens and darkens toward the tube wall. */
-.iv-scope__blur,
+.iv-scope__shade {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
 .iv-scope__shade {
   position: absolute;
   inset: 0;
@@ -36,7 +41,7 @@
 }
 
 .iv-scope__shade {
-  background: radial-gradient(closest-side, rgba(5, 5, 5, 0) 70%, rgba(5, 5, 5, 0.35) 90%, rgba(5, 5, 5, 0.85) 100%);
+  background: radial-gradient(closest-side, rgba(5, 5, 5, 0) 86%, rgba(5, 5, 5, 0.5) 96%, rgba(5, 5, 5, 0.9) 100%);
 }
 
 .iv-scope__reticle {

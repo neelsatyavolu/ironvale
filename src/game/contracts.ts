@@ -500,6 +500,8 @@ export interface GameContext {
   readonly player: PlayerBody;
   /** Set once each system is constructed; systems must not use these in their constructors. */
   readonly ballistics: Ballistics;
+  /** The local player's guns. */
+  readonly weapons: PlayerWeapons;
   readonly audio: AudioSystem;
   /** The map currently loaded, or null between matches. */
   readonly map: MapInstance | null;

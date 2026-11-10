@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ironvale: a first-person shooter that runs in the browser</title>
-<meta name="description" content="A small first-person shooter for the browser and the Mac. Three maps, seven guns, bots at four difficulty levels, and two-player co-op or duel. Free and open source.">
+<meta name="description" content="A small first-person shooter for the browser. Three maps, seven guns, bots at four difficulty levels, and two-player co-op or duel. Free and open source.">
 <meta property="og:title" content="Ironvale">
-<meta property="og:description" content="A first-person shooter that runs in the browser and on the Mac. Free and open source.">
+<meta property="og:description" content="A first-person shooter that runs in the browser. Free and open source.">
 <meta property="og:image" content="https://ironvale.n3el.dev/img/og.jpg">
 <meta property="og:url" content="https://ironvale.n3el.dev/">
 <meta name="twitter:card" content="summary_large_image">
@@ -26,7 +26,6 @@
       <a href="#maps">Maps</a>
       <a href="#guns">Guns</a>
       <a href="#controls">Controls</a>
-      <a href="#mac">Mac app</a>
       <a href="https://github.com/neelsatyavolu/ironvale">Source</a>
     </div>
   </div>
@@ -40,7 +39,7 @@
       <p class="body">It was built for a MacBook: you can play the whole game on a trackpad, with aiming on a key so you never have to hold a two-finger click. A mouse works too.</p>
       <div class="actions">
         <a class="btn accent" href="/play/">Play in the browser</a>
-        <a class="btn ghost" id="dl-hero" href="https://github.com/neelsatyavolu/ironvale/releases/latest">Download for Mac</a>
+        <a class="btn ghost" href="https://github.com/neelsatyavolu/ironvale">Source on GitHub</a>
       </div>
       <p class="label mute">Needs Chrome, Edge or Safari with WebGPU. Older browsers fall back to WebGL 2.</p>
     </div>
@@ -104,7 +103,7 @@
           <tr><td>Reload</td><td class="num">R</td></tr>
           <tr><td>Jump, crouch</td><td class="num">Space, C</td></tr>
           <tr><td>Sprint</td><td class="num">Shift</td></tr>
-          <tr><td>Weapons</td><td class="num">1 to 7, or two-finger scroll</td></tr>
+          <tr><td>Weapons</td><td class="num">1 to 7, scroll, or hold Tab</td></tr>
           <tr><td>Pause</td><td class="num">Esc</td></tr>
         </tbody>
       </table>
@@ -112,20 +111,11 @@
     </div>
   </section>
 
-  <section id="mac">
-    <div class="rule"><span>Mac app</span><span class="mute" id="dl-meta">Latest release</span></div>
+  <section id="about">
+    <div class="rule"><span>About</span></div>
     <div class="two">
-      <div>
-        <p class="prose">The Mac app is the same game in its own window, with every map, model and sound inside it, so it runs with no network. It updates itself when a new version is out.</p>
-        <div class="actions">
-          <a class="btn ghost" id="dl-main" href="https://github.com/neelsatyavolu/ironvale/releases/latest">Download for Mac</a>
-        </div>
-        <p class="label mute">macOS 13 or later, Apple silicon and Intel. Signed and notarized.</p>
-      </div>
-      <div>
-        <p class="body">Two-player games connect the two computers directly. One player hosts and sends a code; the other pastes it in and sends a reply code back.</p>
-        <p class="body">The code is MIT licensed. Models, textures and sounds come from Poly Haven, Freesound, the Free Firearm Sound Library and artists on Sketchfab, under CC0 and CC BY 4.0. The <a href="https://github.com/neelsatyavolu/ironvale/blob/main/CREDITS.md">credits</a> name every one.</p>
-      </div>
+      <p class="prose">Two-player games connect the two computers directly. One player hosts and sends a code; the other pastes it in and sends a reply code back.</p>
+      <p class="body">The code is MIT licensed. Models, textures and sounds come from Poly Haven, Freesound, the Free Firearm Sound Library and artists on Sketchfab, under CC0 and CC BY 4.0. The <a href="https://github.com/neelsatyavolu/ironvale/blob/main/CREDITS.md">credits</a> name every one.</p>
     </div>
   </section>
 </main>
@@ -140,14 +130,6 @@ document.getElementById('theme').addEventListener('click',function(){
   var r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':!matchMedia('(prefers-color-scheme:light)').matches;
   r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch(e){}
 });
-fetch('https://api.github.com/repos/neelsatyavolu/ironvale/releases/latest').then(function(r){return r.ok?r.json():null}).then(function(rel){
-  if(!rel)return;
-  var dmg=(rel.assets||[]).find(function(a){return /\.dmg$/.test(a.name)});
-  if(!dmg)return;
-  ['dl-hero','dl-main'].forEach(function(id){document.getElementById(id).href=dmg.browser_download_url});
-  var mb=Math.round(dmg.size/1048576);
-  document.getElementById('dl-meta').textContent=rel.tag_name+' · '+mb+' MB · '+rel.published_at.slice(0,10);
-}).catch(function(){});
 </script>
 </body>
 </html>

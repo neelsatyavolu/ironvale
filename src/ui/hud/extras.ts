@@ -1,15 +1,13 @@
 /**
- * HUD additions that react to play: the weapon list (hold Tab, or shown briefly
- * on every switch), a note for each kill, and health bars over enemies the
+ * HUD additions that react to play: the weapon picker (hold Tab), a note for each kill, and health bars over enemies the
  * player has just hit.
  */
 import { Vector3 } from 'three/webgpu';
 import type { GameContext } from '../../game/contracts';
-import { WEAPON_DEFS } from '../../weapons/defs';
 import { h } from '../dom';
+import { createPicker } from './picker';
 import '../styles/hud-extras.css';
 
-const WEAPON_LIST_MS = 1600;
 const KILL_NOTE_MS = 1800;
 /** Kills this close together count as a streak. */
 const STREAK_SECONDS = 4;
@@ -30,23 +28,7 @@ export function killNote(headshot: boolean, streak: number, distance: number): s
 }
 
 export function createExtras(ctx: GameContext): HudExtras {
-  // Weapon list.
-  const weapons = Object.values(WEAPON_DEFS).sort((a, b) => a.slot - b.slot);
-  const rows = new Map(
-    weapons.map((def) => [
-      def.id,
-      h('li', 'iv-wlist__row', h('span', 'iv-wlist__key', String(def.slot)), h('span', 'iv-wlist__name', def.name)),
-    ]),
-  );
-  const list = h('ol', 'iv-wlist', ...rows.values());
-  let currentId = '';
-  let listUntil = 0;
-  const markCurrent = (id: string): void => {
-    if (id === currentId) return;
-    rows.get(currentId)?.classList.remove('is-current');
-    rows.get(id)?.classList.add('is-current');
-    currentId = id;
-  };
+  const picker = createPicker(ctx);
 
   // Kill note.
   const note = h('div', 'iv-kill');
@@ -65,15 +47,9 @@ export function createExtras(ctx: GameContext): HudExtras {
   const recent = new Map<number, number>();
   const point = new Vector3();
 
-  const element = h('div', 'iv-extras', list, note, ...bars.map((bar) => bar.element));
-  let listShown = false;
+  const element = h('div', 'iv-extras', picker.element, note, ...bars.map((bar) => bar.element));
 
   const unsubscribe = [
-    ctx.events.on('weaponSwitch', (event) => {
-      if (!event.local) return;
-      markCurrent(event.weapon.id);
-      listUntil = performance.now() + WEAPON_LIST_MS;
-    }),
     ctx.events.on('combatantHit', (event) => {
       if (event.attackerId !== ctx.player.id || event.targetId === ctx.player.id) return;
       recent.set(event.targetId, ctx.time + BAR_SECONDS);
@@ -98,11 +74,7 @@ export function createExtras(ctx: GameContext): HudExtras {
       );
     }),
     ctx.engine.onFrame(() => {
-      const wantList = ctx.input.isDown('scores') || performance.now() < listUntil;
-      if (wantList !== listShown) {
-        listShown = wantList;
-        list.classList.toggle('is-on', wantList);
-      }
+      picker.frame();
 
       const width = window.innerWidth;
       const height = window.innerHeight;

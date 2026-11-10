@@ -25,14 +25,14 @@ export interface ScopeOverlay {
   set(active: boolean): void;
 }
 
-/** Full-screen scope view: a black mask with a round clear lens, cross hairs with mil dots and a soft lens edge. */
+/** Full-screen scope view: a black mask with a round clear lens, cross hairs with mil dots and a dark lens edge. */
 export function createScope(): ScopeOverlay {
   const reticle = document.createElementNS(SVG_NS, 'svg');
   reticle.setAttribute('viewBox', '-100 -100 200 200');
   reticle.setAttribute('class', 'iv-scope__reticle');
   reticle.setAttribute('aria-hidden', 'true');
   reticle.innerHTML = reticleMarkup();
-  const lens = h('div', 'iv-scope__lens', h('div', 'iv-scope__blur'), h('div', 'iv-scope__shade'));
+  const lens = h('div', 'iv-scope__lens', h('div', 'iv-scope__shade'));
   lens.append(reticle);
   const element = h('div', 'iv-scope', h('div', 'iv-scope__mask'), lens);
   element.hidden = true;

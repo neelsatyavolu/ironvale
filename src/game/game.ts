@@ -35,6 +35,7 @@ import type {
 } from './contracts';
 
 const PLAYER_LIVES = 3;
+const WIN_DELAY_SECONDS = 3.5;
 const DEFAULT_INTERIOR_SKY_LIGHT = 0.45;
 const RESPAWN_SECONDS = 3;
 const SNAPSHOT_INTERVAL = 1 / 20;
@@ -300,7 +301,9 @@ export class Game implements GameContext, GameCommands {
   private frame(dt: number): void {
     const net = this.net;
     // A match with a friend keeps running while this player has the pause menu up.
-    const simulating = this.phase === 'playing' || (this.phase === 'paused' && net.inMatch);
+    // Holding the weapon picker open stops the clock when playing alone.
+    const choosing = this.phase === 'playing' && !net.inMatch && this.input.isDown('scores');
+    const simulating = !choosing && (this.phase === 'playing' || (this.phase === 'paused' && net.inMatch));
     if (simulating) {
       const frozen = net.frozen;
       this.setFrozen(frozen);
@@ -381,7 +384,9 @@ export class Game implements GameContext, GameCommands {
       this.reinforce();
       this.bots.spawn(config.botCount + (this.wave - 1) * SURVIVAL_WAVE_GROWTH, 'bravo', config.difficulty);
     } else if (this.kills + net.partnerKills >= config.botCount) {
-      this.endMatch('won');
+      // Let the last kill land and be seen before the result screen comes up.
+      this.waveTimer += dt;
+      if (this.waveTimer >= WIN_DELAY_SECONDS) this.endMatch('won');
     }
   }
 

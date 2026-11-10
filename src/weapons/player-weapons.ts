@@ -206,7 +206,8 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     const aimInput = this.aimInput;
     aimInput.held = intent.aimHeld;
     aimInput.pressed = intent.aimPressed;
-    aimInput.toggle = controls.adsToggle;
+    // A scope is held up only while the aim key is down, whatever the toggle setting.
+    aimInput.toggle = controls.adsToggle && !def.scoped;
     aimInput.aimTime = def.aimTime;
     aimInput.allowed =
       !switching && !machine.reloading && !(def.fireMode === 'bolt' && machine.cycling) && this.sprintBlend < 0.5;
