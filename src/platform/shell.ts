@@ -36,6 +36,10 @@ export function installShell(grab: PointerGrab): void {
   drag.style.cssText = 'position:fixed;top:0;left:0;right:0;height:28px;z-index:2147483647';
   document.body.append(drag);
 
+  import('./updater')
+    .then((updater) => updater.offerUpdate())
+    .catch((error: unknown) => console.warn('Could not check for updates', error));
+
   // The webview's menu offers Reload and Back, which would drop the match.
   window.addEventListener('contextmenu', (event) => event.preventDefault());
 }

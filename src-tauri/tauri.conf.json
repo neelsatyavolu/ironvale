@@ -49,10 +49,19 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg"],
+    "targets": [
+      "app",
+      "dmg"
+    ],
     "category": "Game",
     "shortDescription": "A first-person shooter",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "resources": {
       "../public/assets/dl": "assets/dl",
       "../public/assets/local": "assets/local"
@@ -61,6 +70,15 @@
       "minimumSystemVersion": "13.0",
       "hardenedRuntime": true,
       "entitlements": "Entitlements.plist"
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRFOUU5Q0I2QTg5NTZDOTMKUldTVGJKV290cHllVHFLdlNvQ3FYak01ZGpTS0xlMWxVMFpHRlc1blVYQUVpdjB4THd5L1BYTVAK",
+      "endpoints": [
+        "https://github.com/neelsatyavolu/ironvale/releases/latest/download/latest.json"
+      ]
     }
   }
 }

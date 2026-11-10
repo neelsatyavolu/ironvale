@@ -18,6 +18,8 @@ fn main() {
 
     let builder = tauri::Builder::default()
         .manage(pointer::GrabState::default())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .menu(menu::build)
         .on_window_event(|window, event| match event {
             WindowEvent::Focused(false) | WindowEvent::CloseRequested { .. } | WindowEvent::Destroyed => {
