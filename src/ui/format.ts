@@ -1,8 +1,5 @@
 import type { MatchMode } from '../game/contracts';
 
-/** Lives per match. Mirrors the rules in `src/game/game.ts`, which does not publish them. */
-const SKIRMISH_LIVES = 3;
-
 /** Seconds as `m:ss`. */
 export function formatClock(seconds: number): string {
   const total = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
@@ -27,7 +24,3 @@ export function rulesOf(config: { readonly mode: MatchMode; readonly rules?: 'sk
   return config.mode === 'coop' ? (config.rules ?? 'skirmish') : config.mode;
 }
 
-export function livesLeft(mode: MatchMode, deaths: number): number {
-  const lives = mode === 'skirmish' ? SKIRMISH_LIVES : 1;
-  return Math.max(0, lives - deaths);
-}

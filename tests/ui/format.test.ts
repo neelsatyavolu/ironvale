@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { accuracyPercent, formatClock, livesLeft, respawnCountdown } from '../../src/ui/format';
+import { accuracyPercent, formatClock, respawnCountdown } from '../../src/ui/format';
 
 describe('formatClock', () => {
   it('writes minutes and padded seconds', () => {
@@ -39,15 +39,3 @@ describe('respawnCountdown', () => {
   });
 });
 
-describe('livesLeft', () => {
-  it('counts down from three in a skirmish', () => {
-    expect(livesLeft('skirmish', 0)).toBe(3);
-    expect(livesLeft('skirmish', 2)).toBe(1);
-    expect(livesLeft('skirmish', 5)).toBe(0);
-  });
-
-  it('gives one life in survival', () => {
-    expect(livesLeft('survival', 0)).toBe(1);
-    expect(livesLeft('survival', 1)).toBe(0);
-  });
-});

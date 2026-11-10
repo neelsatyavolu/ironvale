@@ -1,7 +1,7 @@
 /**
- * Weapon picker: hold Tab for a panel in the middle of the screen with a side
+ * Weapon picker: hold E (or Tab) for a panel in the middle of the screen with a side
  * view of each gun and what it is good at. 1 to 7, A and D, the arrow keys or a
- * scroll move the choice; letting go of Tab equips it. Playing alone, the game
+ * scroll move the choice; letting go equips it. Playing alone, the game
  * stands still while it is open.
  */
 import type { Action } from '../../core/input';
@@ -72,7 +72,7 @@ export function createPicker(ctx: GameContext): Picker {
     'iv-pick__panel',
     h('ol', 'iv-pick__tabs', ...tabs),
     h('div', 'iv-pick__body', h('div', 'iv-pick__art', picture), h('div', 'iv-pick__text', name, kind, blurb, stats, ammo)),
-    h('p', 'iv-pick__hint', '1 to 7, A and D or scroll to choose. Let go of Tab to equip.'),
+    h('p', 'iv-pick__hint', '1 to 7, A and D or scroll to choose. Let go of E to equip.'),
   );
   const element = h('div', 'iv-pick', panel);
 

@@ -35,6 +35,8 @@ import type {
 } from './contracts';
 
 const PLAYER_LIVES = 3;
+/** Playing Survival alone: one extra life. With a friend, a fallen player returns with the next wave. */
+const SURVIVAL_SOLO_LIVES = 2;
 const WIN_DELAY_SECONDS = 3.5;
 const DEFAULT_INTERIOR_SKY_LIGHT = 0.45;
 const RESPAWN_SECONDS = 3;
@@ -365,7 +367,8 @@ export class Game implements GameContext, GameCommands {
     if (!this.player.alive) {
       this.respawnTimer -= dt;
       if (this.respawnTimer <= 0) {
-        const outOfLives = rules === 'survival' || this.deaths >= PLAYER_LIVES;
+        const outOfLives =
+          rules === 'survival' ? net.inMatch || this.deaths >= SURVIVAL_SOLO_LIVES : this.deaths >= PLAYER_LIVES;
         if (!outOfLives) this.spawnPlayer();
         else if (!partnerStanding && net.authority) this.endMatch('lost');
       }
@@ -539,7 +542,12 @@ export class Game implements GameContext, GameCommands {
       reloading: weapon.reloading,
       scopedIn: this.weapons.scopedIn,
       aiming: this.weapons.aimBlend > 0.5,
-      livesRemaining: this.rules === 'skirmish' ? Math.max(0, PLAYER_LIVES - this.deaths) : 1,
+      livesRemaining:
+        this.rules === 'skirmish'
+          ? Math.max(0, PLAYER_LIVES - this.deaths)
+          : this.net.inMatch
+            ? Number(this.player.alive)
+            : Math.max(0, SURVIVAL_SOLO_LIVES - this.deaths),
       respawnIn: this.player.alive ? 0 : Math.max(0, this.respawnTimer),
       shotsFired: this.shotsFired,
       shotsHit: this.shotsHit,

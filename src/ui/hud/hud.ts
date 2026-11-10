@@ -2,7 +2,7 @@ import type { FireMode, GameContext, MatchSnapshot, WeaponClass } from '../../ga
 import type { NetSnapshot } from '../../net/api';
 import { healthEffects } from '../damage';
 import { flag, h, textSlot } from '../dom';
-import { livesLeft, respawnCountdown, rulesOf } from '../format';
+import { respawnCountdown, rulesOf } from '../format';
 import { createExtras } from './extras';
 import { createFeed } from './feed';
 import { createPerf } from './perf';
@@ -241,8 +241,8 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
       enemies.value.set(String(snapshot.enemiesRemaining));
       setWave(snapshot.wave > 0);
       wave.value.set(String(snapshot.wave));
-      setLives(mode === 'skirmish');
-      lives.value.set(String(livesLeft(mode, snapshot.deaths)));
+      setLives(mode === 'skirmish' || (mode === 'survival' && net === null));
+      lives.value.set(String(snapshot.livesRemaining));
       setScore(duel && net !== null);
       if (duel && net) {
         scoreYou.label.set(net.localName);
@@ -271,7 +271,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
       wasDead = dead;
       setDead(dead);
       if (!dead) return;
-      const left = livesLeft(mode, snapshot.deaths);
+      const left = snapshot.livesRemaining;
       if (duel) deathNext.set(`Back in ${respawnCountdown(diedAt, snapshot.elapsed, RESPAWN_SECONDS)}`);
       else if (left === 0) {
         const partnerFighting = snapshot.config?.mode === 'coop' && net?.peerConnected === true;

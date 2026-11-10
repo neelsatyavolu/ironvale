@@ -10,7 +10,7 @@ await page.waitForFunction(() => window.__ironvale?.ready, null, { timeout: 9000
 await page.waitForTimeout(1500);
 // A real Tab press without pointer lock moves focus out of the page, so send the event directly.
 const key = (type, code) => page.evaluate(([t, c]) => window.dispatchEvent(new KeyboardEvent(t, { code: c })), [type, code]);
-await key('keydown', 'Tab');
+await key('keydown', 'KeyE');
 await page.waitForTimeout(200);
 const t0 = await page.evaluate(() => window.__ironvale.game.time);
 await key('keydown', 'Digit5');
@@ -18,7 +18,7 @@ await key('keyup', 'Digit5');
 await page.waitForTimeout(700);
 const t1 = await page.evaluate(() => window.__ironvale.game.time);
 await page.screenshot({ path: 'shots/ui-picker.png' });
-await key('keyup', 'Tab');
+await key('keyup', 'KeyE');
 await page.waitForTimeout(1200);
 const weapon = await page.evaluate(() => window.__ironvale.game.weapons.current.def.id);
 await browser.close();

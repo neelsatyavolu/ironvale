@@ -21,7 +21,7 @@ const WAVE_GROWTH = 2;
 
 const MODES: readonly { value: MenuMode; label: string; lives: string; note: string }[] = [
   { value: 'skirmish', label: 'Skirmish', lives: 'Three lives', note: 'Clear every enemy on the map before you run out of lives.' },
-  { value: 'survival', label: 'Survival', lives: 'One life', note: 'Waves keep coming and each is larger than the last. See how long you hold.' },
+  { value: 'survival', label: 'Survival', lives: 'Two lives', note: 'Waves keep coming and each is larger than the last. See how long you hold.' },
 ];
 
 const DIFFICULTIES: readonly { value: Difficulty; label: string; note: string }[] = [
