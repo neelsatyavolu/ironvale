@@ -166,7 +166,7 @@ export function createSettings(ctx: GameContext, actions: SettingsActions): Sett
     ),
     bound(
       'Sensitivity',
-      slider({ label: 'Sensitivity', min: 5, max: 80, step: 1, format: (value) => String(value) }, (sensitivity) =>
+      slider({ label: 'Sensitivity', min: 10, max: 300, step: 5, format: (value) => String(value) }, (sensitivity) =>
         store.update('controls', { sensitivity }),
       ),
       (s) => s.controls.sensitivity,

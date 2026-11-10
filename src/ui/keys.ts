@@ -68,7 +68,7 @@ export interface BindingRow {
 const MOVE: readonly Action[] = ['moveForward', 'moveLeft', 'moveBack', 'moveRight'];
 const SLOTS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6', 'slot7'];
 
-/** Single actions in the order the reference shows them. `scores` is bound but nothing uses it yet. */
+/** Single actions in the order the reference shows them. `scores` (Tab) holds the weapon list open. */
 const SINGLE: readonly (readonly [Action, string])[] = [
   ['sprint', 'Sprint'],
   ['jump', 'Jump'],
@@ -79,6 +79,7 @@ const SINGLE: readonly (readonly [Action, string])[] = [
   ['holdBreath', 'Hold breath'],
   ['weaponNext', 'Next weapon'],
   ['weaponPrev', 'Previous weapon'],
+  ['scores', 'Show weapons'],
 ];
 
 function moveKeys(bindings: Bindings, preset: ControlPreset): readonly string[] {

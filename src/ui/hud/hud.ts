@@ -3,6 +3,7 @@ import type { NetSnapshot } from '../../net/api';
 import { healthEffects } from '../damage';
 import { flag, h, textSlot } from '../dom';
 import { livesLeft, respawnCountdown, rulesOf } from '../format';
+import { createExtras } from './extras';
 import { createFeed } from './feed';
 import { createPerf } from './perf';
 import { createReticle } from './reticle';
@@ -74,6 +75,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
   const scope = createScope();
   const perf = createPerf(ctx, roundTripMs);
   const feed = createFeed(() => ctx.player.name, weaponName);
+  const extras = createExtras(ctx);
 
   // Top left: what is left to do.
   const enemies = figure('Enemies');
@@ -138,7 +140,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
     desaturate,
     vignette,
     scope.element,
-    h('div', 'iv-hud__safe', status, netBox, feed.element, health.element, ammo, reticle.element, reloading, toast, death),
+    h('div', 'iv-hud__safe', status, netBox, feed.element, health.element, ammo, reticle.element, reloading, toast, death, extras.element),
     perf.element,
   );
   element.hidden = true;
@@ -290,6 +292,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
     togglePerf: perf.toggle,
     dispose(): void {
       for (const off of unsubscribe) off();
+      extras.dispose();
       perf.dispose();
     },
   };

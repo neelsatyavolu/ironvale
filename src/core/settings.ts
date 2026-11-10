@@ -161,7 +161,7 @@ export function tierForGpu(name: string): QualityTier | null {
 export const CONTROL_PRESETS: Readonly<Record<ControlPreset, ControlSettings>> = {
   trackpad: {
     preset: 'trackpad',
-    sensitivity: 34,
+    sensitivity: 130,
     adsSensitivity: 0.6,
     invertY: false,
     adsToggle: true,
@@ -171,7 +171,7 @@ export const CONTROL_PRESETS: Readonly<Record<ControlPreset, ControlSettings>> =
   },
   mouse: {
     preset: 'mouse',
-    sensitivity: 22,
+    sensitivity: 70,
     adsSensitivity: 0.7,
     invertY: false,
     adsToggle: false,
@@ -214,7 +214,7 @@ const GRAPHICS_RULES: Rules<GraphicsSettings> = {
 };
 const CONTROL_RULES: Rules<ControlSettings> = {
   preset: ['trackpad', 'mouse'],
-  sensitivity: { min: 1, max: 200 },
+  sensitivity: { min: 1, max: 400 },
   adsSensitivity: { min: 0.1, max: 2 },
   aimAssist: UNIT,
   lookSmoothing: UNIT,
@@ -250,6 +250,15 @@ export function parseSettings(raw: string | null): Settings {
   try {
     const data: unknown = JSON.parse(raw);
     if (!isRecord(data)) return DEFAULT_SETTINGS;
+    // The first release shipped look speeds that were far too slow. Anyone still
+    // on one of those untouched defaults gets the new one.
+    if (isRecord(data.controls)) {
+      const old = data.controls.preset === 'mouse' ? 22 : 34;
+      if (data.controls.sensitivity === old) {
+        const preset = data.controls.preset === 'mouse' ? 'mouse' : 'trackpad';
+        data.controls = { ...data.controls, sensitivity: CONTROL_PRESETS[preset].sensitivity };
+      }
+    }
     return {
       graphics: mergeSection(DEFAULT_SETTINGS.graphics, data.graphics, GRAPHICS_RULES),
       controls: mergeSection(DEFAULT_SETTINGS.controls, data.controls, CONTROL_RULES),
