@@ -147,7 +147,7 @@ export function graphicsForTier(tier: QualityTier, base?: GraphicsSettings): Gra
 
 /**
  * Quality tier for a first run, from the GPU name the browser reports. Returns
- * null when the name says nothing useful (Safari and the Mac app report only
+ * null when the name says nothing useful (Safari reports only
  * "Apple GPU"), in which case the default tier stands.
  */
 export function tierForGpu(name: string): QualityTier | null {

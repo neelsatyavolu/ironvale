@@ -1,6 +1,6 @@
 {
   "name": "ironvale",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,15 +11,9 @@
     "test": "vitest run",
     "assets": "node scripts/fetch-assets.mjs",
     "shot": "node scripts/shot.mjs",
-    "tauri": "tauri",
-    "app:dev": "nice -n 15 tauri dev",
-    "app:build": "nice -n 15 tauri build --target universal-apple-darwin --config \"$(node scripts/dev/app-csp.mjs)\"",
     "build:site": "node scripts/build-site.mjs"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.12.4",
-    "@tauri-apps/plugin-process": "^2.4.0",
-    "@tauri-apps/plugin-updater": "^2.14.1",
     "three": "^0.187.0",
     "three-mesh-bvh": "^0.9.18"
   },
@@ -27,7 +21,6 @@
     "@gltf-transform/core": "^4.5.1",
     "@gltf-transform/extensions": "^4.5.1",
     "@gltf-transform/functions": "^4.5.1",
-    "@tauri-apps/cli": "^2.12.4",
     "@types/three": "^0.187.0",
     "playwright": "^1.65.0",
     "sharp": "^0.35.5",

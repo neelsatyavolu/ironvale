@@ -42,4 +42,3 @@ Ironvale is built from work other people gave away. Entries under CC BY 4.0 (htt
 
 - three.js (https://threejs.org), MIT: Rendering, on WebGPU and WebGL 2
 - three-mesh-bvh (https://github.com/gkjohnson/three-mesh-bvh), MIT: Collision and bullet ray casts
-- Tauri (https://tauri.app), MIT or Apache 2.0: The Mac app

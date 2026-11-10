@@ -1,7 +1,6 @@
 node_modules
 dist
 public/assets/dl
-src-tauri/target
 shots
 .DS_Store
 *.log

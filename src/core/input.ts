@@ -123,7 +123,7 @@ export class Input {
   private wheelBlocked = false;
   private lockListeners = new Set<(locked: boolean) => void>();
   private readonly abort = new AbortController();
-  /** Pointer Lock in the browser, a native cursor grab in the Mac app. */
+  /** Pointer Lock. */
   private readonly grab: PointerGrab;
 
   constructor(

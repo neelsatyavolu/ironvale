@@ -39,10 +39,8 @@ const DIFFICULTY_NAMES: Readonly<Record<string, string>> = {
   elite: 'Elite',
 };
 
-/** Web fonts are a nicety: offline (the Mac app on first run) the system stacks in the CSS take over. */
+/** Web fonts are a nicety: offline the system stacks in the CSS take over. */
 function loadFonts(): HTMLLinkElement[] {
-  // The Mac app bundles its fonts and its policy blocks outside stylesheets.
-  if ('__TAURI_INTERNALS__' in window) return [];
   const link = (rel: string, href: string, crossOrigin = false): HTMLLinkElement => {
     const element = document.createElement('link');
     element.rel = rel;

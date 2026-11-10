@@ -1,6 +1,6 @@
 # Ironvale
 
-Ironvale is a first-person shooter that runs in a browser tab and as a Mac app. You fight bots on three maps (Railyard, Harbor, Pinewood) with seven guns: M1911, MP5, Remington 870, M1 Garand, M24, M4A1 and M249. There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, one life), and a two-player mode that connects two games directly for co-op or a duel.
+Ironvale is a first-person shooter that runs in a browser tab. You fight bots on three maps (Railyard, Harbor, Pinewood) with seven guns: M1911, MP5, Remington 870, M1 Garand, M24, M4A1 and M249. There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, one life), and a two-player mode that connects two games directly for co-op or a duel.
 
 It is written in TypeScript on Three.js r187. It renders with WebGPU and falls back to WebGL 2 on its own when WebGPU is missing. The models, textures and recordings are all CC0 or CC BY 4.0; [CREDITS.md](CREDITS.md) lists them, and the same list is in the game under Credits.
 
@@ -26,17 +26,6 @@ Other commands:
 | `npm run typecheck` | Type checks without building. |
 | `npm run shot -- --out name --params "query"` | Renders one frame in headless Chrome and writes `shots/name.png`. |
 | `node scripts/credits.mjs` | Rewrites CREDITS.md from the manifests. A test fails if the file is out of date. |
-
-### The Mac app
-
-The Mac app is a Tauri window around the same build. It needs Rust and Xcode's command line tools.
-
-```sh
-npm run app:dev     # opens the app on the dev server; start npm run dev first
-npm run app:build   # universal Ironvale.app and a .dmg under src-tauri/target/universal-apple-darwin/release/bundle/
-```
-
-The build is unsigned. Cargo is held to six jobs and the scripts run under `nice`, because this laptop has overheated on full-core builds. [src-tauri/README.md](src-tauri/README.md) explains what the app adds to the page (pointer capture, bundled fonts, files read from disk).
 
 ### Playing with a friend
 
@@ -140,7 +129,7 @@ src/weapons/     weapon data, ballistics, handling; models/ has one module per g
 src/ai/          bot navigation, perception and behaviour        src/characters/   the soldier body
 src/audio/       spatial audio        src/fx/   muzzle flash, tracers, impacts, decals, weather
 src/maps/<id>/   one folder per map: geometry, lighting, spawns
-src/ui/          menus, settings, HUD        src/net/   two-player sync        src/platform/   Mac app glue
+src/ui/          menus, settings, HUD        src/net/   two-player sync        src/platform/   pointer lock
 assets/*.json    asset manifests        scripts/   asset pipeline and dev tools        signaling/   the relay Worker
 ```
 
@@ -160,12 +149,6 @@ Two-player
 - It has only been tested between two Chrome pages on this one machine (`scripts/dev/net-duel.mjs`, `net-coop.mjs`). It has never been played across the internet or between two computers.
 - The signaling Worker is not deployed, so room codes do not work until the owner deploys it. Pasted codes work without it.
 - There is no TURN relay. Players on some mobile, campus and office networks will fail to connect.
-
-Mac app
-
-- Unsigned and not notarised, so macOS will warn before opening it on another Mac.
-- WebKit caps it at 60 frames a second on macOS 13 to 15, and the raw input setting does nothing there.
-- The bundle carries about 190 MB of assets.
 
 Graphics and assets
 

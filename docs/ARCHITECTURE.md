@@ -1,8 +1,8 @@
 # Ironvale architecture
 
 Ironvale is a small first-person shooter with realistic rendering and sound. It
-runs in the browser (Three.js r187, WebGPU with an automatic WebGL2 fallback)
-and ships as a Tauri Mac app from the same code. Single-player against bots,
+runs in the browser (Three.js r187, WebGPU with an automatic WebGL2 fallback).
+Single-player against bots,
 plus a two-player peer-to-peer mode.
 
 Visual target: `docs/reference/` holds frames from the reference video. The look

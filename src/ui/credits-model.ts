@@ -73,7 +73,6 @@ const FONTS: readonly CreditThanks[] = [
 const LIBRARIES: readonly CreditThanks[] = [
   { name: 'three.js', url: 'https://threejs.org', licence: 'MIT', note: 'Rendering, on WebGPU and WebGL 2' },
   { name: 'three-mesh-bvh', url: 'https://github.com/gkjohnson/three-mesh-bvh', licence: 'MIT', note: 'Collision and bullet ray casts' },
-  { name: 'Tauri', url: 'https://tauri.app', licence: 'MIT or Apache 2.0', note: 'The Mac app' },
 ];
 
 function creditedLines(entries: readonly CreditAsset[]): CreditLine[] {

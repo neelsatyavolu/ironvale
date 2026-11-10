@@ -29,7 +29,7 @@ describe('buildCredits', () => {
       asset({ id: 'd', kind: 'hdri' }),
       asset({ id: 'e', kind: 'texture' }),
     ]);
-    expect(groups.map((group) => group.count)).toEqual([1, 1, 3, 3, 3]);
+    expect(groups.map((group) => group.count)).toEqual([1, 1, 3, 3, 2]);
   });
 
   it('shows a CC-BY credit line once however many files share it', () => {
