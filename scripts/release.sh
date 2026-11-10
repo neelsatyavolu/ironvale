@@ -17,6 +17,8 @@ export AGMUX_APPLE_NOTARY_VAULT="${AGMUX_APPLE_NOTARY_VAULT:-Private}"
 REPO="neelsatyavolu/ironvale"
 VERSION="$(node -p "require('./package.json').version")"
 TAG="v$VERSION"
+# Tag the commit the build starts from, even if more commits land while it runs.
+COMMIT="$(git rev-parse HEAD)"
 BUNDLE="src-tauri/target/universal-apple-darwin/release/bundle"
 
 if [ -n "$(git status --porcelain)" ]; then
@@ -71,7 +73,7 @@ node -e '
   }, null, 2));
 ' "$VERSION" "$SIGNATURE" "$URL" > "$OUT/latest.json"
 
-git tag "$TAG"
+git tag "$TAG" "$COMMIT"
 git push origin "$TAG"
 gh release create "$TAG" --repo "$REPO" --title "Ironvale $VERSION" --generate-notes \
   "$OUT/Ironvale.dmg" "$OUT/Ironvale.app.tar.gz" "$OUT/latest.json"
