@@ -11,6 +11,7 @@ import { createControlsReference } from './screens/controls-ref';
 import { createCredits } from './screens/credits';
 import { createEnd } from './screens/end';
 import { createFirstRun } from './screens/first-run';
+import { JOIN_PARAM } from '../net/room-code';
 import { createFriend } from './screens/friend';
 import { controlTips, createLoading } from './screens/loading';
 import { createMenu } from './screens/menu';
@@ -233,6 +234,8 @@ export function createInterface(ctx: GameContext, commands: GameCommands): Inter
   // ?ui=off hides the whole interface for clean screenshots of the scene.
   root.hidden = new URLSearchParams(location.search).get('ui') === 'off';
   document.body.append(root);
+  // Opened from a friend's invite link: go straight to the join screen.
+  if (new URLSearchParams(location.search).has(JOIN_PARAM)) overlay = 'friend';
 
   function activeScreen(): ScreenId | null {
     const canOverlay = phase === 'menu' || (phase === 'paused' && overlay !== 'friend' && overlay !== 'credits');
@@ -320,7 +323,8 @@ export function createInterface(ctx: GameContext, commands: GameCommands): Inter
       });
     } else if (next === 'menu') {
       startedHere = false;
-      overlay = null;
+      // The first arrival at the menu keeps an overlay opened by an invite link.
+      if (previous !== null) overlay = null;
     }
   }
 

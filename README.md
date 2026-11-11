@@ -29,15 +29,15 @@ Other commands:
 
 ### Playing with a friend
 
-Two games connect to each other directly over WebRTC. They can find each other in two ways.
+One player presses "Play with a friend", hosts, and sends the link the game shows. The other opens the link, picks a name and joins. The two games then talk to each other directly over WebRTC.
 
-With no setup, "Play with a friend" gives the host an invite code to send and the guest a reply code to send back, both by copy and paste.
-
-With the signaling Worker in `signaling/`, the host gets a six-character room code instead. The Worker is a small Cloudflare Worker that passes the connection messages across and then drops out. It is not deployed. To use it, deploy it (steps in [signaling/README.md](signaling/README.md)) and build the game with its address:
+The link works through the signaling Worker in `signaling/`, a small Cloudflare Worker at `ironvale-signal.n3el.dev` that passes the connection messages across and then drops out. It also hands out short-lived Cloudflare TURN relay servers, so players whose networks block direct connections still connect (their traffic then goes through Cloudflare). The site is built with its address:
 
 ```sh
-VITE_SIGNAL_URL=wss://ironvale-signaling.<account>.workers.dev npm run build
+VITE_SIGNAL_URL=wss://ironvale-signal.n3el.dev npm run build
 ```
+
+A build without that setting, or a moment when the Worker is unreachable, falls back to two codes passed by copy and paste: an invite from the host and a reply from the guest. Deploy steps are in [signaling/README.md](signaling/README.md).
 
 For local testing, run `npm run dev` inside `signaling/` and start the game's dev server with `VITE_SIGNAL_URL=ws://127.0.0.1:8799`, or add `?signal=ws://127.0.0.1:8799` to the address.
 
@@ -148,8 +148,7 @@ Sound
 Two-player
 
 - It has only been tested between two Chrome pages on this one machine (`scripts/dev/net-duel.mjs`, `net-coop.mjs`). It has never been played across the internet or between two computers.
-- The signaling Worker is not deployed, so room codes do not work until the owner deploys it. Pasted codes work without it.
-- There is no TURN relay. Players on some mobile, campus and office networks will fail to connect.
+- The relay path (TURN) is checked by a scripted relay-only connection, not by play from a network that needs it.
 
 Graphics and assets
 

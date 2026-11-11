@@ -24,3 +24,21 @@ export function isRoomCode(code: string): boolean {
   for (const character of code) if (!ROOM_ALPHABET.includes(character)) return false;
   return true;
 }
+
+/** The query parameter an invite link carries the room code in. */
+export const JOIN_PARAM = 'join';
+
+/** The room code in what a guest typed or pasted: a bare code, or a whole invite link. */
+export function roomCodeFrom(text: string): string {
+  const linked = /[?&#]join=([A-Za-z0-9-]+)/.exec(text);
+  return normalizeRoomCode(linked?.[1] ?? text);
+}
+
+/** The link a host sends: this page's address with the room code attached. */
+export function inviteLink(code: string, page: string): string {
+  const url = new URL(page);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set(JOIN_PARAM, code);
+  return url.toString();
+}

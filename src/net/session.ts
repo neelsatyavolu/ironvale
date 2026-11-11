@@ -14,7 +14,7 @@ import {
   type NetSystem,
 } from './api';
 import { ClockSync } from './clock';
-import { iceServers } from './ice';
+import { fetchRelayServers, iceServers } from './ice';
 import { sanitizeName } from './limits';
 import { MatchSync, type MatchLink } from './match';
 import {
@@ -74,6 +74,8 @@ export class NetSession implements NetSystem {
   private readonly abort = new AbortController();
   private signaling: Signaling | null = null;
   private link: PeerLink | null = null;
+  /** Relay servers for this attempt, from the signaling service. */
+  private relayServers: RTCIceServer[] = [];
   private sync: MatchSync | null = null;
   private connectTimer: ReturnType<typeof setTimeout> | null = null;
   private reachable: { at: number; value: Promise<boolean> } | null = null;
@@ -275,13 +277,23 @@ export class NetSession implements NetSystem {
         else this.fail(error);
       },
     };
-    signaling.open(role, code, handlers);
+    const base = signalUrl();
+    if (!base) {
+      signaling.open(role, code, handlers);
+      return;
+    }
+    // Ask for relay servers first, so both sides have them before any offer is made.
+    void fetchRelayServers(base).then((servers) => {
+      if (this.signaling !== signaling) return;
+      this.relayServers = servers;
+      signaling.open(role, code, handlers);
+    });
   }
 
   private makeLink(signaling: Signaling): PeerLink {
     this.dropLink();
     const link: PeerLink = new PeerLink(
-      { iceServers: iceServers(), trickle: signaling.trickle },
+      { iceServers: [...iceServers(), ...this.relayServers], trickle: signaling.trickle },
       {
         onOpen: () => {
           if (this.link === link) this.onConnected();

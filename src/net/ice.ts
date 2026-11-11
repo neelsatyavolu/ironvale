@@ -43,3 +43,27 @@ export function parseIceServers(raw: string | undefined): RTCIceServer[] {
 export function iceServers(extra: string | undefined = import.meta.env.VITE_ICE_SERVERS as string | undefined): RTCIceServer[] {
   return [STUN, ...parseIceServers(extra)];
 }
+
+const RELAY_TIMEOUT_MS = 3000;
+
+/**
+ * Short-lived relay (TURN) servers from the signaling service, for players
+ * whose networks block direct connections. Empty when there is no service or
+ * it does not answer: the game then tries a direct connection only.
+ */
+export async function fetchRelayServers(baseUrl: string): Promise<RTCIceServer[]> {
+  if (!baseUrl) return [];
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), RELAY_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${baseUrl.replace(/^ws/, 'http')}/ice`, { signal: abort.signal, cache: 'no-store' });
+    if (!response.ok) return [];
+    const body = (await response.json()) as { iceServers?: unknown };
+    return parseIceServers(JSON.stringify(body.iceServers ?? []));
+  } catch (error) {
+    console.warn('Could not get relay servers; trying a direct connection only', error);
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}

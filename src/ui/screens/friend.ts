@@ -1,6 +1,7 @@
 import type { Difficulty } from '../../core/settings';
 import type { GameCommands, GameContext } from '../../game/contracts';
 import type { LobbyState, NetErrorCode, NetMatchConfig, NetMethod } from '../../net/api';
+import { JOIN_PARAM, inviteLink, isRoomCode, roomCodeFrom } from '../../net/room-code';
 import { button, section, segmented, slider } from '../controls';
 import { h, setAttrs, textSlot } from '../dom';
 import '../styles/friend.css';
@@ -94,6 +95,8 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
   let method: NetMethod = 'manual';
   /** Which role the last attempt was in, for wording an error after the session has reset. */
   let lastRole: 'host' | 'guest' = 'host';
+  /** The room code from an invite link this page was opened with. Empty when there was none. */
+  let invited = '';
   let copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ---- name
@@ -121,16 +124,16 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     net.host(method);
   });
   hostButton.setAttribute('data-nav-default', '');
-  const hostSection = section('Host', h('p', 'iv-note', 'You choose the map and the rules, then give your friend a code.'), h('div', 'iv-friend__row', hostButton));
+  const hostSection = section('Host', h('p', 'iv-note', 'You choose the map and the rules, then send your friend a link.'), h('div', 'iv-friend__row', hostButton));
 
   const joinCode = setAttrs(h('input', 'iv-input iv-input--code'), {
     type: 'text',
     autocomplete: 'off',
     autocapitalize: 'characters',
     spellcheck: 'false',
-    maxlength: '12',
-    placeholder: 'Room code',
-    'aria-label': 'Room code',
+    maxlength: '200',
+    placeholder: 'Link or code',
+    'aria-label': 'Invite link or room code',
     'data-nav': '',
   });
   const joinInvite = setAttrs(h('textarea', 'iv-input iv-input--block'), {
@@ -159,6 +162,25 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     render(net.state);
   });
   const backButton = button('Back', 'ghost', actions.close);
+
+  // ---- idle, opened from an invite link: one button
+  const invitedButton = button('Join game', 'accent', () => {
+    lastRole = 'guest';
+    net.setName(nameInput.value);
+    actions.claimAudio();
+    net.join('room', invited);
+  });
+  const declineButton = button('Not now', 'ghost', () => {
+    invited = '';
+    render(net.state);
+  });
+  const invitedView = h(
+    'div',
+    'iv-friend__view',
+    setAttrs(h('p', 'iv-headline', 'Your friend invited you to a game.'), { role: 'status' }),
+    h('p', 'iv-note', 'Choose the name they will see, then join. The host picks the map and the rules.'),
+    h('div', 'iv-friend__actions', invitedButton, declineButton),
+  );
   const idleView = h(
     'div',
     'iv-friend__view',
@@ -179,7 +201,8 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
   });
   const copyNote = textSlot('span', 'iv-label');
   const copyButton = button('Copy code', 'primary', () => {
-    const code = net.state.code;
+    const state = net.state;
+    const code = state.method === 'room' ? inviteLink(state.code, location.href) : state.code;
     const done = (text: string): void => {
       copyNote.set(text);
       if (copiedTimer !== null) clearTimeout(copiedTimer);
@@ -311,10 +334,11 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
         'header',
         'iv-friend__head',
         h('h2', 'iv-title', 'Play with a friend'),
-        h('p', 'iv-lede', 'Two players, connected directly to each other. One hosts and shares a code; the other joins with it.'),
+        h('p', 'iv-lede', 'Two players. One hosts and sends a link; the other opens it, picks a name and joins.'),
       ),
       nameSection.element,
       error,
+      invitedView,
       idleView,
       linkView,
       lobbyView,
@@ -328,7 +352,7 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
         if (state.role === 'host') return manual ? 'Preparing your invite. This takes a few seconds.' : 'Opening a room';
         return manual ? 'Reading the invite and preparing your reply' : 'Looking for the game';
       case 'waiting':
-        return manual ? 'Send the invite to your friend, then paste the reply they send back.' : 'Waiting for your friend. The code works for ten minutes.';
+        return manual ? 'Send the invite to your friend, then paste the reply they send back.' : 'Send this link to your friend. They open it, pick a name and join. It works for ten minutes.';
       case 'reply':
         return 'Send this reply to the host. The game connects when they paste it.';
       default:
@@ -341,12 +365,12 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     if (!rooms) method = 'manual';
     joinCode.hidden = method !== 'room';
     joinInvite.hidden = method !== 'manual';
-    joinNote.textContent = method === 'room' ? 'Type the six-character code your friend gave you.' : 'Paste the invite your friend sent you. You will get a reply code to send back.';
+    joinNote.textContent = method === 'room' ? 'Paste the link your friend sent you, or type its six-character code.' : 'Paste the invite your friend sent you. You will get a reply code to send back.';
     methodSwitch.hidden = !rooms;
-    methodSwitch.textContent = method === 'room' ? 'Use copy-and-paste codes instead' : 'Use a room code instead';
+    methodSwitch.textContent = method === 'room' ? 'Use copy-and-paste codes instead' : 'Use a link instead';
     methodNote.textContent =
       method === 'room'
-        ? 'The host gets a six-character room code to read out or send.'
+        ? 'The host gets a link to send. Opening it joins the game.'
         : rooms
           ? 'No server involved: the host sends an invite code by any messenger and the guest sends a reply code back.'
           : roomsAvailable === null
@@ -359,11 +383,14 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     const hasCode = state.code !== '';
     const room = state.method === 'room';
     codeSection.hidden = !hasCode;
-    codeLabel.set(room ? 'Room code' : state.role === 'host' ? 'Invite code' : 'Reply code');
+    codeLabel.set(room ? 'Invite link' : state.role === 'host' ? 'Invite code' : 'Reply code');
+    // The link is what to send; the bare code is there for reading out.
     codeBig.element.hidden = !room;
-    codeBig.set(room ? state.code : '');
-    codeBlock.hidden = room;
-    if (codeBlock.value !== state.code) codeBlock.value = room ? '' : state.code;
+    codeBig.set(room ? `Code ${state.code}` : '');
+    const shown = room && hasCode ? inviteLink(state.code, location.href) : state.code;
+    codeBlock.rows = room ? 1 : 4;
+    if (codeBlock.value !== shown) codeBlock.value = shown;
+    copyButton.textContent = room ? 'Copy link' : 'Copy code';
     replySection.element.hidden = !(state.role === 'host' && state.method === 'manual' && state.step === 'waiting');
     linkSetup.hidden = state.role !== 'host';
     if (state.role === 'host') {
@@ -419,9 +446,11 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
   }
 
   function render(state: LobbyState): void {
-    const view = state.step === 'idle' ? idleView : state.step === 'connected' ? lobbyView : linkView;
+    // The invite has done its job once the players are connected.
+    if (state.step === 'connected') invited = '';
+    const view = state.step === 'idle' ? (invited ? invitedView : idleView) : state.step === 'connected' ? lobbyView : linkView;
     const changed = view.hidden;
-    for (const item of [idleView, linkView, lobbyView]) item.hidden = item !== view;
+    for (const item of [invitedView, idleView, linkView, lobbyView]) item.hidden = item !== view;
     if (state.role) lastRole = state.role;
     if (state.step === 'connected') {
       // The code has done its job; an old one left in the box would only confuse the next attempt.
@@ -446,6 +475,14 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     element,
     open(): void {
       replyInput.value = '';
+      const url = new URL(location.href);
+      const code = roomCodeFrom(url.searchParams.get(JOIN_PARAM) ?? '');
+      if (url.searchParams.has(JOIN_PARAM)) {
+        // Take the code out of the address so a reload does not ask again.
+        url.searchParams.delete(JOIN_PARAM);
+        history.replaceState(null, '', url);
+        if (isRoomCode(code) && net.state.step === 'idle') invited = code;
+      }
       void net.roomCodesAvailable().then((available) => {
         const first = roomsAvailable === null;
         roomsAvailable = available;

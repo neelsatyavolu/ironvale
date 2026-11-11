@@ -20,6 +20,48 @@ function json(body: object, status: number, headers: Record<string, string> = {}
   });
 }
 
+/** How long a relay credential lasts: longer than any match. */
+const RELAY_TTL_SECONDS = 4 * 60 * 60;
+
+interface IceServer {
+  readonly urls: string | readonly string[];
+  readonly username?: string;
+  readonly credential?: string;
+}
+
+/**
+ * Short-lived Cloudflare TURN credentials, so two players whose networks block
+ * direct connections can still reach each other. Empty when the TURN secrets
+ * are not set or Cloudflare does not answer; the game then connects directly only.
+ */
+async function relayServers(env: Env): Promise<IceServer[]> {
+  const { TURN_KEY_ID: id, TURN_KEY_API_TOKEN: token } = env as Env & { TURN_KEY_ID?: string; TURN_KEY_API_TOKEN?: string };
+  if (!id || !token) {
+    console.warn('TURN secrets are not set; no relay servers', { id: Boolean(id), token: Boolean(token) });
+    return [];
+  }
+  try {
+    const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ ttl: RELAY_TTL_SECONDS }),
+    });
+    if (!response.ok) {
+      console.error('TURN credentials refused', response.status);
+      return [];
+    }
+    const body = (await response.json()) as { iceServers?: IceServer[] };
+    if (!body.iceServers?.length) console.warn('TURN answered without servers', Object.keys(body));
+    // Browsers block port 53, and a blocked address only slows the connection down.
+    return (body.iceServers ?? [])
+      .map((server) => ({ ...server, urls: [server.urls].flat().filter((address) => !/:53(\?|$)/.test(address)) }))
+      .filter((server) => server.urls.length > 0);
+  } catch (error) {
+    console.error('TURN credentials failed', error);
+    return [];
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -30,6 +72,14 @@ export default {
       // The game asks this before offering room codes. Only listed origins may read the answer.
       const cors: Record<string, string> = allowed && origin ? { 'access-control-allow-origin': origin, vary: 'Origin' } : {};
       return json({ ok: true }, 200, cors);
+    }
+
+    if (url.pathname === '/ice') {
+      if (!allowed || !origin) return json({ error: 'Origin not allowed' }, 403);
+      const cors = { 'access-control-allow-origin': origin, vary: 'Origin' };
+      const { success } = await env.JOIN_LIMITER.limit({ key: request.headers.get('CF-Connecting-IP') ?? 'local' });
+      if (!success) return json({ error: 'Too many attempts. Wait a minute and try again.' }, 429, cors);
+      return json({ iceServers: await relayServers(env) }, 200, cors);
     }
 
     const match = /^\/room\/([^/]+)$/.exec(url.pathname);

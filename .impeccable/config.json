@@ -1,0 +1,29 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-11-11T02:55:32.396Z",
+        "reason": "owner's ~/DESIGN.md (Ledger) mandates this; cited in global CLAUDE.md"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "createdAt": "2026-11-11T02:55:32.412Z",
+        "reason": "owner's ~/DESIGN.md (Ledger) mandates this; cited in global CLAUDE.md"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-11-11T02:55:32.428Z",
+        "reason": "owner's ~/DESIGN.md (Ledger) mandates this; cited in global CLAUDE.md"
+      }
+    ]
+  }
+}

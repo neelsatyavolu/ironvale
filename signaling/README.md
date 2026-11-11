@@ -104,15 +104,17 @@ To serve it from your own domain instead, add
 
 ## Players behind strict routers
 
-The game uses two public STUN servers (`stun.cloudflare.com:3478` and
-`stun.l.google.com:19302`). That connects most home networks. Some mobile,
-campus and office networks need a TURN relay as well. The game accepts extra
-servers at build time:
+A direct connection works on most home networks. Some mobile, campus and office
+networks need a relay. The Worker answers `GET /ice` with short-lived Cloudflare
+Realtime TURN servers, which the game asks for before it connects. It needs two
+secrets, from a TURN key made in the Cloudflare dashboard (Realtime > TURN) or
+with `POST /accounts/<id>/calls/turn_keys`:
 
 ```sh
-VITE_ICE_SERVERS='[{"urls":"turn:turn.example.com:3478","username":"user","credential":"secret"}]' npm run build
+npx wrangler secret put TURN_KEY_ID          # the key's uid
+npx wrangler secret put TURN_KEY_API_TOKEN   # the key's secret
 ```
 
-Anything in a build is public, so use credentials that are meant to be public
-or short-lived. Cloudflare Realtime TURN issues short-lived credentials from a
-key and token; handing those out from this Worker is not built yet.
+Without them `/ice` returns an empty list and the game connects directly only.
+Relayed traffic is billed by Cloudflare past the free monthly allowance; a match
+sends a few kilobytes a second.

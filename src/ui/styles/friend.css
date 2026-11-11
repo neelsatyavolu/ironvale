@@ -124,8 +124,8 @@
 
 /* The room code is the one loud thing on its screen. */
 .iv-friend__room {
-  margin: 16px 0 0;
-  font: 400 48px/1 var(--mono);
+  margin: 12px 0 0;
+  font: 400 14px/1 var(--mono);
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
   user-select: text;
@@ -188,7 +188,4 @@
     flex-wrap: wrap;
   }
 
-  .iv-friend__room {
-    font-size: 40px;
-  }
 }

@@ -9,7 +9,7 @@
  */
 import type { NetErrorCode, NetRole } from './api';
 import { decodeInvite, encodeInvite, type InviteError } from './invite';
-import { isRoomCode, makeRoomCode, normalizeRoomCode } from './room-code';
+import { isRoomCode, makeRoomCode, roomCodeFrom } from './room-code';
 
 export type SignalMessage =
   | { readonly type: 'offer'; readonly sdp: string }
@@ -148,7 +148,7 @@ export class RoomSignaling implements Signaling {
       this.connect(role, makeRoomCode());
       return;
     }
-    const tidy = normalizeRoomCode(code);
+    const tidy = roomCodeFrom(code);
     if (!isRoomCode(tidy)) {
       this.fail('bad-code');
       return;

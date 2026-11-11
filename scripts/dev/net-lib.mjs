@@ -48,7 +48,7 @@ export async function launch() {
  * Open one player's page in its own browser context (own storage, own clipboard).
  * `rooms: false` leaves the signaling address out, as in a build with no VITE_SIGNAL_URL.
  */
-export async function openPlayer(browser, label, { rooms = true } = {}) {
+export async function openPlayer(browser, label, { rooms = true, url = '' } = {}) {
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 });
   const page = await context.newPage();
   const problems = [];
@@ -60,7 +60,7 @@ export async function openPlayer(browser, label, { rooms = true } = {}) {
   // socket (the signaling socket goes to another port and is left alone).
   await page.routeWebSocket(new RegExp(`^wss?://(127\\.0\\.0\\.1|localhost):${port}/`), () => undefined);
   const query = `dev&q=low${rooms ? `&signal=${encodeURIComponent(signal)}` : ''}`;
-  await page.goto(`http://127.0.0.1:${port}/?${query}`, { waitUntil: 'load', timeout: 30000 });
+  await page.goto(url || `http://127.0.0.1:${port}/?${query}`, { waitUntil: 'load', timeout: 30000 });
   await page.waitForFunction(() => window.__ironvale?.ready || window.__ironvale?.error, null, { timeout: 60000 });
   return { label, context, page, problems };
 }
@@ -68,7 +68,7 @@ export async function openPlayer(browser, label, { rooms = true } = {}) {
 const visible = (page, selector) => page.locator(selector).filter({ visible: true });
 export const clickButton = (page, name) => page.getByRole('button', { name, exact: true }).filter({ visible: true }).first().click();
 
-async function enterFriendScreen(player, name) {
+export async function enterFriendScreen(player, name) {
   const { page } = player;
   await clickButton(page, 'Play with a friend');
   await page.getByLabel('Your name').fill(name);
@@ -84,9 +84,9 @@ export async function connectByRoomCode(host, guest, names = ['Ada', 'Grace']) {
   await clickButton(host.page, 'Host a game');
   const codeText = visible(host.page, '.iv-friend__room');
   await codeText.waitFor({ timeout: 10000 });
-  const code = (await codeText.textContent()).trim();
+  const code = (await codeText.textContent()).replace('Code', '').trim();
   await visible(guest.page, 'button:has-text("Use copy-and-paste codes instead")').waitFor({ timeout: 10000 });
-  await guest.page.getByLabel('Room code').fill(code.toLowerCase());
+  await guest.page.getByLabel('Invite link or room code').fill(code.toLowerCase());
   await clickButton(guest.page, 'Join');
   await waitConnected(host, guest);
   return code;
@@ -116,7 +116,7 @@ async function readCode(page) {
   return box.inputValue();
 }
 
-async function waitConnected(host, guest) {
+export async function waitConnected(host, guest) {
   for (const player of [host, guest]) {
     await player.page.waitForFunction(() => window.__ironvale.game.net.state.step === 'connected', null, { timeout: 45000 });
   }
