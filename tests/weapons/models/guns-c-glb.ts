@@ -1,5 +1,5 @@
 import { NodeIO } from '@gltf-transform/core';
-import { EXTTextureWebP, KHRMeshQuantization } from '@gltf-transform/extensions';
+import { EXTTextureWebP } from '@gltf-transform/extensions';
 import { getBounds } from '@gltf-transform/functions';
 
 export type Point = readonly [number, number, number];
@@ -113,7 +113,7 @@ function findCrossings(mesh: NodeMesh, through: Point, axis: Axis): number[] {
 /** Reads a processed gun from public/assets/local/guns for the asset checks. */
 export async function readGun(id: string): Promise<GunFile> {
   // Vitest runs from the project root.
-  const io = new NodeIO().registerExtensions([EXTTextureWebP, KHRMeshQuantization]);
+  const io = new NodeIO().registerExtensions([EXTTextureWebP]);
   const doc = await io.read(`public/assets/local/guns/${id}.glb`);
   const root = doc.getRoot();
   const { min, max } = getBounds(root.listScenes()[0]);

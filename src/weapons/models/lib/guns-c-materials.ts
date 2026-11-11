@@ -80,7 +80,7 @@ export function tunedFinish(source: THREE.Material, tweak: FinishTweak): THREE.M
  * to chrome. It weights its result by the metalness it reads from this target,
  * so report none; the environment map already lights the gun.
  */
-function keepOutOfReflections(material: THREE.MeshStandardNodeMaterial): void {
+export function keepOutOfReflections(material: THREE.MeshStandardNodeMaterial): void {
   material.mrtNode = mrt({ metalrough: vec2(0, 1) });
 }
 

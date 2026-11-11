@@ -9,7 +9,6 @@
  * - `cycle=0..1` pulls the bolt back by that share of `cycleTravel`.
  * - `mag=0.1` drops the magazine or belt box by that many metres.
  * - `cover=60` opens the feed cover by that many degrees.
- * - `turn=180` turns the gun about the vertical axis, to bring its left side into the sun.
  * - `aim=1` moves the gun so its sight anchor sits at the origin looking down
  *   -Z: shoot it with `cam=0,0,0&look=0,0,-1&fov=50` to check the sight picture.
  */
@@ -69,7 +68,6 @@ export function gunViewable(module: GunModule): Viewable {
       poseParts(gun, params);
       const holder = new THREE.Group();
       holder.add(gun.root);
-      holder.rotation.y = THREE.MathUtils.degToRad(Number(params.get('turn') ?? 0));
       if (params.get('aim') === '1') {
         // Put the sight anchor at the holder's origin, looking down -Z.
         gun.root.updateMatrixWorld(true);

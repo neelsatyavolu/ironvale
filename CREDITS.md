@@ -12,9 +12,9 @@ Ironvale is built from work other people gave away. Entries under CC BY 4.0 (htt
 - "R700V2" by Domevans (https://sketchfab.com/domevans), CC BY 4.0, https://sketchfab.com/3d-models/r700v2-d748f463852144c7a982b3e170e7d000. Modified: rescaled, stock and rail widened, stock repainted, trigger split out, scope and rings replaced by parts built in code (only the lens discs are kept), textures recompressed.
 - "M4A1 Carbine" by MrM0lten (https://sketchfab.com/MrM0lten), CC BY 4.0, https://sketchfab.com/3d-models/m4a1-carbine-9bb8f18ad94d4b468e447a2d43bd08b9. Carry handle and loose cartridge removed, trigger, charging handle and bolt carrier split into moving parts, textures recompressed.
 - "LMG" by DJMaesen (https://sketchfab.com/bumstrum), CC BY 4.0, https://sketchfab.com/3d-models/lmg-8c24d7374ea64bdab1c30f49c69d5ed8. Repacked into separate moving parts, rear sight aperture widened, textures recompressed.
+- "Low-Poly Sig MCX" by TastyTony (https://sketchfab.com/TastyTony), CC BY 4.0, https://sketchfab.com/3d-models/low-poly-sig-mcx-9a6f000c43644afe900669b6e7202378. Used as the base of the M7 rifle: red dot, foregrip, bottom rail and flash hider removed, front end shortened, suppressor and left-side charging handle added, magazine straightened and shortened, skinned rig repacked into separate moving parts, recoloured.
 - "First Person arms" by DJMaesen (https://sketchfab.com/bumstrum), CC BY 4.0, https://sketchfab.com/3d-models/first-person-arms-e3c42c05b22944e5839deb8e003f0987. Textures recompressed.
 
-- Ironvale, CC0: 1 model synthesised for the game
 - Poly Haven (https://polyhaven.com), CC0: 7 models
 
 ## Sounds
