@@ -247,7 +247,9 @@ export class Game implements GameContext, GameCommands {
       this.progress(0.95, 'Preparing the renderer');
       this.player.update(0);
       this.weapons.update(0);
+      this.weapons.warmUp(true);
       await this.engine.warmUp();
+      this.weapons.warmUp(false);
       if (token !== this.loadToken) return;
       this.progress(1, 'Ready');
       this.setPhase('playing');

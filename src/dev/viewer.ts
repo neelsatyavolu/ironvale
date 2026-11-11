@@ -59,7 +59,9 @@ export async function runViewer(canvas: HTMLCanvasElement, path: string): Promis
     },
     assets.hdri('hdri-test'),
   );
-  if (!sky) engine.scene.background = new THREE.Color(0x1b1c1e);
+  // `bgcolor=00ff00` gives a flat key colour for cutting a picture out of its backdrop.
+  const flat = Number.parseInt(params.get('bgcolor') ?? '', 16);
+  if (!sky) engine.scene.background = new THREE.Color(Number.isFinite(flat) ? flat : 0x1b1c1e);
 
   const floor = new THREE.Mesh(new THREE.CircleGeometry(30, 64), flatMaterial(0x3a3b3d, 0.85));
   floor.rotation.x = -Math.PI / 2;

@@ -240,6 +240,8 @@ export interface PlayerWeapons {
   readonly blocksSprint: boolean;
   /** Refill every weapon. Called on respawn. */
   resupply(): void;
+  /** Show every gun at once while the loading screen draws its warm-up frames, then hide them. */
+  warmUp(on: boolean): void;
   update(dt: number): void;
 }
 

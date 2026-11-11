@@ -118,6 +118,19 @@ export class ViewRig {
     this.retract = 0;
   }
 
+  /**
+   * Put guns that are not in the hands into the scene (or take them out again), so the
+   * renderer compiles their shaders during loading instead of on the first switch.
+   */
+  preload(guns: readonly GunView[], on: boolean): void {
+    for (const gun of guns) {
+      if (gun === this.active) continue;
+      if (on) this.holder.add(gun.model.root);
+      else this.holder.remove(gun.model.root);
+    }
+    if (on) this.root.visible = true;
+  }
+
   setVisible(visible: boolean): void {
     this.root.visible = visible;
   }

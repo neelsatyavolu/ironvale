@@ -250,9 +250,28 @@ export class Engine {
    * for materials that write to the extra targets.)
    */
   async warmUp(): Promise<void> {
-    for (let i = 0; i < 3; i++) {
+    // Draw everything once, including what is behind the camera or out of range, so no
+    // shader is left to compile when it first comes into view during play.
+    const culled: THREE.Object3D[] = [];
+    this.scene.traverse((object) => {
+      if (object.frustumCulled) {
+        object.frustumCulled = false;
+        culled.push(object);
+      }
+    });
+    try {
+      for (let i = 0; i < 3; i++) {
+        this.renderOnce();
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      }
+      // The GPU process compiles the pipelines those frames used in the background. Wait for it
+      // here, behind the loading screen, or the first seconds of play freeze instead.
+      const backend = this.renderer.backend as { device?: { queue?: { onSubmittedWorkDone?: () => Promise<void> } } };
+      await backend.device?.queue?.onSubmittedWorkDone?.();
       this.renderOnce();
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await backend.device?.queue?.onSubmittedWorkDone?.();
+    } finally {
+      for (const object of culled) object.frustumCulled = true;
     }
   }
 

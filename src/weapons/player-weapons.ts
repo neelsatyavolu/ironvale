@@ -140,6 +140,11 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     this.reader.debug = value;
   }
 
+  warmUp(on: boolean): void {
+    this.ensureViews();
+    this.rig?.preload(this.views, on);
+  }
+
   equip(slot: number): void {
     this.requestIndex(this.machines.findIndex((machine) => machine.def.slot === slot));
   }
