@@ -156,7 +156,7 @@ Graphics and assets
 - The 60 frames a second figure (each map, 8 bots) was measured in headless Chrome on one MacBook. There is no record of a run on a slower machine, or of a full match in Firefox or Safari.
 - The four gun models, the arms and the soldier come from an Objaverse mirror of the Sketchfab originals with 1k textures only, so they do not get sharper on the 2k tier.
 - There is no record of the gun textures being checked for real maker marks.
-- The M7 is not a model of the real rifle. It is a low-poly SIG MCX (a 5.56 mm relative) reshaped by `scripts/process-gun-m7.mjs`: suppressor, 20-round magazine, side charging handle and coyote finish added. It has flat colours and no textures, so it looks plainer up close than the other guns.
+- The M7 is an original model built by `scripts/process-gun-m7.mjs` (headless Blender) from measurements of photographs, not from manufacturer drawings: proportions are right to a few millimetres but small parts are simplified, it carries no markings, and the game's holographic sight stands in for the issued optic. Rebuilding it needs Blender installed.
 - The menu's map cards have no pictures until `node scripts/dev/ui-thumbs.mjs` has been run to write `public/assets/thumbs/`.
 - `public/assets/dl/` is not in the repository. A fresh clone shows a loading error until `npm run assets` has run, and the build ships both texture tiers whether or not a player uses them.
 - Six files under `public/assets/dl/pbr/forrest_ground_01/` (12 MB) are left over from an earlier manifest. Nothing loads them, but they are copied into `dist/` and the Mac app until deleted.

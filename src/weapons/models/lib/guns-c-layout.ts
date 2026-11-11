@@ -136,26 +136,26 @@ export const M249_LAYOUT: GunLayout = {
 
 /**
  * Where the holographic sight sits on the M7's top rail, which runs unbroken
- * from the rear of the receiver (z 0.007) to the front of the handguard. The
- * rifle has no iron sights, so nothing stands in the window.
+ * from the rear of the receiver (z 0.056) to the front of the handguard. The
+ * rifle carries no iron sights, so nothing stands in the window.
  */
 export const M7_OPTIC = {
   /** Top of the rail. */
-  railTop: 0.1385,
-  axis: 0.1803,
+  railTop: 0.142,
+  axis: 0.1838,
   /** Rear face of the sight's hood: the plane of the window the eye looks through. */
-  window: -0.09,
+  window: -0.085,
   /** Rear face of the sight body. */
-  rear: -0.076,
+  rear: -0.071,
 } as const;
 
 export const M7_LAYOUT: GunLayout = {
   asset: 'mdl-gun-m7',
   // With the suppressor fitted, stock out.
-  realLength: 0.99,
+  realLength: 0.914,
   // Front face of the suppressor, on the bore axis.
-  muzzle: [0, 0.0973, -0.751],
-  ejection: [0.0175, 0.1025, -0.13],
+  muzzle: [0, 0.105, -0.636],
+  ejection: [0.0205, 0.103, -0.115],
   ejectionTiltDeg: 10,
   sightRear: [0, M7_OPTIC.axis, M7_OPTIC.window],
   sightFront: [0, M7_OPTIC.axis, -0.6],
@@ -164,8 +164,8 @@ export const M7_LAYOUT: GunLayout = {
   cycleTravel: 0.07,
   grips: {
     // Right palm on the right side of the pistol grip.
-    trigger: { position: [0.012, 0.03, 0.014], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
-    // Left palm cupping the slim handguard from below, ahead of the magazine.
-    support: { position: [0.004, 0.067, -0.31], fingers: [0.42, 0.18, -0.89], thumb: [-0.72, 0.16, -0.67] },
+    trigger: { position: [0.014, 0.032, 0.038], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
+    // Left palm cupping the handguard from below, ahead of the magazine well.
+    support: { position: [0.004, 0.081, -0.3], fingers: [0.42, 0.18, -0.89], thumb: [-0.72, 0.16, -0.67] },
   },
 };

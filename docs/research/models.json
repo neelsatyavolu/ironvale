@@ -181,9 +181,21 @@
       "notes": "Attribution: 'M249 Machine Gun' by Kendrick Russell (https://sketchfab.com/Buce), CC BY 4.0. 13,339 tris, single mesh and material, full PBR."
     },
     {
+      "id": "gun-m7-original",
+      "kind": "model",
+      "purpose": "M7 rifle (SIG MCX-SPEAR, 6.8x51 mm) as issued, with suppressor: the model the game uses",
+      "download_url": "",
+      "license": "Original work, part of this repository",
+      "format": "Generated: scripts/process-gun-m7.mjs runs headless Blender (scripts/blender/build-m7.py) and packs a GLB with three WebP texture sets",
+      "size_bytes": 0,
+      "source_page": "",
+      "verified": true,
+      "notes": "No third-party mesh or texture. Each part starts from a side outline in millimetres (scripts/blender/m7_outlines.py) read off the right-side photograph under a 10 mm grid, is extruded with rolled edges and then cut (m7_parts.py); textures are baked from a procedural material in m7_bake.py. Proportions were measured from side-on photographs, used as reference only and not stored in the repository: https://commons.wikimedia.org/wiki/File:M7_Rifle.png (right side, US Army), https://commons.wikimedia.org/wiki/File:SIG_Sauer_XM5.png (left side), https://commons.wikimedia.org/wiki/File:M7_Rifle.jpg, scaled to the published 914 mm length with suppressor (https://en.wikipedia.org/wiki/M7_rifle). No maker names, logos, serials or other marks are modelled or painted; the selector positions are two plain painted dots. The game's code-built holographic sight stands in for the XM157 optic."
+    },
+    {
       "id": "gun-m7-tastytony-mcx",
       "kind": "model",
-      "purpose": "M7 rifle (SIG MCX-SPEAR): base model only, a 5.56 mm SIG MCX reshaped into the M7 by scripts/process-gun-m7.mjs",
+      "purpose": "M7 rifle, first attempt (replaced): a 5.56 mm SIG MCX reshaped into the M7. No longer used; the M7 is now an original model, see gun-m7-original",
       "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-114/9a6f000c43644afe900669b6e7202378.glb",
       "license": "CC-BY 4.0",
       "format": "GLB (no textures: 18 flat-colour materials, rigidly skinned to 10 bones)",
