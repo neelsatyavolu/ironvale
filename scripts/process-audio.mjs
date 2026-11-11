@@ -27,6 +27,7 @@ const sourceInfo = (key) => (key === 'synth' ? GENERATED : (FREESOUND[key] ?? ff
 setSourcePaths(await fetchSources(cacheDir, log));
 await import('./audio/recipes-weapons.mjs');
 await import('./audio/recipes-world.mjs');
+await import('./audio/recipes-grenade.mjs');
 await import('./audio/recipes-ambience.mjs');
 
 mkdirSync(wavDir, { recursive: true });

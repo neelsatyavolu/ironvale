@@ -13,6 +13,7 @@ export type Action =
   | 'aim'
   | 'reload'
   | 'holdBreath'
+  | 'grenade'
   | 'weaponNext'
   | 'weaponPrev'
   | 'slot1'
@@ -37,6 +38,7 @@ const SHARED: Pick<
   | 'moveRight'
   | 'sprint'
   | 'reload'
+  | 'grenade'
   | 'weaponNext'
   | 'weaponPrev'
   | 'slot1'
@@ -52,6 +54,7 @@ const SHARED: Pick<
   moveRight: ['KeyD', 'ArrowRight'],
   sprint: ['ShiftLeft'],
   reload: ['KeyR'],
+  grenade: ['KeyG'],
   weaponNext: ['WheelDown', 'BracketRight'],
   weaponPrev: ['WheelUp', 'BracketLeft'],
   slot1: ['Digit1'],

@@ -3195,6 +3195,90 @@
    }
   },
   {
+   "id": "snd-grenade-pin",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/876008/",
+   "files": {
+    "audio": {
+     "path": "sounds/grenade-pin.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-grenade-throw",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "scripts/process-audio.mjs",
+   "files": {
+    "audio": {
+     "path": "sounds/grenade-throw.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-grenade-bounce-1",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489919/",
+   "files": {
+    "audio": {
+     "path": "sounds/grenade-bounce-1.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-grenade-bounce-2",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489920/",
+   "files": {
+    "audio": {
+     "path": "sounds/grenade-bounce-2.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-grenade-bounce-3",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/489921/",
+   "files": {
+    "audio": {
+     "path": "sounds/grenade-bounce-3.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-grenade-explode",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/609587/",
+   "files": {
+    "audio": {
+     "path": "sounds/grenade-explode.mp3",
+     "local": true
+    }
+   }
+  },
+  {
+   "id": "snd-grenade-explode-dist",
+   "kind": "sound",
+   "license": "CC0",
+   "source": "https://freesound.org/s/609587/",
+   "files": {
+    "audio": {
+     "path": "sounds/grenade-explode-dist.mp3",
+     "local": true
+    }
+   }
+  },
+  {
    "id": "snd-amb-harbor",
    "kind": "sound",
    "license": "CC0",

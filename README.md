@@ -1,6 +1,6 @@
 # Ironvale
 
-Ironvale is a first-person shooter that runs in a browser tab. You fight bots on three maps (Railyard, Harbor, Headworks) with four guns: M4A1, MP5, M24 and M249. There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, two lives), and a two-player mode that connects two games directly for co-op or a duel.
+Ironvale is a first-person shooter that runs in a browser tab. You fight bots on three maps (Railyard, Harbor, Headworks) with four guns: M4A1, MP5, M24 and M249, plus one grenade per match. A minimap in the corner tracks enemies (it can be turned off in Settings). There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, two lives), and a two-player mode that connects two games directly for co-op or a duel.
 
 It is written in TypeScript on Three.js r187. It renders with WebGPU and falls back to WebGL 2 on its own when WebGPU is missing. The models, textures and recordings are all CC0 or CC BY 4.0; [CREDITS.md](CREDITS.md) lists them, and the same list is in the game under Credits.
 
@@ -56,6 +56,7 @@ There are two presets. The game starts on Trackpad; switch under Settings or on 
 | Sprint | Shift | Shift |
 | Hold breath while aiming | Shift | Shift |
 | Reload | R | R |
+| Grenade (one per match) | Hold G to aim, release to throw | Hold G to aim, release to throw |
 | Next or previous weapon | Two-finger scroll, or ] and [ | Wheel, or ] and [ |
 | Pick a weapon | 1 to 4 | 1 to 4 |
 | Scores | Tab | Tab |

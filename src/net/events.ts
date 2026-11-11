@@ -27,6 +27,11 @@ export interface NetMatchConfig {
 
 export type ByeReason = 'left' | 'timeout' | 'ended';
 
+/** The grenade's id wherever a hit or a death names what did it. Mirrors `GRENADE_ID` in `src/weapons/grenades.ts`. */
+export const GRENADE_SOURCE = 'grenade';
+/** What a hit or a death can be put down to: a gun, or a grenade. */
+export type DamageSource = WeaponId | typeof GRENADE_SOURCE;
+
 export type NetEvent =
   | { readonly t: 'hello'; readonly v: number; readonly name: string }
   | { readonly t: 'lobby'; readonly config: NetMatchConfig }
@@ -39,7 +44,7 @@ export type NetEvent =
       readonly t: 'hit';
       readonly target: number;
       readonly attacker: number;
-      readonly weapon: WeaponId;
+      readonly weapon: DamageSource;
       readonly zone: HitZone;
       readonly amount: number;
       readonly p: Vec3;
@@ -49,7 +54,7 @@ export type NetEvent =
       readonly t: 'death';
       readonly victim: number;
       readonly killer: number;
-      readonly weapon: WeaponId;
+      readonly weapon: DamageSource;
       readonly headshot: boolean;
       readonly life: number;
       readonly d: Vec3;
@@ -65,6 +70,10 @@ export type NetEvent =
       readonly hostKills: number;
       readonly guestKills: number;
     }
+  /** The sender threw its grenade from `p` at velocity `v`. The receiver flies a copy for show. */
+  | { readonly t: 'nade'; readonly p: Vec3; readonly v: Vec3 }
+  /** The sender's grenade went off at `p`. Its hits follow as ordinary `hit` events. */
+  | { readonly t: 'boom'; readonly p: Vec3 }
   | { readonly t: 'away'; readonly away: boolean }
   | { readonly t: 'bye'; readonly reason: ByeReason };
 
@@ -90,6 +99,8 @@ export const MAX_NET_BOTS = 32;
 export const MAX_KILL_TARGET = 50;
 const MAX_DAMAGE = 1000;
 const MAX_COUNT = 100000;
+/** No throw is this fast, m/s per axis. */
+const MAX_THROW_SPEED = 40;
 
 type Fields = Record<string, unknown>;
 
@@ -119,6 +130,10 @@ function point(value: unknown, limit: number): Vec3 | null {
 
 function weaponId(value: unknown): WeaponId | null {
   return oneOf(value, WEAPON_IDS);
+}
+
+function damageSource(value: unknown): DamageSource | null {
+  return value === GRENADE_SOURCE ? GRENADE_SOURCE : weaponId(value);
 }
 
 function matchConfig(value: unknown): NetMatchConfig | null {
@@ -157,7 +172,7 @@ function build(fields: Fields): NetEvent | null {
     case 'hit': {
       const target = wireId(fields.target);
       const attacker = wireId(fields.attacker);
-      const weapon = weaponId(fields.weapon);
+      const weapon = damageSource(fields.weapon);
       const zone = oneOf(fields.zone, ZONES);
       const amount = real(fields.amount, 0, MAX_DAMAGE);
       const p = point(fields.p, MAX_COORDINATE);
@@ -168,7 +183,7 @@ function build(fields: Fields): NetEvent | null {
     case 'death': {
       const victim = wireId(fields.victim);
       const killer = wireId(fields.killer);
-      const weapon = weaponId(fields.weapon);
+      const weapon = damageSource(fields.weapon);
       const life = whole(fields.life, 0, 255);
       const d = point(fields.d, 1.01);
       if (victim === null || killer === null || !weapon || typeof fields.headshot !== 'boolean' || life === null || !d) return null;
@@ -200,6 +215,15 @@ function build(fields: Fields): NetEvent | null {
       const guestKills = whole(fields.guestKills, 0, MAX_COUNT);
       if (wave === null || enemies === null || result === null || hostKills === null || guestKills === null) return null;
       return { t: 'match', wave, enemies, result, hostKills, guestKills };
+    }
+    case 'nade': {
+      const p = point(fields.p, MAX_COORDINATE);
+      const v = point(fields.v, MAX_THROW_SPEED);
+      return p && v ? { t: 'nade', p, v } : null;
+    }
+    case 'boom': {
+      const p = point(fields.p, MAX_COORDINATE);
+      return p ? { t: 'boom', p } : null;
     }
     case 'away':
       return typeof fields.away === 'boolean' ? { t: 'away', away: fields.away } : null;

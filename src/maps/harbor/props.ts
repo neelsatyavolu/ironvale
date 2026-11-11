@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import type { Assets } from '../../core/assets';
 import type { Kit } from './facade';
+import { decalQuad, stencilCell } from './posters';
 import { instanced, instanceModel, mergeParts, transform } from './kit';
 import { JETTIES, MOLE, QUAY_EDGE, SLIPWAY, TERRACE_Y } from './layout';
 
@@ -283,25 +284,65 @@ export function addProps(kit: Kit, root: THREE.Object3D, assets: Assets): { disp
   };
 }
 
-/** Plank packing case with corner posts, rails and a diagonal brace. */
+/**
+ * Plank packing case on skids: darker sheathing boards inside a frame of paler
+ * battens with a brace on each side, a boarded lid, and on most of them steel
+ * strapping and a shipper's stencil. All of it stays inside the cube the
+ * collider covers.
+ */
 export function addCase(kit: Kit, x: number, y: number, z: number, size: number, yaw: number): void {
   const { batch, colliders, mats } = kit;
   const s = size;
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
-  const box = (bw: number, bh: number, bd: number, lx: number, ly: number, lz: number, roll = 0): void => {
-    batch.box(mats.crate, bw, bh, bd, x + lx * cos + lz * sin, y + ly, z - lx * sin + lz * cos, { yaw, roll, tile: 1.1 });
+  const place = (lx: number, lz: number): [number, number] => [x + lx * cos + lz * sin, z - lx * sin + lz * cos];
+  const box = (material: THREE.Material, bw: number, bh: number, bd: number, lx: number, ly: number, lz: number, roll = 0, turn = 0): void => {
+    const [wx, wz] = place(lx, lz);
+    batch.box(material, bw, bh, bd, wx, y + ly, wz, { yaw: yaw + turn, roll, tile: 1.1 });
   };
-  box(s - 0.04, s - 0.04, s - 0.04, 0, s / 2, 0);
-  const t = 0.09;
-  const e = s / 2 - t / 2 + 0.012;
+  // Looks are picked from where the case stands, so they never shift when something else is added to the map.
+  const pick = Math.abs(Math.round(x * 37.3 + z * 91.7 + y * 13.1 + size * 211));
+  const skid = 0.055;
+  const lid = 0.03;
+  const t = 0.085;
+  const proud = 0.012;
+  const body = s - 0.05;
+  box(mats.crate, body, s - skid - lid, body, 0, skid + (s - skid - lid) / 2, 0);
+  for (const side of [-1, 1]) box(mats.crateTrim, t, skid, s - 0.02, side * (s / 2 - 0.16), skid / 2, 0);
+  box(mats.crateTrim, s - 0.004, lid, s - 0.004, 0, s - lid / 2, 0);
+
+  const e = s / 2 - t / 2 + proud;
+  const face = s / 2 - 0.012 + proud;
   for (const sx of [-1, 1]) {
-    for (const sz of [-1, 1]) box(t, s, t, sx * e, s / 2, sz * e);
-    box(t, t, s - t, sx * e, t / 2, 0);
-    box(t, t, s - t, sx * e, s - t / 2, 0);
-    box(s - t, t, t, 0, t / 2, sx * e);
-    box(s - t, t, t, 0, s - t / 2, sx * e);
-    box(s * 1.25, t * 0.8, 0.03, 0, s / 2, sx * (s / 2 + 0.002), sx * 0.74);
+    for (const sz of [-1, 1]) box(mats.crateTrim, t, s - skid - lid, t, sx * e, skid + (s - skid - lid) / 2, sz * e);
+    // Rails top and bottom, then the brace, on the two faces across X and the two across Z.
+    for (const v of [skid + t / 2, s - lid - t / 2]) {
+      box(mats.crateTrim, 0.024, t, s - t * 2, sx * face, v, 0);
+      box(mats.crateTrim, s - t * 2, t, 0.024, 0, v, sx * face);
+    }
+    const lean = (pick + (sx > 0 ? 1 : 0)) % 2 === 0 ? 0.74 : -0.74;
+    box(mats.crateTrim, s * 1.12, t * 0.85, 0.022, 0, s / 2, sx * face, lean);
+    box(mats.crateTrim, s * 1.12, t * 0.85, 0.022, sx * face, s / 2, 0, -lean, Math.PI / 2);
+  }
+
+  if (pick % 3 !== 0) {
+    // Two bands of strapping round the case, over the lid.
+    for (const along of [-0.24, 0.24]) {
+      const lx = along * s;
+      box(mats.zinc, 0.03, s - skid, 0.004, lx, skid + (s - skid) / 2, s / 2 + proud - 0.002);
+      box(mats.zinc, 0.03, s - skid, 0.004, lx, skid + (s - skid) / 2, -(s / 2 + proud - 0.002));
+      box(mats.zinc, 0.03, 0.004, s, lx, s - 0.001, 0);
+    }
+  }
+  if (pick % 4 !== 1) {
+    const mark = s * 0.34;
+    for (const [sx, index] of [
+      [1, pick],
+      [-1, pick + 3],
+    ] as const) {
+      const [wx, wz] = place(sx * (s / 2 - 0.02), sx * -0.08 * s);
+      batch.add(mats.poster, decalQuad(stencilCell(index), mark, mark, wx, y + s * 0.5, wz, yaw + (sx * Math.PI) / 2, ((pick % 5) - 2) * 0.03));
+    }
   }
   colliders.box(s, s, s, x, y + s / 2, z, 'wood', yaw);
 }

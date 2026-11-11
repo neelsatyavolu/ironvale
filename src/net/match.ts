@@ -2,13 +2,18 @@ import { Vector3 } from 'three/webgpu';
 import { createSoldier } from '../characters/index';
 import type { Combatant, DamageInfo, GameContext, GameEvents, Team, WeaponDef } from '../game/contracts';
 import { WEAPON_DEFS } from '../weapons/defs';
+import { GRENADES_PER_MATCH } from '../weapons/grenade-hand';
+import { GRENADE } from '../weapons/grenade-math';
+import { GRENADE_DEF } from '../weapons/grenades';
 import { closestPointOnSegment } from '../weapons/math';
 import { WEAPON_IDS, type WeaponId } from '../weapons/models/api';
 import type { NetGameHooks, NetRole } from './api';
 import type { ClockSync } from './clock';
 import { TokenBucket, WeaponGate, capDamage } from './limits';
 import {
+  GRENADE_SOURCE,
   MAX_BOTS_PER_SNAPSHOT,
+  MAX_NET_BOTS,
   MAX_PELLETS,
   MAX_WIRE_ID,
   WIRE_BOT_BASE,
@@ -19,6 +24,7 @@ import {
   encodeShot,
   type BinaryMessage,
   type BotState,
+  type DamageSource,
   type NetEvent,
   type NetMatchConfig,
   type PlayerState,
@@ -37,6 +43,10 @@ const MAX_EXTRAPOLATION_MS = 250;
 const STALE_MS = 2000;
 const NEAR_MISS_RADIUS = 1.2;
 const NOBODY = -1;
+/** A thrown grenade may start this far from where the thrower is shown here (they are shown a little in the past). */
+const GRENADE_REACH = 8;
+/** Slack on the throw speed for rounding on the wire. */
+const GRENADE_SPEED_SLACK = 1.05;
 
 /** The parts of a host's bot that are sent to the guest. `src/ai/bot.ts` has them all. */
 interface BotView extends Combatant {
@@ -72,7 +82,7 @@ interface PendingShot {
 interface PendingDeath {
   readonly victimId: number;
   readonly killerId: number;
-  readonly weapon: WeaponId;
+  readonly weapon: DamageSource;
   readonly headshot: boolean;
 }
 
@@ -84,6 +94,10 @@ const nearest = new Vector3();
 
 function isWeaponId(id: string): id is WeaponId {
   return (WEAPON_IDS as readonly string[]).includes(id);
+}
+
+function isDamageSource(id: string): id is DamageSource {
+  return id === GRENADE_SOURCE || isWeaponId(id);
 }
 
 function triple(v: Vector3): Vec3 {
@@ -117,6 +131,10 @@ export class MatchSync {
   readonly proxies: BotProxies;
   private readonly gates = new Map<number, WeaponGate>();
   private readonly actionGate = new TokenBucket(30, 30);
+  /** Hits the other player's grenades may report this match: every enemy and a player, once per grenade. Never refilled. */
+  private readonly blastGate = new TokenBucket(0, (MAX_NET_BOTS + 2) * GRENADES_PER_MATCH);
+  /** Grenades the other player has thrown this match. */
+  private peerGrenades = 0;
   private readonly unsubscribe: (() => void)[];
   private readonly fatalDirections = new Map<number, Vec3>();
   private readonly lastHurt = new Vector3(0, 0, -1);
@@ -167,6 +185,12 @@ export class MatchSync {
       events.on('weaponSwitch', (event) => this.onSwitch(event)),
       events.on('spawned', (event) => this.onSpawned(event)),
       events.on('died', (event) => this.onDied(event)),
+      events.on('grenadeThrown', (event) => {
+        if (event.local && !this.remoteGone) this.link.sendEvent({ t: 'nade', p: triple(event.position), v: triple(event.velocity) });
+      }),
+      events.on('grenadeExploded', (event) => {
+        if (event.local && !this.remoteGone) this.link.sendEvent({ t: 'boom', p: triple(event.position) });
+      }),
       events.on('combatantHit', (event) => {
         if (event.fatal) this.fatalDirections.set(event.targetId, triple(event.direction));
       }),
@@ -345,7 +369,7 @@ export class MatchSync {
   }
 
   private onDied(event: GameEvents['died']): void {
-    if (!isWeaponId(event.weaponId)) return;
+    if (!isDamageSource(event.weaponId)) return;
     const victim = this.ctx.combat.get(event.victimId);
     const mine = event.victimId === this.ctx.player.id;
     const hostBot = this.role === 'host' && this.coop && victim?.kind === 'bot';
@@ -379,7 +403,7 @@ export class MatchSync {
 
   /** A hit this machine decided on a body the other machine owns. */
   private forwardDamage(target: RemoteSoldier, info: DamageInfo): void {
-    if (this.remoteGone || !isWeaponId(info.weaponId)) return;
+    if (this.remoteGone || !isDamageSource(info.weaponId)) return;
     this.link.sendEvent({
       t: 'hit',
       target: target.wireId,
@@ -420,6 +444,12 @@ export class MatchSync {
         }
         break;
       }
+      case 'nade':
+        this.onRemoteGrenade(event);
+        break;
+      case 'boom':
+        this.ctx.grenades.detonate(this.remote.id, a.set(event.p[0], event.p[1], event.p[2]));
+        break;
       case 'botSpawn':
         if (this.role === 'guest' && this.coop) this.proxies.spawn(event);
         break;
@@ -516,8 +546,21 @@ export class MatchSync {
     }
   }
 
+  /** The other player threw their grenade: fly a copy here. It does no damage on this machine. */
+  private onRemoteGrenade(event: Extract<NetEvent, { t: 'nade' }>): void {
+    if (this.peerGrenades >= GRENADES_PER_MATCH || !this.remote.alive) return;
+    const velocity = b.set(event.v[0], event.v[1], event.v[2]);
+    if (velocity.length() > GRENADE.throwSpeed * GRENADE_SPEED_SLACK) return;
+    const origin = a.set(event.p[0], event.p[1], event.p[2]);
+    this.remote.eyePosition(head);
+    if (origin.distanceTo(head) > GRENADE_REACH) origin.copy(head);
+    this.peerGrenades++;
+    this.ctx.grenades.launch(this.remote, origin, velocity, false);
+  }
+
   private onRemoteHit(hit: Extract<NetEvent, { t: 'hit' }>, now: number): void {
-    const def = WEAPON_DEFS[hit.weapon];
+    const blast = hit.weapon === GRENADE_SOURCE;
+    const def = hit.weapon === GRENADE_SOURCE ? GRENADE_DEF : WEAPON_DEFS[hit.weapon];
     const player = this.ctx.player;
     let target: Combatant | undefined;
     if (hit.target === this.myWire) {
@@ -529,7 +572,12 @@ export class MatchSync {
     } else if (this.role === 'host' && this.coop && hit.attacker === this.peerWire && hit.target >= WIRE_BOT_BASE) {
       target = this.localOf(hit.target);
     }
-    if (!target || !target.alive || !this.gate(hit.attacker).allowHit(def, now)) return;
+    if (!target || !target.alive) return;
+    // A blast is only believed from a player who has thrown a grenade, and only so many times.
+    const allowed = blast
+      ? hit.attacker === this.peerWire && this.peerGrenades > 0 && this.blastGate.take(now)
+      : this.gate(hit.attacker).allowHit(def, now);
+    if (!allowed) return;
     const amount = capDamage(def, hit.amount);
     if (amount <= 0) return;
     const attacker = this.localOf(hit.attacker);

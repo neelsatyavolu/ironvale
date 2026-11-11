@@ -123,18 +123,44 @@ export function formedConcrete(maps: PbrMaps, roundTile = 0): THREE.MeshStandard
   const top: TslNode = smoothstep(0.6, 0.9, normalWorld.y);
   const lichen: TslNode = smoothstep(0.55, 0.75, worldNoise(1.7).mul(0.55).add(worldNoise(11).mul(0.45))).mul(top);
 
-  let color: TslNode = vec3(0.44, 0.436, 0.415).mul(mix(float(1), grain, 0.55)).mul(pour).mul(blotch);
+  // Water that has run down from the coping: broad dark tongues, wettest where they are newest.
+  const tongue: TslNode = smoothstep(0.5, 0.74, mx_noise_float(vec3(along.mul(0.55), p.y.mul(0.06), 21.3)).mul(0.5).add(0.5).mul(0.75).add(fineRun.mul(0.25))).mul(upright);
+  // Damp drawn up from the slab, green with algae where it never dries.
+  const rising: TslNode = smoothstep(0.05, 0.3, p.y.sub(patchy.mul(0.22))).oneMinus().mul(upright);
+  const algae: TslNode = smoothstep(0.45, 0.7, worldNoise(0.45).mul(0.6).add(worldNoise(4.1).mul(0.4))).mul(smoothstep(0.1, 0.9, p.y).oneMinus()).mul(upright);
+  // Shrinkage cracks wandering across a few of the panels, and the squares of grey mortar that patched the worst.
+  const wander: TslNode = mx_noise_float(vec3(along.mul(0.21), p.y.mul(0.16), 5.9)).add(mx_noise_float(vec3(along.mul(3.1), p.y.mul(3.1), 2.2)).mul(0.035));
+  const crack: TslNode = smoothstep(0.0008, 0.003, abs(wander)).oneMinus().mul(smoothstep(0.6, 0.7, worldNoise(0.09))).mul(upright);
+  const px: TslNode = fract(along.div(2.4).add(0.5));
+  const py: TslNode = fract(p.y.div(1.2).add(0.5));
+  const repair: TslNode = step(0.9, hash(panel.add(17)))
+    .mul(smoothstep(0.18, 0.2, px).mul(smoothstep(0.66, 0.64, px)))
+    .mul(smoothstep(0.2, 0.23, py).mul(smoothstep(0.8, 0.77, py)))
+    .mul(upright);
+  // Old snow lying on copings and roofs, eaten back from the edges.
+  const snow: TslNode = smoothstep(0.42, 0.52, worldNoise(0.5).mul(0.55).add(worldNoise(2.9).mul(0.3)).add(worldNoise(13).mul(0.15))).mul(smoothstep(0.9, 0.97, normalWorld.y)).mul(smoothstep(2.9, 3.1, p.y));
+
+  let color: TslNode = vec3(0.4, 0.39, 0.362).mul(mix(float(1), grain, 0.55)).mul(pour).mul(blotch);
   color = mix(color, color.mul(vec3(0.46, 0.45, 0.42)), streak.mul(0.8));
-  color = mix(color, color.mul(vec3(0.5, 0.56, 0.68)), under);
+  color = mix(color, color.mul(vec3(0.5, 0.5, 0.49)), tongue.mul(0.7));
+  color = mix(color, color.mul(vec3(0.62, 0.65, 0.72)), under);
   color = mix(color, color.mul(vec3(0.5, 0.48, 0.43)), foot.mul(0.75));
+  color = mix(color, color.mul(vec3(0.42, 0.5, 0.3)), algae.mul(0.7));
+  color = mix(color, color.mul(0.55), rising.mul(0.8));
   color = mix(color, vec3(0.82, 0.83, 0.82), salt.mul(0.55));
   color = mix(color, color.mul(0.74), top.mul(0.6));
   color = mix(color, color.mul(vec3(0.6, 0.64, 0.6)), lichen.mul(0.6));
+  color = mix(color, vec3(0.47, 0.47, 0.46).mul(grain.mul(0.2).add(0.8)), repair.mul(0.85));
   color = mix(color, vec3(0.3, 0.17, 0.09), drip.mul(0.55));
   color = mix(color, color.mul(0.38), seam.mul(0.85));
+  color = mix(color, color.mul(0.4), crack.mul(0.8));
   color = mix(color, vec3(0.03, 0.03, 0.03), hole);
+  color = mix(color, vec3(0.86, 0.89, 0.94), snow);
   material.colorNode = color;
   material.roughness = 1;
+  // Wet concrete has a sheen; dry concrete has none.
+  const wet: TslNode = max(max(tongue.mul(0.7), rising), streak.mul(0.4));
+  material.roughnessNode = mix(mix(float(0.97), float(0.48), wet), float(0.8), snow);
   material.vertexColors = true;
   return material;
 }
@@ -170,16 +196,22 @@ export function paving(maps: PbrMaps, base: readonly [number, number, number], b
   color = mix(color, color.mul(0.3), joint.mul(0.9));
   // Last night's frost has melted where the slab dips: damp patches with standing water at their middle.
   const low: TslNode = worldNoise(0.085).mul(0.62).add(worldNoise(0.37).mul(0.3)).add(worldNoise(2.3).mul(0.08));
-  const damp: TslNode = smoothstep(0.5, 0.58, low);
-  const puddle: TslNode = smoothstep(0.605, 0.63, low).mul(joint.oneMinus());
-  color = mix(color, color.mul(vec3(0.56, 0.58, 0.6)), damp.mul(0.85));
-  color = mix(color, color.mul(0.5), puddle);
+  const damp: TslNode = smoothstep(0.44, 0.53, low);
+  const puddle: TslNode = smoothstep(0.56, 0.58, low).mul(joint.oneMinus());
+  // Ploughed snow that has not gone yet: grey-white crusts with a wet margin of slush round each.
+  const lie: TslNode = mx_noise_float(positionWorld.xz.mul(0.12).add(vec2(41, 7))).mul(0.5).add(0.5).mul(0.7).add(worldNoise(1.9).mul(0.22)).add(worldNoise(4.3).mul(0.08));
+  const snow: TslNode = smoothstep(0.66, 0.72, lie);
+  const slush: TslNode = smoothstep(0.58, 0.67, lie);
+  const wetness: TslNode = max(damp, slush);
+  color = mix(color, color.mul(vec3(0.5, 0.52, 0.55)), wetness.mul(0.9));
+  color = mix(color, color.mul(0.45), puddle);
+  color = mix(color, vec3(0.74, 0.78, 0.84).mul(mix(float(0.8), float(1.05), worldNoise(6))), snow);
   material.colorNode = color;
   material.roughness = 1;
   const dry: TslNode = mix(float(0.94), float(0.72), polished.mul(joint.oneMinus()));
-  material.roughnessNode = mix(mix(dry, float(0.42), damp), float(0.06), puddle);
+  material.roughnessNode = mix(mix(mix(dry, float(0.4), wetness), float(0.03), puddle), float(0.85), snow);
   // Standing water lies flat over the grain of the slab.
-  if (maps.normal) material.normalNode = mix(normalMap(texture(maps.normal, uv())), normalMap(vec3(0.5, 0.5, 1)), puddle.mul(0.92));
+  if (maps.normal) material.normalNode = mix(normalMap(texture(maps.normal, uv())), normalMap(vec3(0.5, 0.5, 1)), max(puddle, wetness.mul(0.6)).mul(0.95));
   material.vertexColors = true;
   return material;
 }
@@ -191,14 +223,29 @@ export function paving(maps: PbrMaps, base: readonly [number, number, number], b
  */
 export function coatedSteel(): THREE.MeshStandardNodeMaterial {
   const material = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, metalness: 0.1 });
+  const p: TslNode = positionWorld;
   const fine: TslNode = worldNoise(9);
-  const fade: TslNode = mix(float(0.82), float(1.1), worldNoise(0.7));
-  const run: TslNode = mx_noise_float(positionWorld.mul(vec3(2.4, 0.25, 2.4))).mul(0.5).add(0.5);
-  const grime: TslNode = smoothstep(0.5, 0.9, run.mul(0.7).add(fine.mul(0.3)));
-  const chip: TslNode = smoothstep(0.71, 0.76, worldNoise(3.1).mul(0.55).add(worldNoise(17).mul(0.45)));
-  const coat: TslNode = mix(vec3(fade), vec3(0.5, 0.48, 0.45), grime.mul(0.6));
-  material.colorNode = mix(coat, vec3(0.5, 0.22, 0.1), chip.mul(0.85));
-  material.roughnessNode = mix(float(0.42), float(0.8), max(grime, chip));
+  const fade: TslNode = mix(float(0.74), float(1.08), worldNoise(0.7).mul(0.7).add(worldNoise(3.3).mul(0.3)));
+  const upright: TslNode = uprightFace();
+  const run: TslNode = mx_noise_float(p.mul(vec3(2.4, 0.25, 2.4))).mul(0.5).add(0.5);
+  const thin: TslNode = mx_noise_float(p.mul(vec3(11, 0.6, 11))).mul(0.5).add(0.5);
+  const grime: TslNode = smoothstep(0.46, 0.84, run.mul(0.6).add(thin.mul(0.2)).add(fine.mul(0.2))).mul(upright.mul(0.7).add(0.3));
+  // Dust and bird lime settle on tops; road spray and rust creep up from the foot of anything standing on the slab.
+  const settled: TslNode = smoothstep(0.5, 0.9, normalWorld.y).mul(mix(float(0.5), float(1), worldNoise(2.1)));
+  const spray: TslNode = smoothstep(0.03, 0.5, p.y.sub(worldNoise(3.7).mul(0.2))).oneMinus();
+  const blister: TslNode = worldNoise(3.1).mul(0.55).add(worldNoise(17).mul(0.45));
+  const chip: TslNode = smoothstep(0.73, 0.77, blister.add(spray.mul(0.12)));
+  const primer: TslNode = smoothstep(0.69, 0.73, blister.add(spray.mul(0.12))).mul(chip.oneMinus());
+  // Rust bleeds down from each chip.
+  const bleed: TslNode = smoothstep(0.66, 0.78, worldNoise(3.1).mul(0.55).add(mx_noise_float(p.mul(vec3(17, 2.2, 17))).mul(0.5).add(0.5).mul(0.45))).mul(upright);
+  let coat: TslNode = mix(vec3(fade), vec3(0.5, 0.48, 0.45), grime.mul(0.65));
+  coat = mix(coat, vec3(0.62, 0.61, 0.58), settled.mul(0.45));
+  coat = mix(coat, vec3(0.36, 0.33, 0.29), spray.mul(0.6));
+  coat = mix(coat, vec3(0.55, 0.3, 0.16), bleed.mul(0.3));
+  coat = mix(coat, vec3(0.72, 0.4, 0.3), primer.mul(0.7));
+  material.colorNode = mix(coat, vec3(0.33, 0.13, 0.05).mul(mix(float(0.6), float(1.3), fine)), chip.mul(0.9));
+  material.roughnessNode = mix(mix(float(0.34), float(0.5), worldNoise(1.3)), float(0.88), max(max(grime, chip), max(settled.mul(0.7), spray.mul(0.8))));
+  material.metalnessNode = mix(float(0.1), float(0.5), chip);
   material.vertexColors = true;
   return material;
 }

@@ -2,6 +2,7 @@ import type { EffectsSystem, GameContext } from '../game/contracts';
 import { Blood } from './blood';
 import { Casings } from './casings';
 import { Decals } from './decals';
+import { GrenadeFx } from './grenade';
 import { FxDemo } from './demo';
 import { readDemoConfig } from './demo-config';
 import { Impacts } from './impacts';
@@ -43,6 +44,7 @@ export function createEffects(ctx: GameContext): EffectsSystem {
     new Blood(env, lit),
     new Casings(env),
     new NearMiss(env, tracers, lit),
+    new GrenadeFx(env, lit, glow, rings, decals),
     weather,
     decals,
     tracers,

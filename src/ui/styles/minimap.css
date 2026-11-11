@@ -1,0 +1,45 @@
+/* Minimap: top right corner. The kill feed moves down to sit under it. */
+.iv-hud {
+  --minimap-size: 180px;
+}
+
+.iv-minimap {
+  position: absolute;
+  top: 1.5em;
+  right: 1.5em;
+  box-sizing: border-box;
+  width: var(--minimap-size);
+  height: var(--minimap-size);
+  overflow: hidden;
+  border: 1px solid rgba(242, 240, 234, 0.32);
+  border-radius: 50%;
+  background: rgba(14, 14, 13, 0.6);
+}
+
+.iv-minimap__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.iv-hud__safe:has(> .iv-minimap:not([hidden])) > .iv-feed {
+  top: calc(1.5em + var(--minimap-size) + 1em);
+}
+
+@media (min-height: 1200px) {
+  .iv-hud {
+    --minimap-size: 216px;
+  }
+}
+
+@media (max-height: 760px) {
+  .iv-hud {
+    --minimap-size: 148px;
+  }
+}
+
+@media (max-height: 560px) {
+  .iv-hud {
+    --minimap-size: 120px;
+  }
+}

@@ -222,6 +222,10 @@ describe('events', () => {
       { t: 'match', wave: 2, enemies: 7, result: '', hostKills: 3, guestKills: 1 },
       { t: 'away', away: true },
       { t: 'bye', reason: 'left' },
+      { t: 'nade', p: [1, 1.5, -3], v: [0, 2.8, -15.7] },
+      { t: 'boom', p: [1, 0.05, -18] },
+      { t: 'hit', target: 5, attacker: 1, weapon: 'grenade', zone: 'torso', amount: 140, p: [1, 2, 3], d: [0, 0, -1] },
+      { t: 'death', victim: 1, killer: 1, weapon: 'grenade', headshot: false, life: 2, d: [0, 1, 0] },
     ];
     for (const event of events) expect(parseEvent(JSON.stringify(event))).toEqual(event);
   });
@@ -262,6 +266,13 @@ describe('events', () => {
       { t: 'match', wave: -1, enemies: 3, result: '', hostKills: 0, guestKills: 0 },
       { t: 'match', wave: 1, enemies: 3, result: 'draw', hostKills: 0, guestKills: 0 },
       { t: 'bye', reason: 'because' },
+      { t: 'nade', p: [1, 1.5, -3] },
+      { t: 'nade', p: [1, 1.5, -3], v: [0, 0, -400] },
+      { t: 'nade', p: [1, 1.5, 9e9], v: [0, 0, -10] },
+      { t: 'boom', p: [1, 'x', 3] },
+      { t: 'boom' },
+      { t: 'action', actor: 0, weapon: 'grenade', stage: 'magOut' },
+      { t: 'switch', weapon: 'grenade' },
     ];
     for (const value of bad) expect(parseEvent(JSON.stringify(value))).toBeNull();
   });

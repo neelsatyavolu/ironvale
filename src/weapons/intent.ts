@@ -9,6 +9,8 @@ export interface WeaponIntent {
   reloadPressed: boolean;
   holdBreath: boolean;
   sprintPressed: boolean;
+  /** The grenade key is down: aim while held, throw on release. */
+  grenadeHeld: boolean;
   /** Loadout slot asked for this frame (1 - 4), or 0. */
   slot: number;
   /** +1 next weapon, -1 previous, 0 none. */
@@ -24,6 +26,8 @@ export interface DebugInput {
   fire?: boolean;
   aim?: boolean;
   holdBreath?: boolean;
+  /** Hold to aim the grenade; set back to false to throw it. */
+  grenade?: boolean;
   reload?: boolean;
   slot?: number;
   /** +1 next weapon, -1 previous. */
@@ -43,6 +47,7 @@ export class IntentReader {
     reloadPressed: false,
     holdBreath: false,
     sprintPressed: false,
+    grenadeHeld: false,
     slot: 0,
     cycle: 0,
   };
@@ -59,6 +64,7 @@ export class IntentReader {
       intent.aimPressed = aim && !intent.aimHeld;
       intent.aimHeld = aim;
       intent.holdBreath = debug.holdBreath === true;
+      intent.grenadeHeld = debug.grenade === true;
       intent.reloadPressed = debug.reload === true;
       intent.slot = debug.slot ?? 0;
       intent.sprintPressed = false;
@@ -70,7 +76,7 @@ export class IntentReader {
     }
     if (!active) {
       intent.fireHeld = intent.firePressed = intent.aimHeld = intent.aimPressed = false;
-      intent.reloadPressed = intent.holdBreath = intent.sprintPressed = false;
+      intent.reloadPressed = intent.holdBreath = intent.sprintPressed = intent.grenadeHeld = false;
       intent.slot = intent.cycle = 0;
       return intent;
     }
@@ -81,6 +87,7 @@ export class IntentReader {
     intent.reloadPressed = input.wasPressed('reload');
     intent.holdBreath = input.isDown('holdBreath');
     intent.sprintPressed = input.wasPressed('sprint');
+    intent.grenadeHeld = input.isDown('grenade');
     intent.slot = 0;
     for (let i = 0; i < SLOT_ACTIONS.length; i++) {
       if (input.wasPressed(SLOT_ACTIONS[i]!)) intent.slot = i + 1;

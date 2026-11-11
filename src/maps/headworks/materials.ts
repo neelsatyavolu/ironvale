@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { float, floor, fract, hash, smoothstep, step, mix, mx_noise_float, normalize, positionWorld, transformNormalToView, vec2, vec3 } from 'three/tsl';
 import { linePaint, runOff, signAtlas, stain, tyreMarks } from './decals';
 import type { Kit } from './kit';
+import { lampGlow, lampLit } from './lamps';
 import { bareSteel, coatedSteel, formedConcrete, grating, hazardStripes, paving, shelter, skyVisibility, worldNoise, type TslNode } from './surfaces';
 
 export interface Materials {
@@ -61,7 +62,7 @@ export function createMaterials(kit: Kit): Materials {
   matte.colorNode = vec3(mix(float(0.8), float(1.05), worldNoise(2.4).mul(0.6).add(worldNoise(17).mul(0.4))));
   matte.vertexColors = true;
 
-  // Glazing seen from outside at noon: a dark room behind, pale slat blinds drawn to a different height in each bay.
+  // Glazing seen from outside by day: a dark room behind, pale slat blinds drawn to a different height in each bay.
   const glass = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, roughness: 0.08, metalness: 0 });
   const bay: TslNode = floor(positionWorld.x.add(positionWorld.z).div(1.8)).add(400);
   const drawn: TslNode = step(fract(positionWorld.y.div(1.8)), mix(float(0.25), float(1), hash(bay.add(90))));
@@ -97,6 +98,8 @@ export function createMaterials(kit: Kit): Materials {
   };
   const visibility = skyVisibility();
   for (const material of Object.values(lit)) shelter(material, visibility);
+  const glow = lampGlow();
+  for (const material of [concrete, concreteRound, slab, road, lit.paint, lit.galvanised, matte]) lampLit(material, glow);
   const materials: Materials = { ...lit, lamp };
   for (const material of Object.values(materials)) kit.own(material);
 

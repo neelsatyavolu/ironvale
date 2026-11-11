@@ -16,6 +16,7 @@ import { PROFILES } from './curves';
 import { createDebug, type AudioDebug } from './debug';
 import { Foley } from './foley';
 import { AudioGraph, SUB_BUFFER } from './graph';
+import { GrenadeAudio } from './grenade';
 import { Gunfire } from './gunfire';
 import { activeReverb } from './layers';
 import { Mixer } from './mixer';
@@ -37,6 +38,7 @@ interface Live {
   readonly mixer: Mixer;
   readonly gunfire: Gunfire;
   readonly foley: Foley;
+  readonly grenade: GrenadeAudio;
   readonly ambience: Ambience;
   readonly debug: AudioDebug;
 }
@@ -195,6 +197,7 @@ class AudioEngine implements AudioEngineSystem {
       graph, pool, mixer, ambience,
       gunfire: new Gunfire(mixer),
       foley: new Foley(mixer),
+      grenade: new GrenadeAudio(mixer),
       debug: createDebug(graph, pool, () => this.ambienceFor !== null, () => [...this.buffers.keys()]),
     };
     this.live = live;
@@ -363,6 +366,9 @@ class AudioEngine implements AudioEngineSystem {
     on('playerHurt', (live, event) => live.foley.playerHurt(event));
     on('died', (live, event) => live.foley.died(event));
     on('botCallout', (live, event) => live.foley.botCallout(event));
+    on('grenadeThrown', (live, event) => live.grenade.thrown(event));
+    on('grenadeBounced', (live, event) => live.grenade.bounced(event));
+    on('grenadeExploded', (live, event) => live.grenade.exploded(event));
     // Match state arrives while paused and in menus too: it is what switches the heartbeat off.
     this.unsubscribe.push(this.ctx.events.on('matchState', (snapshot) => this.live?.foley.matchState(snapshot)));
   }

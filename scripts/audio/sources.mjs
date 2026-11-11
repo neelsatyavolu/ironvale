@@ -77,6 +77,9 @@ const FREESOUND_ROWS = [
   ['glass-4', 465946, 5855051, 'AlterKartoffelsack', 'Glass Breaking'],
   ['water-splashes', 50623, 333536, 'vibe_crc', 'water_splash_10shots.wav'],
   ['water-rocks', 737644, 9268998, 'Kraftaggregat', 'Rocks Thrown in Water'],
+  // ---- grenade
+  ['grenade-explosion', 609587, 1038806, 'unfa', 'Grenade Explosion SFX (medium-sized, meaty, realistic)'],
+  ['grenade-pin', 876008, 16682330, 'loganzsound', 'Grenade with Pin Handling'],
   // ---- casings
   ['casing-concrete', 210102, 3278936, 'GrayJoy', 'Brass bullet shell casing drop onto concrete, multiple takes'],
   ['casing-tile', 318964, 5421667, 'GryffDavid', 'Bouncing Shell Casings (Various Sizes)'],

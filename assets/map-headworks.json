@@ -4,19 +4,19 @@
       "id": "hdri-headworks",
       "kind": "hdri",
       "license": "CC0",
-      "source": "https://polyhaven.com/a/kiara_5_noon",
+      "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
       "files": {
         "hdr@1k": {
-          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kiara_5_noon_1k.hdr",
-          "path": "hdri/kiara_5_noon_1k.hdr"
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloppenheim_06_puresky_1k.hdr",
+          "path": "hdri/kloppenheim_06_puresky_1k.hdr"
         },
         "hdr@2k": {
-          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kiara_5_noon_2k.hdr",
-          "path": "hdri/kiara_5_noon_2k.hdr"
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloppenheim_06_puresky_2k.hdr",
+          "path": "hdri/kloppenheim_06_puresky_2k.hdr"
         },
         "sky": {
-          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/kiara_5_noon.jpg",
-          "path": "hdri/kiara_5_noon_sky.jpg"
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/kloppenheim_06_puresky.jpg",
+          "path": "hdri/kloppenheim_06_puresky_sky.jpg"
         }
       }
     },

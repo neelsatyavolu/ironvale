@@ -5,6 +5,8 @@ import { flag, h, textSlot } from '../dom';
 import { respawnCountdown, rulesOf } from '../format';
 import { createExtras } from './extras';
 import { createFeed } from './feed';
+import { createGrenadeIndicator } from './grenade';
+import { createMinimap } from './minimap';
 import { createPerf } from './perf';
 import { createReticle } from './reticle';
 import { createScope } from './scope';
@@ -75,6 +77,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
   const perf = createPerf(ctx, roundTripMs);
   const feed = createFeed(() => ctx.player.name, weaponName);
   const extras = createExtras(ctx);
+  const minimap = createMinimap(ctx);
 
   // Top left: what is left to do.
   const enemies = figure('Enemies');
@@ -118,6 +121,8 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
     h('div', 'iv-ammo__count', magazine.element, h('span', 'iv-ammo__slash', '/'), reserve.element),
     weapon.element,
   );
+  const grenade = createGrenadeIndicator(ctx);
+  ammo.append(grenade.element);
 
   // Centre: notes that sit near the line of sight.
   const reloading = h('div', 'iv-hud__reload', 'Reloading');
@@ -143,6 +148,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
     perf.element,
   );
   element.hidden = true;
+  feed.element.before(minimap.element);
 
   const setLow = flag((on) => health.element.classList.toggle('is-low', on));
   const setEmpty = flag((on) => ammo.classList.toggle('is-empty', on));
@@ -258,10 +264,12 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
       magazine.set(String(snapshot.magazine));
       reserve.set(String(snapshot.reserve));
       setEmpty(snapshot.magazine === 0);
+      grenade.update(snapshot);
       weapon.set(snapshot.fireMode ? `${snapshot.weaponName} · ${FIRE_MODES[snapshot.fireMode]}` : snapshot.weaponName);
       setReloading(snapshot.reloading && snapshot.health > 0);
       scope.set(snapshot.scopedIn && snapshot.health > 0);
       feed.update(snapshot.killFeed, snapshot.elapsed);
+      minimap.update(snapshot);
       reticle.track();
       refreshCrosshair();
 
@@ -282,6 +290,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
     },
     setVisible: flag((visible) => {
       element.hidden = !visible;
+      minimap.setVisible(visible);
       if (!visible) {
         reticle.clear();
         toastAnimation?.cancel();
@@ -292,6 +301,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
     dispose(): void {
       for (const off of unsubscribe) off();
       extras.dispose();
+      minimap.dispose();
       perf.dispose();
     },
   };

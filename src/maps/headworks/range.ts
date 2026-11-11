@@ -1,21 +1,26 @@
 import * as THREE from 'three/webgpu';
-import { dot, float, mix, mx_fractal_noise_float, normalWorld, positionWorld, smoothstep, vec3 } from 'three/tsl';
+import { abs, dot, float, max, mix, mx_fractal_noise_float, mx_noise_float, normalize, normalWorld, positionWorld, pow, smoothstep, vec3 } from 'three/tsl';
 import type { Kit } from './kit';
-import { LIGHTING } from './lighting';
+import { FOG_COLOR, LIGHTING, SUN_COLOR } from './lighting';
 import { TANK } from './plan';
 import type { TslNode } from './surfaces';
 
 const INNER = 300;
 const OUTER = 840;
-const SPOKES = 560;
-const ROWS = 44;
+const SPOKES = 720;
+const ROWS = 72;
 const PEAK = 290;
 /** Bearing (atan2(x, z)) of the view north through the slot, square to the line between the tank centres. */
 const SLOT_BEARING = Math.atan2(-TANK.z, TANK.x);
-/** Haze the range sinks into with distance; the same pale blue as the foot of the sky. */
-const HAZE = [0.6, 0.71, 0.86] as const;
-/** The range is drawn unlit, so its colours are scene-referred: this lifts sunlit snow to the brightness of sunlit concrete. */
-const GAIN = 1.25;
+/** The range is drawn unlit, so its colours are scene-referred: this sets sunlit snow against sunlit concrete. */
+const GAIN = 0.8;
+const STEP = 2;
+
+/** Crest lines of a noise field, 0 in the gullies and 1 on the ridge. */
+const crest = (at: TslNode): TslNode => {
+  const fall: TslNode = abs(mx_noise_float(at)).oneMinus();
+  return fall.mul(fall);
+};
 
 const fold = (v: number): number => 1 - 2 * Math.abs(v);
 const hash2 = (x: number, y: number): number => {
@@ -92,29 +97,50 @@ export function buildRange(kit: Kit): void {
   terrain.computeVertexNormals();
 
   const p: TslNode = positionWorld;
-  const n: TslNode = normalWorld;
   const sun = LIGHTING.sunDirection;
+  const sunward: TslNode = vec3(sun.x, sun.y, sun.z);
   const coarse: TslNode = mx_fractal_noise_float(p.mul(0.011), 4);
   const fine: TslNode = mx_fractal_noise_float(p.mul(vec3(0.05, 0.11, 0.05)), 3);
-  // Small relief the mesh is too coarse to carry: it tilts the light and breaks the snow line.
-  const relief: TslNode = coarse.mul(0.4).add(fine.mul(0.22));
-  const lit: TslNode = dot(n, vec3(sun.x, sun.y, sun.z)).add(relief).clamp(0, 1);
-  const slope: TslNode = n.y.add(relief.mul(0.6));
-  // Snow lies above a ragged line and only where the ground is not too steep; gullies hold it lower down.
-  const snowLine: TslNode = float(150).add(coarse.mul(60));
-  const snow: TslNode = smoothstep(snowLine.sub(14), snowLine.add(26), p.y.add(fine.mul(18))).mul(smoothstep(0.56, 0.74, slope));
-  const dusting: TslNode = smoothstep(0.1, 0.5, fine).mul(smoothstep(70, 140, p.y)).mul(smoothstep(0.62, 0.8, slope)).mul(0.45);
-  const strata: TslNode = mx_fractal_noise_float(vec3(p.x.mul(0.004), p.y.mul(0.09), p.z.mul(0.004)), 3).mul(0.5).add(0.5);
-  const rock: TslNode = mix(vec3(0.1, 0.105, 0.115), vec3(0.26, 0.25, 0.24), strata);
-  const scree: TslNode = mix(vec3(0.2, 0.19, 0.17), vec3(0.15, 0.16, 0.14), coarse.mul(0.5).add(0.5));
-  const ground: TslNode = mix(scree, rock, smoothstep(30, 90, p.y.add(coarse.mul(20))));
-  const surface: TslNode = mix(ground, vec3(0.93, 0.95, 0.98), snow.add(dusting).clamp(0, 1));
-  // Sunlight is warm and the shade is lit by blue sky, which is what makes snow read as snow.
-  const light: TslNode = vec3(1, 0.97, 0.92).mul(lit.mul(1.25)).add(vec3(0.16, 0.22, 0.34));
+  // Relief the mesh is too coarse to carry, in metres: spurs and gullies running down the fall line, then
+  // broken rock. Its slope tilts the surface normal, so the low sun picks out every rib.
+  const relief = (at: TslNode): TslNode =>
+    crest(vec3(at.x.mul(0.016), at.y.mul(0.004), at.z.mul(0.016)))
+      .mul(18)
+      .add(crest(vec3(at.x.mul(0.045), at.y.mul(0.012), at.z.mul(0.045)).add(7.3)).mul(5))
+      .add(mx_fractal_noise_float(at.mul(0.09), 3).mul(1.2));
+  const height: TslNode = relief(p);
+  const crags: TslNode = mx_fractal_noise_float(p.mul(0.09), 2);
+  const flat: TslNode = normalize(normalWorld);
+  // Slope of the relief by differences two metres apart, which stays smooth where screen derivatives would step.
+  const gx: TslNode = relief(p.add(vec3(STEP, 0, 0))).sub(height).div(STEP);
+  const gz: TslNode = relief(p.add(vec3(0, 0, STEP))).sub(height).div(STEP);
+  const n: TslNode = normalize(flat.sub(vec3(gx, 0, gz).mul(0.8)));
+
+  const facing: TslNode = dot(n, sunward);
+  // No shadows are cast out here; ground that the broad shape turns from the sun counts as shaded by its own ridge.
+  const lit: TslNode = smoothstep(-0.05, 0.5, facing).mul(smoothstep(-0.22, 0.12, dot(flat, sunward)));
+  const slope: TslNode = n.y;
+  // Winter: snow on everything that is not steep, thinning to bare ground toward the valley floor.
+  const snowLine: TslNode = float(46).add(coarse.mul(26));
+  const snow: TslNode = smoothstep(snowLine.sub(12), snowLine.add(30), p.y.add(fine.mul(14))).mul(smoothstep(0.42, 0.62, slope.add(fine.mul(0.08))));
+  const strata: TslNode = mx_fractal_noise_float(vec3(p.x.mul(0.02), p.y.mul(0.16).add(coarse.mul(3)), p.z.mul(0.02)), 3).mul(0.5).add(0.5);
+  const rock: TslNode = mix(vec3(0.045, 0.047, 0.055), vec3(0.17, 0.155, 0.14), strata.mul(smoothstep(-0.6, 0.8, crags)));
+  // Dark conifers on the lower slopes give the range its size.
+  const stand: TslNode = mx_noise_float(p.mul(0.3)).mul(0.5).add(0.5);
+  const forest: TslNode = smoothstep(96, 40, p.y.add(coarse.mul(30))).mul(smoothstep(0.4, 0.55, mx_noise_float(p.mul(0.035)).mul(0.5).add(0.5).mul(0.6).add(stand.mul(0.4)))).mul(smoothstep(0.35, 0.6, slope));
+  const ground: TslNode = mix(rock, vec3(0.9, 0.92, 0.96), snow);
+  const surface: TslNode = mix(ground, mix(vec3(0.02, 0.035, 0.03), vec3(0.06, 0.08, 0.07), stand), forest.mul(0.9));
+  // Low sun is straw-coloured and the shade is lit by blue sky, which is what makes snow read as snow.
+  const sunLight = new THREE.Color(SUN_COLOR);
+  const light: TslNode = vec3(sunLight.r, sunLight.g, sunLight.b).mul(lit.mul(1.5)).add(vec3(0.13, 0.19, 0.33).mul(slope.mul(0.4).add(0.6)));
+  // Aerial haze: thick in the valley, thinner up the faces, and warm where the view runs toward the sun.
   const distance: TslNode = p.xz.length();
-  const haze: TslNode = smoothstep(INNER - 60, OUTER, distance).mul(0.3).add(0.07).add(smoothstep(70, 0, p.y).mul(0.25));
+  const fogTone = new THREE.Color(FOG_COLOR);
+  const towardSun: TslNode = max(dot(normalize(vec3(p.x, 0, p.z)), normalize(vec3(sun.x, 0, sun.z))), 0);
+  const hazeColour: TslNode = mix(vec3(fogTone.r, fogTone.g, fogTone.b).mul(1.35), vec3(sunLight.r, sunLight.g, sunLight.b).mul(1.7), pow(towardSun, 5).mul(0.8));
+  const haze: TslNode = smoothstep(INNER - 80, OUTER, distance).mul(0.34).add(0.3).add(smoothstep(120, 0, p.y).mul(0.4)).add(pow(towardSun, 5).mul(0.2));
   const material = kit.own(new THREE.MeshBasicNodeMaterial({ fog: false }));
-  material.colorNode = mix(surface.mul(light), vec3(...HAZE), haze.clamp(0, 0.92)).mul(GAIN);
+  material.colorNode = mix(surface.mul(light).mul(GAIN), hazeColour.mul(0.62), haze.clamp(0, 0.94));
 
   const range = new THREE.Mesh(terrain, material);
   range.castShadow = false;
@@ -123,7 +149,9 @@ export function buildRange(kit: Kit): void {
   kit.root.add(range);
 
   const floorMaterial = kit.own(new THREE.MeshBasicNodeMaterial({ fog: false }));
-  floorMaterial.colorNode = mix(vec3(0.27, 0.27, 0.25), vec3(...HAZE), smoothstep(40, INNER, positionWorld.xz.length()).mul(0.5).add(0.2)).mul(GAIN);
+  // The valley floor outside the wall: old snow over rough ground, lost in haze before it reaches the slopes.
+  const drift: TslNode = smoothstep(0.35, 0.6, mx_fractal_noise_float(positionWorld.mul(0.05), 3).mul(0.5).add(0.5));
+  floorMaterial.colorNode = mix(mix(vec3(0.09, 0.09, 0.085), vec3(0.42, 0.47, 0.56), drift), hazeColour.mul(0.62), smoothstep(40, INNER, positionWorld.xz.length()).mul(0.6).add(0.15));
   const floor = new THREE.Mesh(kit.own(new THREE.CircleGeometry(INNER + 20, 48)), floorMaterial);
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.35;

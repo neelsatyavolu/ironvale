@@ -33,6 +33,13 @@ describe('settings', () => {
     expect(parsed.gameplay.fov).toBe(120);
   });
 
+  it('shows the minimap for settings saved before it existed and keeps a saved choice', () => {
+    expect(DEFAULT_SETTINGS.gameplay.minimap).toBe(true);
+    expect(parseSettings(JSON.stringify({ gameplay: { fov: 90, crosshair: false } })).gameplay.minimap).toBe(true);
+    expect(parseSettings(JSON.stringify({ gameplay: { minimap: false } })).gameplay.minimap).toBe(false);
+    expect(parseSettings(JSON.stringify({ gameplay: { minimap: 'no' } })).gameplay.minimap).toBe(true);
+  });
+
   it('survives storage that throws when read', () => {
     const storage = {
       getItem: (): string => {

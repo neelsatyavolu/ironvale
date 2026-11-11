@@ -7,6 +7,7 @@
  * handler returns: clone anything you keep.
  */
 import type { Object3D, Vector3 } from 'three/webgpu';
+import type { NavGrid } from '../ai/navgrid';
 import type { Assets } from '../core/assets';
 import type { EventBus } from '../core/events';
 import type { Input } from '../core/input';
@@ -238,10 +239,53 @@ export interface PlayerWeapons {
   readonly breath: number;
   /** true when firing should break a sprint this frame. */
   readonly blocksSprint: boolean;
-  /** Refill every weapon. Called on respawn. */
+  /** Refill every weapon. Called on respawn. Does not give a grenade back. */
   resupply(): void;
+  /** The hand grenade: how many are left and, while the key is held, the throw being lined up. */
+  readonly grenade: GrenadeHandState;
+  /** A new match: the player has a grenade again. */
+  restockGrenades(): void;
   /** Show every gun at once while the loading screen draws its warm-up frames, then hide them. */
   warmUp(on: boolean): void;
+  update(dt: number): void;
+}
+
+// ---------------------------------------------------------------- grenades
+
+/** The local player's grenade, as the HUD and the preview arc need it. */
+export interface GrenadeHandState {
+  /** Grenades left this match. */
+  readonly count: number;
+  /** true while the key is held and the throw is being aimed. */
+  readonly aiming: boolean;
+  /** Where a throw released now would start and how fast. Live references, valid while `aiming`. */
+  readonly origin: Vector3;
+  readonly velocity: Vector3;
+}
+
+/** A grenade in flight. Live references; do not mutate. */
+export interface GrenadeFlight {
+  readonly active: boolean;
+  readonly ownerId: number;
+  /** Position smoothed between simulation steps, for drawing. */
+  readonly drawPosition: Vector3;
+  readonly velocity: Vector3;
+  readonly resting: boolean;
+}
+
+/** Thrown grenades: flight, bounces, the blast and its damage. */
+export interface Grenades {
+  /** A fixed pool; draw the ones that are `active`. */
+  readonly flights: readonly GrenadeFlight[];
+  /**
+   * Throw a grenade. This machine decides its damage when `authoritative`;
+   * otherwise it is only shown here and goes off when `detonate` is called.
+   */
+  launch(owner: Combatant, origin: Vector3, velocity: Vector3, authoritative: boolean): void;
+  /** Set off `ownerId`'s shown grenade at `position` (the other machine's word on where it went off). */
+  detonate(ownerId: number, position: Vector3): void;
+  /** Remove every grenade without a blast (map unload, new match). */
+  clear(): void;
   update(dt: number): void;
 }
 
@@ -313,6 +357,12 @@ export interface GameEvents {
   spawned: { combatantId: number };
   /** A bot called something out (spotted, reloading, hit). Audio may voice it. */
   botCallout: { botId: number; kind: 'spotted' | 'reloading' | 'hurt' | 'death'; position: Vector3 };
+  /** A grenade left someone's hand. */
+  grenadeThrown: { ownerId: number; position: Vector3; velocity: Vector3; local: boolean };
+  /** A grenade struck something hard enough to hear. `speed` is into the surface, m/s. */
+  grenadeBounced: { ownerId: number; position: Vector3; speed: number; surface: Surface };
+  /** A grenade went off. `local` is true when the local player threw it. */
+  grenadeExploded: { ownerId: number; position: Vector3; local: boolean };
   matchState: MatchSnapshot;
 }
 
@@ -378,6 +428,8 @@ export interface BotSystem {
   spawn(count: number, team: Team, difficulty: Difficulty): void;
   /** Living bots. */
   readonly alive: number;
+  /** Walkable cells of the loaded map; the minimap draws its layout from it. Throws until `enterMap` has finished. */
+  readonly grid: NavGrid;
   update(dt: number): void;
   dispose(): void;
 }
@@ -449,6 +501,9 @@ export interface MatchSnapshot {
   readonly scopedIn: boolean;
   /** true while the sights are raised (aim blend past halfway). */
   readonly aiming: boolean;
+  /** Grenades the local player has left this match, and whether one is being aimed. */
+  readonly grenades: number;
+  readonly grenadeAiming: boolean;
   /** Lives left in Skirmish, including the current one. 1 in Survival. */
   readonly livesRemaining: number;
   /** Seconds until the player respawns; 0 while alive. */
@@ -497,7 +552,9 @@ export interface GameContext {
   readonly ballistics: Ballistics;
   /** The local player's guns. */
   readonly weapons: PlayerWeapons;
+  readonly grenades: Grenades;
   readonly audio: AudioSystem;
+  readonly bots: BotSystem;
   /** The map currently loaded, or null between matches. */
   readonly map: MapInstance | null;
   /** Seconds since the match started; stops while paused. */

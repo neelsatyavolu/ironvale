@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import type { GameContext, PlayerWeapons, WeaponActionStage, WeaponState } from '../game/contracts';
 import { AimState } from './aim';
 import { WEAPON_DEFS } from './defs';
+import { GrenadeThrow } from './grenade-throw';
 import {
   SPRINT_HOLD_OFF_SECONDS,
   SPRINT_IN_SECONDS,
@@ -22,6 +23,8 @@ import { ViewRig, type ViewFrame } from './view/rig';
 
 /** The scope picture replaces the gun once the sights are this far up. */
 const SCOPED_AT = 0.9;
+/** The gun cannot fire while it is this far lowered for a grenade. */
+const GRENADE_READY = 0.3;
 /** Switch times used before the view models exist. */
 const DEFAULT_SWITCH_TIMES = { lowerTime: 0.3, raiseTime: 0.4 };
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -43,6 +46,7 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
 
   private readonly machines: WeaponMachine[];
   private readonly swap: WeaponSwitch;
+  readonly grenade: GrenadeThrow;
   private sprintBlend = 0;
   private sprintHoldOff = 0;
   private wasAlive = true;
@@ -85,6 +89,7 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     };
     this.swap = new WeaponSwitch(this.machines.length, (index) => this.views[index]?.handling ?? DEFAULT_SWITCH_TIMES);
     this.steering = new ViewSteering(ctx, new THREE.Vector3());
+    this.grenade = new GrenadeThrow(ctx);
     this.unsubscribe.push(
       ctx.events.on('spawned', (event) => {
         if (event.combatantId === this.ctx.player.id) this.resetHandling();
@@ -161,6 +166,10 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     this.ensureViews();
   }
 
+  restockGrenades(): void {
+    this.grenade.restock();
+  }
+
   dispose(): void {
     for (const off of this.unsubscribe) off();
     this.rig?.dispose();
@@ -184,6 +193,7 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     const active = ctx.input.locked || this.reader.debug !== null;
     const intent = this.reader.read(ctx.input, active);
 
+    const switchAsked = intent.slot > 0 || intent.cycle !== 0;
     if (intent.slot > 0) this.equip(intent.slot);
     else if (intent.cycle !== 0) {
       const count = this.machines.length;
@@ -197,6 +207,10 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     const machine = this.machine;
     const def = machine.def;
     const switching = this.swap.switching;
+
+    // Holding the grenade key lowers the gun; fire or a weapon switch puts the grenade away unused.
+    const grenade = this.grenade;
+    grenade.update(dt, intent.grenadeHeld, intent.firePressed || switchAsked, !switching && !machine.reloading);
 
     // Sprinting lowers the gun; using the trigger, the sights or the reload brings it back up.
     if (intent.sprintPressed && controls.adsToggle && !(def.scoped && this.aim.blend > 0.5)) this.aim.drop();
@@ -215,7 +229,11 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     aimInput.toggle = controls.adsToggle && !def.scoped;
     aimInput.aimTime = def.aimTime;
     aimInput.allowed =
-      !switching && !machine.reloading && !(def.fireMode === 'bolt' && machine.cycling) && this.sprintBlend < 0.5;
+      !switching &&
+      !machine.reloading &&
+      !(def.fireMode === 'bolt' && machine.cycling) &&
+      this.sprintBlend < 0.5 &&
+      !grenade.aiming;
     const aimChanged = this.aim.update(dt, aimInput);
     if (aimChanged) ctx.events.emit('aimChanged', { aiming: this.aim.aiming, weapon: def });
 
@@ -229,8 +247,8 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     const trigger = this.trigger;
     trigger.fireHeld = intent.fireHeld;
     trigger.firePressed = intent.firePressed && !switching;
-    trigger.reloadPressed = intent.reloadPressed && !switching;
-    trigger.ready = !switching && this.sprintBlend < SPRINT_READY_BLEND;
+    trigger.reloadPressed = intent.reloadPressed && !switching && !grenade.aiming;
+    trigger.ready = !switching && this.sprintBlend < SPRINT_READY_BLEND && grenade.lowered < GRENADE_READY;
     machine.step(dt, trigger, this);
     this.recoil.update(dt);
     this.spread = this.recoil.spread(def, stance);
@@ -242,7 +260,7 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     frame.machine = machine;
     frame.aim = this.aim.blend;
     frame.sprint = this.sprintBlend;
-    frame.lowered = this.swap.lowered;
+    frame.lowered = Math.max(this.swap.lowered, grenade.lowered);
     frame.lookYaw = this.steering.lookYaw;
     frame.lookPitch = this.steering.lookPitch;
     frame.speed = player.speed;
@@ -329,6 +347,7 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     this.recoil.reset();
     this.steering.reset();
     this.swap.reset();
+    this.grenade.cancel();
     this.sprintBlend = 0;
     this.sprintHoldOff = 0;
   }

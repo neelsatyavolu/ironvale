@@ -3,8 +3,10 @@ import type { Assets } from '../../core/assets';
 import { seededRandom } from '../../core/random';
 import { flatMaterial, pbrMaterial } from '../../render/materials';
 import { createGrimeMap } from './grime';
+import { createPosterMap, posterMaterial } from './posters';
+import { createShadeMap, shadeLit, shadeTerms } from './shade';
 import { createSprayMap } from './sprays';
-import { cobbles, hillside, lampGlass, leafy, litRoom, louvred, masonry, painted, plaster, roofTiles, scuffed, stained, striped } from './surfaces';
+import { cobbles, hillside, lampGlass, leafy, litRoom, louvred, masonry, painted, plaster, roofTiles, scuffed, stainDecal, stained, striped, treeShadow } from './surfaces';
 
 type Standard = THREE.MeshStandardNodeMaterial;
 
@@ -13,6 +15,8 @@ const GRIME_SEED = 0x4a7b0;
 export interface HarborMaterials {
   /** Shared noise atlas behind every weathered surface. */
   readonly grime: THREE.DataTexture;
+  /** Street lighting in plan; filled by `ShadeBake` once the collision world exists. */
+  readonly shade: THREE.DataTexture;
   readonly cobble: Standard;
   readonly stone: Standard;
   /** Paler dressed stone for copings, sills, steps and trim. */
@@ -62,6 +66,16 @@ export interface HarborMaterials {
   /** Dull cast iron for covers and old ironwork, without the sheen of the painted railings. */
   readonly castIron: Standard;
   readonly cypress: Standard;
+  /** Dark run-off under sills, pipes and drains. UV V is 1 at the source and fades to 0. */
+  readonly stain: Standard;
+  /** Bill posters, painted wall advertisements and case stencils; cells come from posters.ts. */
+  readonly poster: Standard;
+  /** Soft ellipse under each tree on the hill. */
+  readonly treeShadow: THREE.MeshBasicNodeMaterial;
+  /** Dull zinc for gutters, meter cabinets and strapping. */
+  readonly zinc: Standard;
+  /** Pale worn battens on packing cases. */
+  readonly crateTrim: Standard;
   /** Pine canopies and scrub on the hill, seen from far off. */
   readonly pine: Standard;
 }
@@ -113,6 +127,8 @@ export function createMaterials(assets: Assets): HarborMaterials {
   const blueMaps = assets.pbr('pbr-harbor-blue-planks');
   // Its own fixed seed: the atlas is cosmetic, and drawing it from the map's stream would shift every placement after it.
   const grime = createGrimeMap(seededRandom(GRIME_SEED));
+  const shade = createShadeMap();
+  const terms = shadeTerms(shade);
 
   const net = flatMaterial(0x5a7a6c, 0.9);
   net.alphaMap = netTexture();
@@ -133,9 +149,10 @@ export function createMaterials(assets: Assets): HarborMaterials {
   lampGreen.emissiveIntensity = 6;
   const lamp = lampGlass(0xffb463, 7.5);
 
-  return {
+  const mats: HarborMaterials = {
     grime,
-    cobble: cobbles(assets.pbr('pbr-harbor-cobble'), grime, 0.39),
+    shade,
+    cobble: cobbles(assets.pbr('pbr-harbor-cobble'), grime, 0.39, terms),
     // Rubble masonry, lifted from the scan's dark brown to a sun-bleached harbour stone.
     stone: masonry(stoneMaps, 0xa3957e, 0.15, grime),
     // Dressed limestone: the rough plaster scan reads as worn ashlar once it is tinted and jointed.
@@ -183,20 +200,35 @@ export function createMaterials(assets: Assets): HarborMaterials {
     spray,
     lampGreen,
     castIron: scuffed(0x34302c, 0.82, grime),
+    stain: stainDecal(grime),
+    treeShadow: treeShadow(),
+    poster: posterMaterial(createPosterMap(seededRandom(GRIME_SEED + 2))),
+    zinc: scuffed(0x4f5456, 0.55, grime),
+    crateTrim: stained(plankMaps, 0xa78c63, 0.06, grime),
     hill: hillside(stoneMaps, grime),
-    cypress: leafy(0x0e2412, 0x2a5226, grime, 1.9),
-    pine: leafy(0x14301a, 0x3f6a2c, grime, 2.6),
+    cypress: leafy(0x10301a, 0x35662c, grime, 1.9),
+    pine: leafy(0x1a3a1c, 0x55802f, grime, 2.6),
     fishBox: [scuffed(0x2c5d8a, 0.55, grime), scuffed(0xc9cdc8, 0.55, grime), scuffed(0xa8402f, 0.55, grime), scuffed(0xd0a030, 0.55, grime)],
   };
+  // Everything that stands in the street takes the baked shade; rooms, glass, lamps and the far hill keep their own light.
+  const outdoors: readonly Standard[] = [
+    mats.cobble, mats.stone, mats.stoneLight, ...mats.plaster, mats.plasterWhite, mats.planks, mats.planksPale, ...mats.paint, ...mats.louvre,
+    mats.iron, mats.rope, mats.terracotta, mats.foliage, ...mats.awning, ...mats.cloth, mats.float, mats.crate, mats.netHeap, ...mats.fishBox,
+    mats.spray, mats.tarp, mats.sack, mats.castIron, mats.poster, mats.zinc, mats.crateTrim,
+  ];
+  for (const material of outdoors) shadeLit(material, terms);
+  return mats;
 }
 
 export function disposeMaterials(materials: HarborMaterials): void {
-  const { grime, ...rest } = materials;
+  const { grime, shade, ...rest } = materials;
   for (const value of Object.values(rest)) {
     const list: readonly THREE.Material[] = Array.isArray(value) ? value : [value as THREE.Material];
     for (const material of list) material.dispose();
   }
   materials.net.alphaMap?.dispose();
   materials.spray.map?.dispose();
+  materials.poster.map?.dispose();
   grime.dispose();
+  shade.dispose();
 }

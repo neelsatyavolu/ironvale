@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const file = process.argv[2] ?? join(root, 'public/assets/dl/hdri/kiara_5_noon_1k.hdr');
+const file = process.argv[2] ?? join(root, 'public/assets/dl/hdri/kloppenheim_06_puresky_1k.hdr');
 const data = await readFile(file);
 
 /** Reads the text header and returns the offset of the pixel data with the image size. */

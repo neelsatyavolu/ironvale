@@ -59,3 +59,13 @@ describe('bindingRows', () => {
     expect(new Set(labels).size).toBe(labels.length);
   });
 });
+
+describe('grenade key', () => {
+  it('is G on both presets and is listed in the controls reference', () => {
+    for (const preset of ['trackpad', 'mouse'] as const) {
+      expect(BINDING_PRESETS[preset].grenade).toEqual(['KeyG']);
+      const row = bindingRows(BINDING_PRESETS[preset], preset).find((entry) => entry.label.startsWith('Grenade'));
+      expect(row?.keys).toEqual(['G']);
+    }
+  });
+});

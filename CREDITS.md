@@ -21,9 +21,9 @@ Ironvale is built from work other people gave away. Entries under CC BY 4.0 (htt
 - "249 single shot.wav" by Baelphazoar, https://freesound.org/s/568007/, CC-BY 4.0. Used for 2 files.
 - "Askeleet kadulla, mukulakivet / Footsteps, sedate, a man walking on cobblestones, a close sound" by YleArkisto, https://freesound.org/s/322565/, CC-BY 4.0. Used for 12 files.
 
-- Freesound (https://freesound.org), CC0: 246 sounds cut from 90 recordings
+- Freesound (https://freesound.org), CC0: 252 sounds cut from 92 recordings
 - The Free Firearm Sound Library (https://opengameart.org/content/the-free-firearm-sound-library), CC0: 13 sounds, recorded by Ben Jaszczak, Brian Nelson, Kevin Heras and Matthew Nanney
-- Ironvale, CC0: 15 sounds synthesised for the game
+- Ironvale, CC0: 16 sounds synthesised for the game
 
 ## Textures and skies
 

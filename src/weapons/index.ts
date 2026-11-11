@@ -22,3 +22,6 @@ export function createBallistics(ctx: GameContext): Ballistics {
 export function createPlayerWeapons(ctx: GameContext): PlayerWeapons {
   return createPlayerWeaponSystem(ctx);
 }
+
+/** Thrown grenades: flight, bounces and the blast. `GRENADE_DEF` names the grenade wherever a weapon is named. */
+export { createGrenades, GRENADE_DEF, GRENADE_ID } from './grenades';

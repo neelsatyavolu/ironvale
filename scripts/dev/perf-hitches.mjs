@@ -64,14 +64,16 @@ await page.evaluate(() => {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 async function step(label, action, windowMs = 1400) {
-  await page.evaluate(() => (window.__frames.length = 0));
+  const from = await page.evaluate(() => ((window.__frames.length = 0), performance.now()));
   await page.evaluate(action);
   await wait(windowMs);
   const frames = await page.evaluate(() => window.__frames.slice());
+  // Anything compiled inside the window is what a hitch there would be made of.
+  const compiled = await page.evaluate((t) => window.__pipes.filter((p) => p.at > t && p.kind !== 'createTexture').length, from);
   const sorted = [...frames].sort((a, b) => b - a);
   const median = sorted[Math.floor(sorted.length / 2)] ?? 0;
   process.stdout.write(
-    `${label.padEnd(26)} worst ${sorted.slice(0, 3).map((v) => v.toFixed(0).padStart(4)).join(' ')} ms   median ${median.toFixed(1)}   frames ${frames.length}\n`,
+    `${label.padEnd(26)} worst ${sorted.slice(0, 3).map((v) => v.toFixed(0).padStart(4)).join(' ')} ms   median ${median.toFixed(1)}   frames ${frames.length}   compiled ${compiled}\n`,
   );
 }
 const input = (body) => new Function(`const i = window.__ironvale.game.weapons.debugInput; ${body}`);
@@ -138,5 +140,9 @@ for (const slot of [2, 3, 4, 1, 2, 3, 4, 1]) {
     await step('  stop', input('i.fire = false'), 300);
   }
 }
+// The grenade: the arc and marker appear for the first time, then the body, then the blast 2.5 s after release.
+await step('grenade aim (first)', input('i.grenade = true'), 900);
+await step('grenade throw', input('i.grenade = false'), 2300);
+await step('grenade blast (first)', () => undefined, 1800);
 await browser.close();
 for (const line of [...new Set(problems)].slice(0, 15)) process.stdout.write(`${line.slice(0, 300)}\n`);

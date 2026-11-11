@@ -6,6 +6,7 @@ import type { Kit } from './facade';
 import { addHouse } from './house';
 import { projectUv } from './kit';
 import { TERRACE_NORTH, TERRACE_Y } from './layout';
+import { LIGHTING } from './lighting';
 import { cypressTree, scrubBush, stonePineCrown, stonePineTrunk } from './trees';
 
 /** Two more terraces of houses climb the hill behind the town. Nobody can reach them. */
@@ -110,6 +111,44 @@ function tree(x: number, y: number, z: number, width: number, height: number, ya
     ),
     shade,
   };
+}
+
+const SHADOW_REACH = 2.4;
+
+/** One soft ellipse per tree, lying on the slope and stretched away from the sun. */
+function treeShadows(parent: THREE.Object3D, material: THREE.Material, trees: readonly Tree[]): THREE.InstancedMesh | null {
+  if (trees.length === 0) return null;
+  const disc = new THREE.PlaneGeometry(1, 1);
+  const mesh = new THREE.InstancedMesh(disc, material, trees.length);
+  const sun = LIGHTING.sunDirection;
+  const away = new THREE.Vector3(-sun.x, 0, -sun.z).normalize();
+  const at = new THREE.Vector3();
+  const size = new THREE.Vector3();
+  const normal = new THREE.Vector3();
+  const along = new THREE.Vector3();
+  const across = new THREE.Vector3();
+  const basis = new THREE.Matrix4();
+  trees.forEach((item, i) => {
+    at.setFromMatrixPosition(item.matrix);
+    size.setFromMatrixScale(item.matrix);
+    normal.set(hillHeight(at.x - 1.5, at.z) - hillHeight(at.x + 1.5, at.z), 3, hillHeight(at.x, at.z - 1.5) - hillHeight(at.x, at.z + 1.5)).normalize();
+    along.copy(away).addScaledVector(normal, -away.dot(normal)).normalize();
+    across.crossVectors(normal, along);
+    const length = size.y * SHADOW_REACH;
+    const width = size.x * 1.15;
+    // The plane's X runs across the shadow, its Y along it and its Z out of the ground.
+    basis.makeBasis(across.multiplyScalar(width), along.clone().multiplyScalar(length), normal);
+    at.addScaledVector(along, 0.5).addScaledVector(normal, 0.5);
+    at.y = hillHeight(at.x, at.z) + 0.35;
+    basis.setPosition(at.x + along.x * length * 0.42, at.y + along.y * length * 0.42, at.z + along.z * length * 0.42);
+    mesh.setMatrixAt(i, basis);
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
+  mesh.computeBoundingSphere();
+  parent.add(mesh);
+  return mesh;
 }
 
 /**
@@ -237,12 +276,19 @@ export function addBackdrop(kit: Kit, root: THREE.Object3D): { dispose(): void }
   forest(root, trunk, mats.planksShade, pines);
   forest(root, shrub, mats.pine, shrubs);
 
+  const shadows = treeShadows(
+    root,
+    mats.treeShadow,
+    [...cypresses, ...pines].filter((item) => item.matrix.elements[14]! < HILL_FOOT - 1),
+  );
+
   const capes = addCapes(kit, root);
 
   return {
     dispose: () => {
       capes.dispose();
       for (const geometry of [cypress, canopy, trunk, shrub]) geometry.dispose();
+      shadows?.geometry.dispose();
     },
   };
 }

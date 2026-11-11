@@ -15,7 +15,7 @@ import { PlayerController } from '../player/controller';
 import { Engine } from '../render/engine';
 import { createInterface, type Interface } from '../ui/index';
 import { WEAPON_DEFS } from '../weapons/defs';
-import { createBallistics, createPlayerWeapons, weaponAssets } from '../weapons/index';
+import { createBallistics, createGrenades, createPlayerWeapons, GRENADE_DEF, weaponAssets } from '../weapons/index';
 import { CollisionWorld } from '../world/collision';
 import type { MapInstance, World } from '../world/types';
 import { Combat } from './combat';
@@ -27,6 +27,7 @@ import type {
   GameCommands,
   GameContext,
   GameEvents,
+  Grenades,
   KillFeedEntry,
   MatchConfig,
   MatchPhase,
@@ -77,6 +78,7 @@ export class Game implements GameContext, GameCommands {
   time = 0;
 
   readonly weapons: PlayerWeapons;
+  readonly grenades: Grenades;
   readonly effects: EffectsSystem;
   readonly bots: BotSystem;
   /** Two-player session. Idle unless a match with a friend is set up. */
@@ -120,6 +122,7 @@ export class Game implements GameContext, GameCommands {
     this.audio = createAudio(this);
     this.ballistics = createBallistics(this);
     this.weapons = createPlayerWeapons(this);
+    this.grenades = createGrenades(this);
     this.effects = createEffects(this);
     this.bots = createBots(this);
     const game = this;
@@ -145,7 +148,8 @@ export class Game implements GameContext, GameCommands {
       if (event.shooterId === this.player.id) this.shotsFired++;
     });
     this.events.on('combatantHit', (event) => {
-      if (event.attackerId === this.player.id) this.shotsHit++;
+      // A blast is not a shot: it must not count toward accuracy.
+      if (event.attackerId === this.player.id && event.weapon !== GRENADE_DEF) this.shotsHit++;
     });
     settings.subscribe((next, previous) => {
       if (next.graphics !== previous.graphics) engine.applyGraphics(next.graphics);
@@ -240,6 +244,8 @@ export class Game implements GameContext, GameCommands {
       this.net.enterMap(map);
       this.spawnPlayer(true);
       this.weapons.resupply();
+      // One grenade for the whole match: this is the only place it is handed out.
+      this.weapons.restockGrenades();
       // A co-op guest shows the host's enemies instead of running its own.
       if (this.net.authority) this.bots.spawn(config.botCount, 'bravo', config.difficulty);
       // Compile every shader while the loading screen is still up, so the first
@@ -321,6 +327,7 @@ export class Game implements GameContext, GameCommands {
         zoom: this.weapons.zoom,
         blockSprint: this.weapons.blocksSprint,
       });
+      if (!frozen) this.grenades.update(dt);
       if (!frozen) this.bots.update(dt);
       this.effects.update(dt);
       this.map?.update?.(dt, this.time, this.engine.camera.position);
@@ -437,7 +444,10 @@ export class Game implements GameContext, GameCommands {
       {
         killer: killer?.name ?? 'Unknown',
         victim: victim?.name ?? 'Unknown',
-        weapon: (WEAPON_DEFS as Record<string, { name: string } | undefined>)[event.weaponId]?.name ?? event.weaponId,
+        weapon:
+          event.weaponId === GRENADE_DEF.id
+            ? GRENADE_DEF.name
+            : ((WEAPON_DEFS as Record<string, { name: string } | undefined>)[event.weaponId]?.name ?? event.weaponId),
         headshot: event.headshot,
         time: this.time,
       },
@@ -474,6 +484,7 @@ export class Game implements GameContext, GameCommands {
     const map = this.map;
     this.setFrozen(false);
     this.net.leaveMap();
+    this.grenades.clear();
     this.combat.clear();
     if (!map) return;
     this.bots.leaveMap();
@@ -544,6 +555,8 @@ export class Game implements GameContext, GameCommands {
       reloading: weapon.reloading,
       scopedIn: this.weapons.scopedIn,
       aiming: this.weapons.aimBlend > 0.5,
+      grenades: this.weapons.grenade.count,
+      grenadeAiming: this.weapons.grenade.aiming,
       livesRemaining:
         this.rules === 'skirmish'
           ? Math.max(0, PLAYER_LIVES - this.deaths)

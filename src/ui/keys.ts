@@ -76,6 +76,7 @@ const SINGLE: readonly (readonly [Action, string])[] = [
   ['fire', 'Fire'],
   ['aim', 'Aim'],
   ['reload', 'Reload'],
+  ['grenade', 'Grenade (hold to aim, release to throw)'],
   ['holdBreath', 'Hold breath'],
   ['weaponNext', 'Next weapon'],
   ['weaponPrev', 'Previous weapon'],

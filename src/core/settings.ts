@@ -64,6 +64,8 @@ export interface GameplaySettings {
   readonly headBob: number;
   readonly showHitMarkers: boolean;
   readonly crosshair: boolean;
+  /** Overhead map in the corner of the HUD that tracks enemies. */
+  readonly minimap: boolean;
 }
 
 export interface Settings {
@@ -185,7 +187,7 @@ export const DEFAULT_SETTINGS: Settings = {
   graphics: graphicsForTier('high'),
   controls: CONTROL_PRESETS.trackpad,
   audio: { master: 0.9, effects: 1, ambience: 0.8, interface: 0.7, hrtf: true },
-  gameplay: { difficulty: 'regular', fov: 78, headBob: 1, showHitMarkers: true, crosshair: true },
+  gameplay: { difficulty: 'regular', fov: 78, headBob: 1, showHitMarkers: true, crosshair: true, minimap: true },
 };
 
 const STORAGE_KEY = 'ironvale.settings.v1';

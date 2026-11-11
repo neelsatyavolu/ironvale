@@ -3,6 +3,7 @@ import { addBalcony, addDoor, addWindow, Frame, PLASTER_TILE, WALL_THICKNESS, ty
 import { projectUv } from './kit';
 import { STOREY } from './layout';
 import { bayCentres, wallPieces, type Rect } from './pieces';
+import { addWallDetail } from './wall-detail';
 
 /** `open` is a real hole to walk through; `door` and `window` are filled; `shut` is a shuttered blind window. */
 export type OpeningKind = 'open' | 'door' | 'window' | 'french' | 'shut';
@@ -75,6 +76,7 @@ export function addHouse(kit: Kit, spec: HouseSpec): HouseInfo {
   const plaster = mats.plaster[spec.wall % mats.plaster.length]!;
   const paint = mats.paint[spec.paint % mats.paint.length]!;
   const wallTop = base + height;
+  const ridge = spec.ridge ?? (spec.x1 - spec.x0 >= spec.z1 - spec.z0 ? 'x' : 'z');
 
   for (const side of SIDES) {
     const alongX = side === 'n' || side === 's';
@@ -92,7 +94,13 @@ export function addHouse(kit: Kit, spec: HouseSpec): HouseInfo {
         }
       }
     }
-    if (!spec.detail.includes(side)) continue;
+    const eave = (ridge === 'x') === alongX;
+    const seed = (Math.round(spec.x0 * 131 + spec.z0 * 71) + SIDES.indexOf(side) * 7919) >>> 0;
+    const street = (spec.buried?.[side] ?? 0) * storeyHeight;
+    if (!spec.detail.includes(side)) {
+      addWallDetail(kit, { frame, length, height, ground: street, storeyHeight, openings, eave, pipeU: null, detailed: false, seed });
+      continue;
+    }
 
     for (const opening of openings) {
       if (opening.kind === 'open') continue;
@@ -131,8 +139,10 @@ export function addHouse(kit: Kit, spec: HouseSpec): HouseInfo {
     }
     frame.box(mats.stoneLight, -0.08, length + 0.08, height - 0.24, height - 0.04, 0, 0.1, { tile: 1.5 });
     // Rainwater pipe near one corner.
+    let pipeU: number | null = null;
     if (random() < 0.6) {
       const u = random() < 0.5 ? 0.22 : length - 0.22;
+      pipeU = u;
       frame.box(mats.iron, u - 0.045, u + 0.045, ground + 0.1, height - 0.24, 0.03, 0.12);
       for (let v = ground + 0.9; v < height - 0.5; v += 2.1) frame.box(mats.iron, u - 0.07, u + 0.07, v, v + 0.05, 0, 0.13);
     }
@@ -142,9 +152,9 @@ export function addHouse(kit: Kit, spec: HouseSpec): HouseInfo {
         frame.box(mats.stoneLight, 0, length, v, v + 0.1, 0, 0.035, { tile: 1.5 });
       }
     }
+    addWallDetail(kit, { frame, length, height, ground, storeyHeight, openings, eave, pipeU, detailed: true, seed });
   }
 
-  const ridge = spec.ridge ?? (spec.x1 - spec.x0 >= spec.z1 - spec.z0 ? 'x' : 'z');
   const ridgeY = addGableRoof(kit, spec, wallTop, ridge, plaster);
   if (spec.collide === false) return { wallTop, ridgeY };
   if (!spec.hollow) colliders.span(spec.x0, spec.x1, base, wallTop, spec.z0, spec.z1, 'plaster');

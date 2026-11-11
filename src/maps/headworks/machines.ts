@@ -95,7 +95,7 @@ function buildBarrier(kit: Kit, m: Materials, b: Block, index: number): void {
 function buildStation(kit: Kit, m: Materials, b: Block): void {
   slabOf(kit, m.concrete, { ...b, h: 0.42 }, 0.06, 0xe2e0d9);
   const body = inner(b, 0.12, 0.42, b.h);
-  // Painted, not bare: a polished box this size throws the noon sun straight into the lane.
+  // Painted, not bare: a polished box this size throws the sun straight into the lane.
   slabOf(kit, m.paint, body, 0.02, COAT.tealDark);
   const [front] = longSides(b);
   const face = faceOf(body, front);

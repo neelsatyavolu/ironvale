@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { archedPanel, archInsert, archSurround } from './arch';
+import { addChurchFront } from './church-front';
 import { Frame, PLASTER_TILE, WALL_THICKNESS, type Kit } from './facade';
 import { addGableRoof, addHouse, type GroundOpening, type HouseSpec } from './house';
 import { CAFE, NET_STORE, PASSAGE, QUAY_NORTH, STREET_NORTH, STREET_SOUTH, TERRACE_EDGE, TERRACE_NORTH, TERRACE_Y } from './layout';
@@ -180,7 +181,8 @@ function addChurch(kit: Kit): void {
   const height = 9.6;
   batch.span(plaster, x0, x1, base, base + height, z0, z1, { tile: PLASTER_TILE });
   colliders.span(x0, x1, base, base + height, z0, z1, 'plaster');
-  addGableRoof(kit, { x0, x1, z0, z1 }, base + height, 'z', plaster);
+  const ridgeY = addGableRoof(kit, { x0, x1, z0, z1 }, base + height, 'z', plaster);
+  addChurchFront(kit, { x0, x1, z: z1, base, height, ridgeY });
 
   const front = new Frame(batch, 's', x0, z1, base);
   for (const u of [0, 5.2, 12.2, 17.4]) front.box(mats.stoneLight, u, u + 0.6, 0, height, 0, 0.16, { tile: 1.5 });
@@ -193,20 +195,6 @@ function addChurch(kit: Kit): void {
   batch.place(mats.stoneLight, surround, 0, base, z1, 0, 1, 1.4);
   door.dispose();
   surround.dispose();
-  const rose = new THREE.CircleGeometry(1.05, 24);
-  batch.place(mats.glassLit, rose, 0, base + 7.1, z1 + 0.03);
-  rose.dispose();
-  const rim = new THREE.TorusGeometry(1.12, 0.13, 8, 28);
-  batch.place(mats.stoneLight, rim, 0, base + 7.1, z1 + 0.04);
-  rim.dispose();
-  for (const [u0, u1] of [
-    [2.3, 3.5],
-    [14.5, 15.7],
-  ] as const) {
-    front.box(mats.glass, u0, u1, 2.2, 4.4, 0, 0.03);
-    front.box(mats.stoneLight, u0 - 0.14, u1 + 0.14, 2.06, 2.2, 0, 0.1, { tile: 1.5 });
-    front.box(mats.stoneLight, u0 - 0.14, u1 + 0.14, 4.4, 4.54, 0, 0.1, { tile: 1.5 });
-  }
   // Two broad steps to the door.
   for (let i = 0; i < 2; i++) {
     const reach = 0.5 * (2 - i);

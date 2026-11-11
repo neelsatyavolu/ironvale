@@ -12,6 +12,7 @@ import { buildMachines } from './machines';
 import { createMaterials } from './materials';
 import { BOUNDS, ENEMY_SPAWNS, HOUSES, PLAYER_SPAWNS, TANK, type Spot } from './plan';
 import { buildPlant } from './plant';
+import { dressServices } from './services';
 import { buildCastWork, buildGround, buildRamps } from './shell';
 import { dressBuildings, dressPerimeter, dressWaterworks } from './structures';
 import { buildTanks } from './tanks';
@@ -25,8 +26,8 @@ const toSpawn = (spot: Spot): SpawnPoint => ({
 });
 
 /**
- * Headworks: a concrete water-treatment station in the mountains at winter
- * noon. The west team starts behind the control building. Three ways east:
+ * Headworks: a concrete water-treatment station in the mountains on a low
+ * winter afternoon. The west team starts behind the control building. Three ways east:
  * the Filter Walk road along the north wall, the Valve Court round the two
  * clarifiers in the middle, and the pump house on the south side. The level
  * is point-symmetric, so the east team's side is the same turned half a turn.
@@ -48,6 +49,7 @@ function build(ctx: MapBuildContext): MapInstance {
   dressHouses(kit, materials);
   dressPerimeter(kit, materials);
   dressGround(kit, materials);
+  dressServices(kit, materials);
   buildLights(kit, materials);
   kit.finish();
 
@@ -83,7 +85,7 @@ const headworks: MapModule = {
   meta: {
     id: 'headworks',
     name: 'Headworks',
-    tagline: 'Mountain water works at winter noon',
+    tagline: 'Mountain water works, low winter sun',
     assets: ['hdri-headworks', 'pbr-headworks-formed', 'pbr-headworks-paving', 'pbr-headworks-road'],
   },
   build,

@@ -45,6 +45,11 @@ against what exists, and list the change you want in your final report.
   `src/game/contracts.ts`). Audio and effects subscribe to events; gameplay
   code emits events and never calls audio or effects for gunfire, impacts or
   footsteps.
+- Grenades follow the same split. `ctx.weapons.grenade` is the one in the
+  player's hand (count, aiming, where a throw would start), `ctx.grenades`
+  flies the thrown ones and applies the blast, and the pure maths both use
+  (and the preview arc) is `src/weapons/grenade-math.ts`. Effects and audio
+  react to `grenadeThrown`, `grenadeBounced` and `grenadeExploded`.
 - Each subsystem's `index.ts` exports the factory that `src/game/game.ts`
   already imports (`createAudio`, `createEffects`, `createBots`,
   `createBallistics`, `createPlayerWeapons`, `weaponAssets`, `createInterface`).

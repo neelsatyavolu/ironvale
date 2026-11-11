@@ -263,6 +263,12 @@ export function createSettings(ctx: GameContext, actions: SettingsActions): Sett
       toggle('Hit markers', (showHitMarkers) => store.update('gameplay', { showHitMarkers })),
       (s) => s.gameplay.showHitMarkers,
     ),
+    bound(
+      'Minimap',
+      toggle('Minimap', (minimap) => store.update('gameplay', { minimap })),
+      (s) => s.gameplay.minimap,
+      'Shows the layout around you and where the enemies are.',
+    ),
     row('Performance readout', h('span', 'iv-row__hint', 'Press ` during a match')),
   );
 

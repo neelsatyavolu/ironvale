@@ -2,6 +2,7 @@ import type * as THREE from 'three/webgpu';
 import { seededRandom } from '../../core/random';
 import type { Kit } from './facade';
 import { CAFE, NET_STORE } from './layout';
+import { adCell, decalQuad, posterCell, type AtlasCell } from './posters';
 
 /** Below the window sills (0.95 m), rail included. */
 const DADO = 0.86;
@@ -54,7 +55,7 @@ function addDado(kit: Kit, room: Room, panel: THREE.Material, gaps: { n: readonl
 }
 
 /** Framed picture, mirror or board hung flat on a wall. `along` is x for a north or south wall, z for the west wall. */
-function addFrame(kit: Kit, wall: 'n' | 's' | 'w', room: Room, along: number, y: number, w: number, h: number, face: THREE.Material): void {
+function addFrame(kit: Kit, wall: 'n' | 's' | 'w', room: Room, along: number, y: number, w: number, h: number, face: THREE.Material, print?: number): void {
   const { batch, mats } = kit;
   const rim = 0.045;
   const put = (material: THREE.Material, half: number, tall: number, depth: number): void => {
@@ -64,6 +65,29 @@ function addFrame(kit: Kit, wall: 'n' | 's' | 'w', room: Room, along: number, y:
   };
   put(mats.planksShade, w / 2, h, 0.03);
   put(face, w / 2 - rim, h - rim * 2, 0.036);
+  if (print === undefined) return;
+  // An old bill under the glass: the middle of the sheet, cropped to the frame.
+  const pw = w - rim * 2;
+  const ph = h - rim * 2;
+  const cell = cropCell(posterCell(print), pw / ph);
+  const out = 0.04;
+  if (wall === 'w') batch.add(mats.poster, decalQuad(cell, pw, ph, room.x0 + out, y, along, Math.PI / 2));
+  else if (wall === 'n') batch.add(mats.poster, decalQuad(cell, pw, ph, along, y, room.z0 + out, 0));
+  else batch.add(mats.poster, decalQuad(cell, pw, ph, along, y, room.z1 - out, Math.PI));
+}
+
+/** Largest centred part of a portrait poster cell (2:3) with the given width-to-height ratio, kept off the torn edges. */
+export function cropCell(cell: AtlasCell, aspect: number): AtlasCell {
+  const [u0, v0, u1, v1] = cell;
+  const inset = 0.12;
+  const du = (u1 - u0) * (1 - inset * 2);
+  const dv = (v1 - v0) * (1 - inset * 2);
+  // The cell is 2 wide by 3 tall, so a full-width crop is `2 / 3 / aspect` of its height.
+  const tall = Math.min(1, 2 / 3 / aspect);
+  const wide = Math.min(1, (aspect * 3) / 2);
+  const cu = (u0 + u1) / 2;
+  const cv = (v0 + v1) / 2;
+  return [cu - (du * wide) / 2, cv - (dv * tall) / 2, cu + (du * wide) / 2, cv + (dv * tall) / 2];
 }
 
 /** Row of bottles and jars on a bracketed shelf against the north wall. */
@@ -98,14 +122,14 @@ export function addRoomDressing(kit: Kit): void {
     // The bar and its shelves cover the east wall.
     e: [[cafe.z0, cafe.z1]],
   });
-  addFrame(kit, 'n', cafe, -10.3, 1.75, 0.62, 0.48, mats.hill);
-  addFrame(kit, 'n', cafe, -6.35, 1.72, 0.5, 0.66, mats.plaster[1]!);
+  addFrame(kit, 'n', cafe, -10.3, 1.75, 0.62, 0.48, mats.hill, 2);
+  addFrame(kit, 'n', cafe, -6.35, 1.72, 0.5, 0.66, mats.plaster[1]!, 3);
   addFrame(kit, 'n', cafe, -1.2, 1.78, 0.85, 0.55, mats.tarp);
   addFrame(kit, 's', cafe, -10.6, 1.75, 0.9, 0.62, mats.glass);
   addFrame(kit, 's', cafe, -4.7, 1.7, 1.3, 0.85, mats.castIron);
-  addFrame(kit, 's', cafe, 1.3, 1.75, 0.6, 0.75, mats.plaster[4]!);
-  addFrame(kit, 'w', cafe, 3.8, 1.75, 0.95, 0.6, mats.hill);
-  addFrame(kit, 'w', cafe, 8.2, 1.7, 0.55, 0.7, mats.roof);
+  addFrame(kit, 's', cafe, 1.3, 1.75, 0.6, 0.75, mats.plaster[4]!, 1);
+  addFrame(kit, 'w', cafe, 3.8, 1.75, 0.95, 0.6, mats.hill, 0);
+  addFrame(kit, 'w', cafe, 8.2, 1.7, 0.55, 0.7, mats.roof, 4);
   addShelf(kit, cafe, -5.6, -4.1, 2.02, seededRandom(SEED));
   // Chalk lines on the slate menu between the arches.
   for (let row = 0; row < 6; row++) {
@@ -124,6 +148,13 @@ export function addRoomDressing(kit: Kit): void {
     w: [[store.z0, store.z1]],
     e: [[5.1, 8.7]],
   });
-  addFrame(kit, 'n', store, NET_STORE.x0 + 4.9, 1.8, 0.9, 0.6, mats.tarp);
+  addFrame(kit, 'n', store, NET_STORE.x0 + 4.9, 1.8, 0.9, 0.6, mats.tarp, 2);
   addFrame(kit, 's', store, NET_STORE.x0 + 9.6, 1.9, 0.7, 0.5, mats.castIron);
+
+  // Lettering painted on the plaster: the house amaro over the bar, the firm's name in the store.
+  batch.add(mats.poster, decalQuad(adCell(2), 3.4, 0.85, cafe.x1 - 0.012, 2.52, 5.8, -Math.PI / 2));
+  batch.add(mats.poster, decalQuad(adCell(1), 2.6, 0.65, NET_STORE.x0 + 3.6, 2.35, store.z0 + 0.012, 0));
+  // Bills pasted by the store's street door, one over the edge of the other.
+  batch.add(mats.poster, decalQuad(posterCell(6), 0.42, 0.63, NET_STORE.x0 + 9.3, 1.5, store.z0 + 0.012, 0, 0.04));
+  batch.add(mats.poster, decalQuad(posterCell(4), 0.42, 0.63, NET_STORE.x0 + 9.68, 1.42, store.z0 + 0.015, 0, -0.05));
 }

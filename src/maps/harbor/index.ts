@@ -20,6 +20,7 @@ import { createBounce, createLamps, LIGHTING } from './lighting';
 import { createMaterials, disposeMaterials } from './materials';
 import { addProps } from './props';
 import { addScatter } from './scatter';
+import { ShadeBake } from './shade';
 import { addSigns } from './signs';
 import { addSky } from './sky';
 import { addStreetLife } from './street-life';
@@ -39,6 +40,9 @@ const ASSETS = [
   'mdl-harbor-crate',
   'mdl-harbor-bench',
 ] as const;
+
+/** Time per frame the street-light bake may take until it is finished. */
+const SHADE_BUDGET_MS = 400;
 
 const toSpawn = (spec: SpawnSpec): SpawnPoint => ({ position: new THREE.Vector3(spec.x, spec.y, spec.z), yaw: spec.yaw });
 
@@ -92,7 +96,7 @@ function build(ctx: MapBuildContext): MapInstance {
   const signs = addSigns(kit);
   const merged = kit.batch.build(root);
   // Netting, lamp glass, leaf cards and the far hill should not throw shadows.
-  const shadowless = new Set<THREE.Material>([mats.net, mats.lamp, mats.lampGreen, mats.glassLit, mats.hill, mats.spray]);
+  const shadowless = new Set<THREE.Material>([mats.net, mats.lamp, mats.lampGreen, mats.glassLit, mats.hill, mats.spray, mats.stain, mats.poster]);
   for (const mesh of merged) {
     if (shadowless.has(mesh.material as THREE.Material)) mesh.castShadow = false;
   }
@@ -100,6 +104,7 @@ function build(ctx: MapBuildContext): MapInstance {
   for (const lamp of lamps) root.add(lamp);
   const bounce = createBounce();
   root.add(bounce);
+  const shade = new ShadeBake(mats.shade, ctx.world, LIGHTING.sunDirection);
 
   return {
     root,
@@ -120,6 +125,7 @@ function build(ctx: MapBuildContext): MapInstance {
       skyLight: 0.32,
     })),
     update: (_dt, elapsed) => {
+      shade.step(SHADE_BUDGET_MS);
       fleet.update(elapsed);
       interiors.update(elapsed);
     },
