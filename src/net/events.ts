@@ -6,7 +6,7 @@
 import type { Difficulty } from '../core/settings';
 import type { HitZone, WeaponActionStage } from '../game/contracts';
 import { WEAPON_IDS, type WeaponId } from '../weapons/models/api';
-import { sanitizeName } from './limits';
+import { sanitizeChat, sanitizeName } from './limits';
 import { MAX_COORDINATE, MAX_EVENT_CHARS, MAX_TIME_MS, MAX_WIRE_ID, WIRE_BOT_BASE, type Vec3 } from './wire';
 
 
@@ -74,6 +74,7 @@ export type NetEvent =
   | { readonly t: 'nade'; readonly p: Vec3; readonly v: Vec3 }
   /** The sender's grenade went off at `p`. Its hits follow as ordinary `hit` events. */
   | { readonly t: 'boom'; readonly p: Vec3 }
+  | { readonly t: 'chat'; readonly text: string }
   | { readonly t: 'away'; readonly away: boolean }
   | { readonly t: 'bye'; readonly reason: ByeReason };
 
@@ -224,6 +225,10 @@ function build(fields: Fields): NetEvent | null {
     case 'boom': {
       const p = point(fields.p, MAX_COORDINATE);
       return p ? { t: 'boom', p } : null;
+    }
+    case 'chat': {
+      const text = sanitizeChat(fields.text);
+      return text ? { t: 'chat', text } : null;
     }
     case 'away':
       return typeof fields.away === 'boolean' ? { t: 'away', away: fields.away } : null;

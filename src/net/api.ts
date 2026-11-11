@@ -87,6 +87,14 @@ export interface NetSnapshot {
   readonly rttMs: number;
 }
 
+/** One line of chat between the two players. */
+export interface ChatLine {
+  readonly name: string;
+  readonly text: string;
+  /** true for a line this player wrote. */
+  readonly mine: boolean;
+}
+
 /** Commands the interface uses to set a two-player match up. */
 export interface NetLobby {
   readonly state: LobbyState;
@@ -107,6 +115,10 @@ export interface NetLobby {
   /** Close the connection. Safe to call at any time. */
   leave(): void;
   setName(name: string): void;
+  /** Send a line to the other player. Does nothing unless the two are connected. */
+  sendChat(text: string): void;
+  /** Every chat line, sent or received. */
+  onChat(listener: (line: ChatLine) => void): () => void;
 }
 
 /** The other player, as the match rules need to know them. */

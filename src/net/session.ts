@@ -2,6 +2,7 @@ import type { GameContext, MatchConfig } from '../game/contracts';
 import type { MapInstance, SpawnPoint } from '../world/types';
 import {
   DEFAULT_NET_CONFIG,
+  type ChatLine,
   type LobbyState,
   type NetErrorCode,
   type NetGameHooks,
@@ -15,7 +16,7 @@ import {
 } from './api';
 import { ClockSync } from './clock';
 import { fetchRelayServers, iceServers } from './ice';
-import { sanitizeName } from './limits';
+import { sanitizeChat, sanitizeName } from './limits';
 import { MatchSync, type MatchLink } from './match';
 import {
   MAX_KILL_TARGET,
@@ -70,6 +71,7 @@ function clampWhole(value: number, min: number, max: number): number {
 export class NetSession implements NetSystem {
   private lobby: LobbyState;
   private readonly listeners = new Set<(state: LobbyState) => void>();
+  private readonly chatListeners = new Set<(line: ChatLine) => void>();
   private readonly clock = new ClockSync();
   private readonly abort = new AbortController();
   private signaling: Signaling | null = null;
@@ -215,6 +217,22 @@ export class NetSession implements NetSystem {
     }
     this.patch({ localName });
     if (this.lobby.step === 'connected') this.send({ t: 'hello', v: PROTOCOL_VERSION, name: localName });
+  }
+
+  sendChat(text: string): void {
+    const line = sanitizeChat(text);
+    if (!line || this.lobby.step !== 'connected' || !this.link) return;
+    this.send({ t: 'chat', text: line });
+    this.chat({ name: this.lobby.localName, text: line, mine: true });
+  }
+
+  onChat(listener: (line: ChatLine) => void): () => void {
+    this.chatListeners.add(listener);
+    return () => this.chatListeners.delete(listener);
+  }
+
+  private chat(line: ChatLine): void {
+    for (const listener of [...this.chatListeners]) listener(line);
   }
 
   private patch(change: Partial<LobbyState>): void {
@@ -428,6 +446,9 @@ export class NetSession implements NetSystem {
           const now = performance.now();
           this.goAt = Math.min(now + COUNTDOWN_MS * 3, Math.max(now, this.clock.toLocal(event.at)));
         }
+        break;
+      case 'chat':
+        this.chat({ name: this.lobby.peerName, text: event.text, mine: false });
         break;
       case 'away':
         this.peerAway = event.away;

@@ -1,0 +1,66 @@
+/* Two-player chat: recent lines above the health readout, and the box T opens. */
+.iv-chat {
+  position: absolute;
+  left: 1.5em;
+  bottom: 7.5em;
+  width: min(26em, 40vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  font-size: 0.875em;
+}
+
+.iv-chat__log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.iv-chat__line {
+  color: var(--ink);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 2px rgba(9, 9, 8, 0.9);
+}
+
+.iv-chat__name {
+  margin-right: 0.625em;
+  font-family: var(--mono);
+  font-size: 0.8125em;
+  color: var(--hud-dim);
+}
+
+/* The other player's name takes the accent, so their lines stand out from your own. */
+.iv-chat__line:not(.is-mine) .iv-chat__name {
+  color: var(--accent);
+}
+
+.iv-chat__input {
+  width: 100%;
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: rgba(14, 14, 13, 0.82);
+  color: var(--ink);
+  font: inherit;
+  pointer-events: auto;
+}
+
+.iv-chat__input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.iv-chat__input::placeholder {
+  color: var(--mute);
+}
+
+.iv-chat__hint {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.75em;
+  color: var(--hud-dim);
+}

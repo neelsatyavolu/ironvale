@@ -6,6 +6,18 @@
 import type { WeaponDef } from '../game/contracts';
 
 export const NAME_LENGTH = 16;
+export const CHAT_LENGTH = 140;
+
+/** A chat line: one line of printable text, at most 140 characters. Empty when nothing is left. */
+export function sanitizeChat(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  return raw
+    .replace(/[\p{Cc}\p{Cf}]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, CHAT_LENGTH)
+    .trim();
+}
 const NAME_DROP = /[^\p{L}\p{N} _.'-]/gu;
 
 /** A display name: letters, digits, spaces and a little punctuation, at most 16 characters. */

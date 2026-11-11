@@ -9,6 +9,10 @@ export const MINIMAP = {
   floorGap: 2,
   /** How long a shot stays marked. */
   shotSeconds: 1,
+  /** Duel: the opponent shows on the map this often, in seconds. */
+  revealEvery: 15,
+  /** Duel: and stays for this long. */
+  revealSeconds: 2.5,
 } as const;
 
 export const CELL_FLOOR = 0;
@@ -112,4 +116,14 @@ export function horizontalHalfFov(verticalDegrees: number, aspect: number): numb
 /** Seconds since a shot at `firedAt` on the match clock; Infinity when there is none or the clock has restarted. */
 export function shotAge(firedAt: number | undefined, now: number): number {
   return firedAt === undefined || firedAt > now ? Infinity : now - firedAt;
+}
+
+/**
+ * Duel: seconds into the current reveal of the opponent, or Infinity between reveals. The first comes
+ * `every` seconds into the match, so nobody is shown at the start.
+ */
+export function revealAge(now: number, every: number = MINIMAP.revealEvery, hold: number = MINIMAP.revealSeconds): number {
+  if (!(now >= every)) return Infinity;
+  const into = now % every;
+  return into < hold ? into : Infinity;
 }

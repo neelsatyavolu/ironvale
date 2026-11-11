@@ -5,6 +5,8 @@ import { flag, h, textSlot } from '../dom';
 import { respawnCountdown, rulesOf } from '../format';
 import { createExtras } from './extras';
 import { createFeed } from './feed';
+import type { NetLobby } from '../../net/api';
+import { createChat } from './chat';
 import { createGrenadeIndicator } from './grenade';
 import { createMinimap } from './minimap';
 import { createPerf } from './perf';
@@ -68,7 +70,7 @@ function noticeText(net: NetSnapshot | null): string {
 }
 
 /** The in-match overlay. Never takes the pointer and only touches the DOM when a value changes. */
-export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1): Hud {
+export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1, net: Pick<NetLobby, 'sendChat' | 'onChat'> | null = null): Hud {
   const weaponNames = new Map<string, string>();
   const weaponName = (id: string): string => weaponNames.get(id) ?? id.toUpperCase();
 
@@ -149,6 +151,8 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
   );
   element.hidden = true;
   feed.element.before(minimap.element);
+  const chat = net ? createChat(net) : null;
+  if (chat) feed.element.before(chat.element);
 
   const setLow = flag((on) => health.element.classList.toggle('is-low', on));
   const setEmpty = flag((on) => ammo.classList.toggle('is-empty', on));
@@ -270,6 +274,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
       scope.set(snapshot.scopedIn && snapshot.health > 0);
       feed.update(snapshot.killFeed, snapshot.elapsed);
       minimap.update(snapshot);
+      chat?.update(snapshot);
       reticle.track();
       refreshCrosshair();
 
@@ -291,6 +296,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
     setVisible: flag((visible) => {
       element.hidden = !visible;
       minimap.setVisible(visible);
+      chat?.setVisible(visible);
       if (!visible) {
         reticle.clear();
         toastAnimation?.cancel();
@@ -302,6 +308,7 @@ export function createHud(ctx: GameContext, roundTripMs: () => number = () => -1
       for (const off of unsubscribe) off();
       extras.dispose();
       minimap.dispose();
+      chat?.dispose();
       perf.dispose();
     },
   };

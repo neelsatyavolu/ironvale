@@ -62,7 +62,7 @@ export function createInterface(ctx: GameContext, commands: GameCommands): Inter
   const fontLinks = loadFonts();
   const stats = createStats(ctx);
   const net = commands.net;
-  const hud = createHud(ctx, () => (net.state.inMatch ? net.state.rttMs : -1));
+  const hud = createHud(ctx, () => (net.state.inMatch ? net.state.rttMs : -1), net);
 
   let phase: MatchPhase | null = null;
   let snapshot: MatchSnapshot | null = null;

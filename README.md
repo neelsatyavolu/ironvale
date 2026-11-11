@@ -56,6 +56,7 @@ There are two presets. The game starts on Trackpad; switch under Settings or on 
 | Sprint | Shift | Shift |
 | Hold breath while aiming | Shift | Shift |
 | Reload | R | R |
+| Chat (two-player) | T, Enter to send | T, Enter to send |
 | Grenade (one per match) | Hold G to aim, release to throw | Hold G to aim, release to throw |
 | Next or previous weapon | Two-finger scroll, or ] and [ | Wheel, or ] and [ |
 | Pick a weapon | 1 to 4 | 1 to 4 |

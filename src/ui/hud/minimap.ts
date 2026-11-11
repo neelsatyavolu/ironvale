@@ -5,7 +5,7 @@
 import type { Combatant, GameContext, MatchSnapshot } from '../../game/contracts';
 import type { MapInstance } from '../../world/types';
 import { flag, h } from '../dom';
-import { buildLayout, CELL_SOLID, CELL_WALL, horizontalHalfFov, MINIMAP, shotAge, toMap, type Layout, type MapPoint } from './minimap-model';
+import { buildLayout, CELL_SOLID, CELL_WALL, horizontalHalfFov, MINIMAP, revealAge, shotAge, toMap, type Layout, type MapPoint } from './minimap-model';
 import '../styles/minimap.css';
 
 /** Layout canvas pixels per grid cell: a little more than a cell covers on a Retina screen, so walls stay sharp. */
@@ -184,8 +184,21 @@ export function createMinimap(ctx: GameContext): Minimap {
       const shot = shots.get(enemy.id);
       const age = shotAge(shot?.time, now);
       const fresh = age < MINIMAP.shotSeconds;
+      const reveal = duel ? revealAge(now) : Infinity;
+      if (reveal < MINIMAP.revealSeconds) {
+        // A duel opponent shows where they stand for a moment every so often, then fades.
+        toMap(point, enemy.position.x - px, enemy.position.z - pz, yaw, scale, limit);
+        g.globalAlpha = Math.min(1, 2 * (1 - reveal / MINIMAP.revealSeconds));
+        if (point.outside) tick(point.x, point.y, limit, INK);
+        else {
+          dot(point.x, point.y, INK, Math.abs(enemy.position.y - py) > MINIMAP.floorGap);
+          ripple(point.x, point.y, reveal);
+        }
+        g.globalAlpha = 1;
+        continue;
+      }
       if (duel) {
-        // A duel opponent shows only as a fading mark where the shot came from.
+        // Between reveals they show only as a fading mark where a shot came from.
         if (!fresh || !shot) continue;
         toMap(point, shot.x - px, shot.z - pz, yaw, scale, limit);
         g.globalAlpha = 1 - age / MINIMAP.shotSeconds;
