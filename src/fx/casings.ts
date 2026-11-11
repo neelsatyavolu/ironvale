@@ -12,8 +12,6 @@ const SIZES: Readonly<Record<CasingKind, readonly [number, number]>> = {
   pistol: [0.0055, 0.021],
   rifle: [0.0054, 0.05],
   shotgun: [0.011, 0.074],
-  // The Garand's en-bloc clip: a stubby steel block, drawn as a short wide casing.
-  clip: [0.012, 0.03],
 };
 const REST_MIN_SECONDS = 10;
 const REST_MAX_SECONDS = 20;

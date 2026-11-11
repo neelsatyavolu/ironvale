@@ -2,7 +2,7 @@ import type { Assets } from '../../core/assets';
 import type { ArmsRig, GunModel } from '../../game/contracts';
 
 /** Weapon ids, in loadout slot order (slot 1 first). */
-export const WEAPON_IDS = ['m4a1', 'm1garand', 'mp5', 'r870', 'm24', 'm249', 'm1911'] as const;
+export const WEAPON_IDS = ['m4a1', 'mp5', 'm24', 'm249'] as const;
 export type WeaponId = (typeof WEAPON_IDS)[number];
 
 /**

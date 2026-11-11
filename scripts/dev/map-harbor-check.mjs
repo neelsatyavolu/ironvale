@@ -27,7 +27,7 @@ const WALKS = [
   { name: 'through the net store', start: [-30.25, 0.05, 12], via: [[-30.25, 8.5], [-28.6, 6.5], [-28, 3], [-28, -1]], endY: 0 },
   { name: 'cafe side door to lane', start: [-6, 0.05, 6.2], via: [[-10.5, 6], [-13.5, 6]], endY: 0 },
   { name: 'middle jetty to its head', start: [3, 0.05, 18], via: [[3, 36], [6, 36.6]], endY: 0 },
-  { name: 'out along the mole', start: [-44, 0.05, 15], via: [[-48.5, 21], [-48.5, 40]], endY: 0 },
+  { name: 'out along the mole', start: [-44, 0.05, 15], via: [[-48.5, 21], [-50.6, 25.5], [-50.6, 32.5], [-48.6, 36.6], [-47.6, 39.4]], endY: 0 }, // round the sacks, the case and the pallets, which block the straight line
   { name: 'water steps back to the quay', start: [-9.8, -1.39, 20.75], via: [[-5.4, 20.75], [-5.4, 18]], endY: 0 },
   { name: 'slipway back to the quay', start: [43.5, -1.45, 36], via: [[43.5, 18]], endY: 0 },
 ];

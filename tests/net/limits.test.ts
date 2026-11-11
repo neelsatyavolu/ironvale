@@ -75,9 +75,9 @@ describe('WeaponGate', () => {
     expect(through).toBeGreaterThan(20);
   });
 
-  it('counts every pellet of a shotgun as a hit but only one shot', () => {
+  it('counts every pellet of a multi-pellet round as a hit but only one shot', () => {
     const gate = new WeaponGate();
-    const def = WEAPON_DEFS.r870;
+    const def = { ...WEAPON_DEFS.mp5, pellets: 9 };
     expect(gate.allowShot(def, 0)).toBe(true);
     let hits = 0;
     for (let i = 0; i < def.pellets; i++) if (gate.allowHit(def, 0)) hits++;

@@ -106,8 +106,9 @@ function addFountain(kit: Kit, root: THREE.Object3D, sea: Sea, owned: { dispose(
   root.add(water);
 }
 
-function lantern(kit: Kit, x: number, y: number, z: number): void {
+function lantern(kit: Kit, x: number, y: number, z: number, nx = 0, nz = 0): void {
   const { batch, mats } = kit;
+  kit.lanterns.push([x, y, z, nx, nz]);
   batch.box(mats.lamp, 0.17, 0.26, 0.17, x, y, z);
   batch.box(mats.iron, 0.28, 0.035, 0.28, x, y + 0.16, z);
   batch.box(mats.iron, 0.16, 0.07, 0.16, x, y + 0.21, z);
@@ -129,12 +130,12 @@ function addLampPost(kit: Kit, x: number, z: number, base = 0): void {
 }
 
 /** Lantern on a wall bracket; (nx, nz) points away from the wall. */
-function addWallLantern(kit: Kit, x: number, y: number, z: number, nx: number, nz: number): void {
+export function addWallLantern(kit: Kit, x: number, y: number, z: number, nx: number, nz: number): void {
   const { batch, mats } = kit;
   const reach = 0.5;
   batch.box(mats.iron, nx !== 0 ? reach : 0.03, 0.03, nz !== 0 ? reach : 0.03, x + (nx * reach) / 2, y + 0.3, z + (nz * reach) / 2);
   batch.box(mats.iron, 0.02, 0.12, 0.02, x + nx * reach, y + 0.24, z + nz * reach);
-  lantern(kit, x + nx * reach, y, z + nz * reach);
+  lantern(kit, x + nx * reach, y, z + nz * reach, nx, nz);
 }
 
 /** Washing line between two walls. */

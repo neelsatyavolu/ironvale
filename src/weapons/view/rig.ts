@@ -137,7 +137,7 @@ export class ViewRig {
 
   /** A reload or action stage happened: a small bump so the motion lands with the sound. */
   stage(stage: WeaponActionStage): void {
-    const strong = stage === 'magIn' || stage === 'clipInsert' || stage === 'boltForward' || stage === 'slideRelease';
+    const strong = stage === 'magIn' || stage === 'boltForward';
     this.jolt.kick(strong ? 0.26 : 0.14);
   }
 

@@ -78,9 +78,9 @@ describe('the shipped manifests', () => {
     expect([...new Set(manifest.map((entry) => entry.license))].sort()).toEqual(['CC-BY 4.0', 'CC0']);
   });
 
-  it('credit all nine CC-BY models', () => {
+  it('credit all six CC-BY models', () => {
     const text = groups[0]?.credited.map((line) => line.text).join('\n') ?? '';
-    for (const author of ['doctortex', 'MrM0lten', 'e.belous', 'Michael Karel', '8sianDude', 'Sky_Hunter', 'Domevans', 'DJMaesen']) {
+    for (const author of ['doctortex', 'MrM0lten', 'Michael Karel', 'Domevans', 'DJMaesen']) {
       expect(text).toContain(author);
     }
   });

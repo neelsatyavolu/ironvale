@@ -1,11 +1,13 @@
 // Builds public/assets/local/guns/m24.glb from "R700V2" by Domevans (CC BY 4.0,
 // https://sketchfab.com/3d-models/r700v2-d748f463852144c7a982b3e170e7d000), a Remington 700 in the
-// M24 configuration: heavy barrel, olive stock, rail and a 10x-class scope. Run scripts/fetch-guns-b.mjs first.
+// M24 configuration: heavy barrel, olive stock and rail. Run scripts/fetch-guns-b.mjs first.
 //
 // Output frame: metres, barrel along -Z, up +Y, bore on x = 0, origin at the wrist of the stock.
-// Nodes: body (barrel, receiver, rail, scope, stock, butt pad, trigger guard), bolt (> bolt_body,
+// Nodes: body (barrel, receiver, rail, stock, butt pad, trigger guard), bolt (> bolt_body,
 // bolt_handle), trigger, lens_ocular, lens_objective. Moving parts have their origin on their own
-// axis or pin. The detachable magazine is built in code (src/weapons/models/lib/guns-b-magazine.ts).
+// axis or pin. The source's scope tube, dials and rings are dropped; only its two lens discs stay, to
+// fix the optical axis. The scope, rings, bipod and magazine are built in code
+// (src/weapons/models/lib/m24-*.ts and guns-b-magazine.ts).
 import { mkdir, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -59,6 +61,10 @@ const STOCK_WIDTH = [
   { z: 0.2, inner: 0.004, from: 0.0177, to: 0.0225 },
   { z: 0.32, inner: 0.004, from: 0.0177, to: 0.0225 },
 ];
+/** The rail is 12.5 mm wide in the source; a Picatinny rail is 21 mm. */
+const RAIL_WIDTH_SCALE = 1.68;
+/** Source objects replaced by the scope built in code. */
+const DROPPED = /^(Scope_LP:Metal|Dial\d+_LP|Center_LP|Mount\d+_LP|Screw\d+_LP|Finger_Screw\d+_LP)/;
 /** The guard and trigger are 8 and 5 mm wide in the source. */
 const GUARD_WIDTH_SCALE = 1.6;
 /** Stock paint: the source is a pale sage; the M24 stock is a dark olive drab. */
@@ -87,6 +93,9 @@ const named = (name) => {
   return found[0];
 };
 const prim = (node) => node.getMesh().listPrimitives()[0];
+for (const node of doc.getRoot().listNodes()) {
+  if (DROPPED.test(node.getName())) node.dispose();
+}
 
 // Scale and turn the barrel from +X to -Z, then slide the muzzle crown to its place so the bore is on x = 0.
 bakeScene(doc, canonicalMatrix({ scale: SCALE, yaw: Math.PI / 2 }));
@@ -115,6 +124,8 @@ for (const name of ['Body_LP:Paint', 'Body_LP:Rubber']) {
     (x, z) => (x <= station(z).inner ? 1 : station(z).slope),
   );
 }
+
+stretchWidth(prim(named('Rail_LP:Metal')), (x) => x * RAIL_WIDTH_SCALE, () => RAIL_WIDTH_SCALE);
 
 // Trigger blade out of the guard.
 const guard = named('Trigger_LP:Paint');

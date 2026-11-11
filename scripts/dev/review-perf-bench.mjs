@@ -3,7 +3,7 @@
 // stopped and frames are driven by hand, each one waiting for the GPU queue to drain, so the
 // interval is the serial cost of one frame (CPU + GPU) whatever the display rate.
 //
-// Usage: node scripts/dev/review-perf-bench.mjs [--maps harbor,pinewood,railyard] [--sizes 1728x1117,2560x1440]
+// Usage: node scripts/dev/review-perf-bench.mjs [--maps harbor,headworks,railyard] [--sizes 1728x1117,2560x1440]
 //          [--dpr 1] [--tiers low,medium,high,ultra] [--toggles 1|0] [--webgl] [--json file]
 //          [--extra "no=bloom"] [--quantiles] [--sample ms] [--settle ms] [--quiet seconds]
 // Each map is loaded with 8 bots; the player is made immortal, holds the trigger, and is put at
@@ -16,7 +16,7 @@ const arg = (name, fallback) => {
   const index = process.argv.indexOf(`--${name}`);
   return index >= 0 ? process.argv[index + 1] : fallback;
 };
-const maps = arg('maps', 'harbor,pinewood,railyard').split(',');
+const maps = arg('maps', 'harbor,headworks,railyard').split(',');
 const sizes = arg('sizes', '1728x1117,2560x1440').split(',');
 const tiers = arg('tiers', 'low,medium,high,ultra').split(',').filter(Boolean);
 const dpr = Number(arg('dpr', '1'));
@@ -69,7 +69,7 @@ const poses = new Map(
     ? []
     : [
         ['harbor', { x: -48.5, y: 0.02, z: 33.1, yaw: 5.4978 }],
-        ['pinewood', { x: -27.3, y: -1.79, z: -45.3, yaw: 3.927 }],
+        ['headworks', { x: 5, y: 0.05, z: -9.5, yaw: 2.618 }],
         ['railyard', { x: -3, y: 0.05, z: 45.5, yaw: 0 }],
       ],
 );

@@ -10,6 +10,7 @@ import {
   output,
   packNormalToRGB,
   pass,
+  perspectiveDepthToViewZ,
   renderOutput,
   roughness,
   sample,
@@ -152,7 +153,15 @@ export function buildPipeline(input: PipelineInput): PipelineHandles {
     disposables.push(blurred);
     // In-scattered sunlight: fade the scene toward the sun colour where shafts are dense.
     const shaftColor = new THREE.Color(lighting.sunColor).multiplyScalar(lighting.sunIntensity * 0.22);
-    const amount: TslNode = blurred.getTextureNode().r.mul(lighting.volumetric);
+    // Past the playable area there is only backdrop and sky; tinting those toward the sun
+    // colour turns the whole sky orange on low-sun maps, so the in-scatter fades with distance.
+    const viewDistance: TslNode = perspectiveDepthToViewZ(
+      sceneDepth,
+      float(camera.near),
+      float(camera.far),
+    ).negate();
+    const nearField: TslNode = float(1).sub(smoothstep(SHAFT_FADE_START, SHAFT_FADE_END, viewDistance).mul(0.8));
+    const amount: TslNode = blurred.getTextureNode().r.mul(lighting.volumetric).mul(nearField);
     color = vec4(mix(color.rgb, vec3(shaftColor.r, shaftColor.g, shaftColor.b), amount), color.a);
   }
 
@@ -193,6 +202,10 @@ export function buildPipeline(input: PipelineInput): PipelineHandles {
     },
   };
 }
+
+/** Sun in-scatter fades between these view distances (metres), leaving 20% on the sky. */
+const SHAFT_FADE_START = 110;
+const SHAFT_FADE_END = 320;
 
 /** Per-map shaft density multiplier; `?shafts=<n>` overrides it for tuning. */
 function shaftBoost(lighting: LightingSetup): number {

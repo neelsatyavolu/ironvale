@@ -28,7 +28,7 @@ function finish(
 }
 
 export const gunMaterials = {
-  /** Deep blue-black polished steel: pistol slides, bolt-action barrels and receivers. */
+  /** Deep blue-black polished steel: bolt-action barrels and receivers. */
   bluedSteel: () => finish('blued', 0x15171b, 0.32, 1, 0.45, 38),
   /** Matte grey-black phosphate: military rifles, magazines. */
   parkerized: () => finish('parkerized', 0x2a2c2e, 0.62, 0.85, 0.25, 55),
@@ -38,10 +38,6 @@ export const gunMaterials = {
   bareSteel: () => finish('bare', 0x8d9196, 0.28, 1, 0.5, 45),
   /** Glass-filled polymer: stocks, grips, handguards. */
   polymer: () => finish('polymer', 0x18191a, 0.72, 0, 0.18, 120),
-  /** Rubber: butt pads, grip inserts. */
-  rubber: () => finish('rubber', 0x0f0f10, 0.92, 0, 0.08, 90),
-  /** Cartridge brass. */
-  brass: () => finish('brass', 0xb08d45, 0.3, 1, 0.35, 70),
   /** Olive drab painted or cerakoted parts. */
   oliveDrab: () => finish('olive', 0x3b3f2c, 0.66, 0.2, 0.25, 60),
 };

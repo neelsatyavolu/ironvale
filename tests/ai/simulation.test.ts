@@ -153,7 +153,7 @@ describe('bot system in a simulated match', () => {
     expect(moved.length).toBeGreaterThanOrEqual(4);
     expect(game.shots.length).toBeGreaterThan(10);
     const used = new Set(game.shots.map((shot) => shot.weapon.id));
-    for (const id of used) expect(['m4a1', 'mp5', 'r870', 'm24', 'm249']).toContain(id);
+    for (const id of used) expect(['m4a1', 'mp5', 'm24', 'm249']).toContain(id);
     for (const shot of game.shots) {
       expect(shot.shooter.kind).toBe('bot');
       expect(shot.spread).toBeGreaterThan(0);

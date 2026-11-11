@@ -3,21 +3,26 @@ import type { MapBuildContext } from '../../game/contracts';
 import type { AmbienceLayer, MapInstance, SpawnPoint } from '../../world/types';
 import type { MapModule } from '../registry';
 import { addBackdrop } from './backdrop';
-import { addBoats, addJetties } from './boats';
+import { addBoats } from './boats';
+import { addJetties } from './jetties';
 import { addBuildings } from './buildings';
+import { addRoomDressing } from './cafe';
 import { addClutter } from './clutter';
 import { addDressing } from './dressing';
 import type { Kit } from './facade';
+import { addGlow } from './glow';
 import { addGreenery } from './greenery';
 import { addGround } from './ground';
 import { addInteriors, INTERIOR_BOXES } from './interiors';
 import { Batch, Colliders } from './kit';
 import { BOUNDS, CAFE, ENEMY_SPAWNS, JETTIES, MOLE, PLAYER_SPAWNS, QUAY_EDGE, WATER_Y, type SpawnSpec } from './layout';
-import { createLamps, LIGHTING } from './lighting';
+import { createBounce, createLamps, LIGHTING } from './lighting';
 import { createMaterials, disposeMaterials } from './materials';
 import { addProps } from './props';
 import { addScatter } from './scatter';
 import { addSigns } from './signs';
+import { addSky } from './sky';
+import { addStreetLife } from './street-life';
 import { createSea } from './water';
 import { addWires } from './wires';
 
@@ -62,8 +67,10 @@ function build(ctx: MapBuildContext): MapInstance {
     mats,
     random: () => ctx.random(),
     density: ctx.detailDensity,
+    lanterns: [],
   };
 
+  const sky = addSky(root, ctx.assets);
   const sea = createSea(kit.random);
   root.add(sea.mesh);
   addGround(kit);
@@ -73,7 +80,11 @@ function build(ctx: MapBuildContext): MapInstance {
   const fleet = addBoats(kit, root, ctx.assets);
   const props = addProps(kit, root, ctx.assets);
   const dressing = addDressing(kit, root, sea);
+  addStreetLife(kit);
+  // Before the glow: the pendants inside register for a pool of light on the floor like any lantern.
   const interiors = addInteriors(kit, root);
+  addRoomDressing(kit);
+  const glow = addGlow(kit, root);
   addClutter(kit);
   addScatter(kit);
   addGreenery(kit);
@@ -87,6 +98,8 @@ function build(ctx: MapBuildContext): MapInstance {
   }
   const lamps = createLamps();
   for (const lamp of lamps) root.add(lamp);
+  const bounce = createBounce();
+  root.add(bounce);
 
   return {
     root,
@@ -103,6 +116,8 @@ function build(ctx: MapBuildContext): MapInstance {
     interiors: INTERIOR_BOXES.map(([x0, x1, y0, y1, z0, z1]) => ({
       box: new THREE.Box3(new THREE.Vector3(x0, y0, z0), new THREE.Vector3(x1, y1, z1)),
       reverb: 'interior' as const,
+      // Thick walls and small openings: a third of the sky light gets in.
+      skyLight: 0.32,
     })),
     update: (_dt, elapsed) => {
       fleet.update(elapsed);
@@ -111,13 +126,16 @@ function build(ctx: MapBuildContext): MapInstance {
     dispose: () => {
       for (const mesh of merged) mesh.geometry.dispose();
       for (const lamp of lamps) lamp.dispose();
+      bounce.dispose();
       backdrop.dispose();
       fleet.dispose();
       props.dispose();
       dressing.dispose();
+      glow.dispose();
       interiors.dispose();
       signs.dispose();
       sea.dispose();
+      sky.dispose();
       disposeMaterials(mats);
     },
   };

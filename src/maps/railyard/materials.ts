@@ -11,7 +11,6 @@ import {
   mix,
   mx_noise_float,
   normalWorld,
-  positionGeometry,
   positionWorld,
   smoothstep,
   step,
@@ -21,7 +20,10 @@ import {
 } from 'three/tsl';
 import type { PbrMaps } from '../../core/assets';
 import { pbrMaterial } from '../../render/materials';
+import { containerPaint } from './container-paint';
+import { soak } from './ground';
 import type { Kit } from './kit';
+import { lampGlow, lampLit } from './lamps';
 import { letteringAtlas } from './lettering';
 import { shelter, skyVisibility } from './shelter';
 import {
@@ -48,8 +50,8 @@ export interface Materials {
   readonly ballast: THREE.Material;
   /** Profiled steel sheet, grey by default; vertex colour picks the paint. */
   readonly cladding: THREE.Material;
-  /** Container paint; instance or vertex colour picks the livery. */
-  readonly container: THREE.Material;
+  /** Container paint for one instanced mesh; `livery` is its per-instance colour node. */
+  readonly containerPaint: (livery: TslNode) => THREE.Material;
   /** Painted structural steel with grime; vertex colour picks the paint. */
   readonly steel: THREE.Material;
   /** Bare, worn steel: rails, wheels, chains. */
@@ -139,13 +141,15 @@ function slabTone(spacing: number): TslNode {
 export function createMaterials(kit: Kit): Materials {
   const assets = kit.ctx.assets;
 
-  const asphalt = pbrMaterial(assets.pbr('pbr-railyard-asphalt'), { wetness: 0.86, puddleScale: 5 });
-  // Rain-dark, with slow tonal drift across the yard to break up the 3 m repeat.
-  const drift: TslNode = mix(float(0.36), float(0.66), mx_noise_float(positionWorld.xz.div(9)).mul(0.5).add(0.5));
-  asphalt.colorNode = (asphalt.colorNode as TslNode).mul(drift);
+  // Rain-dark asphalt with slow tonal drift across the yard to break up the 3 m repeat.
+  const asphaltMaps = assets.pbr('pbr-railyard-asphalt');
+  const asphalt = pbrMaterial(asphaltMaps);
+  const drift: TslNode = mix(float(0.62), float(1.12), mx_noise_float(positionWorld.xz.div(9)).mul(0.5).add(0.5));
+  soak(asphalt, asphaltMaps, { damp: 0.8, puddleScale: 5.5, cover: 0.3, tone: drift });
 
-  const quay = pbrMaterial(assets.pbr('pbr-railyard-concrete'), { wetness: 0.7, puddleScale: 3.2, tint: 0xa3a199 });
-  quay.colorNode = (quay.colorNode as TslNode).mul(slabTone(6)).mul(mix(float(1), float(0.3), slabJoints(6, 0.035)));
+  const quayMaps = assets.pbr('pbr-railyard-concrete');
+  const quay = pbrMaterial(quayMaps, { tint: 0xa3a199 });
+  soak(quay, quayMaps, { damp: 0.65, puddleScale: 3.6, cover: 0.26, tone: slabTone(6).mul(mix(float(1), float(0.3), slabJoints(6, 0.035))) });
 
   // Shed slab: dusty, darkened where trucks run, damp and shiny in patches where rain is tracked in.
   const shedFloor = pbrMaterial(assets.pbr('pbr-railyard-concrete'), { roughness: 0.9, tint: 0x8f8b82 });
@@ -178,10 +182,9 @@ export function createMaterials(kit: Kit): Materials {
     .mul(mix(float(1), float(0.45), joints));
   wall.roughnessNode = (materialRoughness as TslNode).mul(mix(float(1), float(0.5), streaks));
   wall.vertexColors = true;
-  const ballast = pbrMaterial(assets.pbr('pbr-railyard-ballast'), { roughness: 0.7, tint: 0x6f6a64 });
+  const ballast = pbrMaterial(assets.pbr('pbr-railyard-ballast'), { roughness: 0.88, tint: 0x6f6a64 });
 
   const cladding = tintable(assets.pbr('pbr-railyard-cladding'), 'r', 4.6, 0.6, 1, positionWorld.y.sub(0.9), 0.5);
-  const container = tintable(assets.pbr('pbr-railyard-container'), 'g', 3.1, 0.5, 0.35, positionGeometry.y, 1);
 
   const rawSteel = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, roughness: 0.42, metalness: 0.85 });
   rawSteel.vertexColors = true;
@@ -208,7 +211,6 @@ export function createMaterials(kit: Kit): Materials {
     wall,
     ballast,
     cladding,
-    container,
     steel: steelPaint(),
     rawSteel,
     hazard: hazardStripes(),
@@ -223,7 +225,16 @@ export function createMaterials(kit: Kit): Materials {
     lettering: letteringAtlas(kit),
   };
   for (const material of Object.values(lit)) shelter(material, visibility);
-  const materials: Materials = { ...lit, lamp, water: seaWater(), visibility };
+  // Pools from the lamp fittings, on everything that stands out in the weather.
+  const glow = lampGlow();
+  for (const material of [asphalt, quay, wall, cladding, lit.steel]) lampLit(material, glow);
+  const paintContainers = (livery: TslNode): THREE.Material => {
+    const material = kit.own(containerPaint(assets.pbr('pbr-railyard-container'), 3.1, 0.35, livery));
+    shelter(material, visibility);
+    lampLit(material, glow);
+    return material;
+  };
+  const materials: Materials = { ...lit, lamp, water: seaWater(), visibility, containerPaint: paintContainers };
   for (const material of [...Object.values(lit), lamp, materials.water]) kit.own(material);
 
   for (const flat of [materials.paint, materials.stain, materials.lettering, asphalt, quay, shedFloor, ballast, materials.water]) {

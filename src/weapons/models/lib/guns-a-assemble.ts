@@ -18,14 +18,14 @@ export interface GripSpec {
   readonly fingers: Triple;
   /** Direction of the thumb side of the hand; squared up against `fingers`. */
   readonly thumb: Triple;
-  /** Part the hand rides on (a pump fore-end, a slide). Fixed to the gun when omitted. */
+  /** Part the hand rides on (a slide, a moving fore-end). Fixed to the gun when omitted. */
   readonly on?: PartName;
 }
 
 export interface GunLayout {
   /** glTF node name of each moving part the model has. */
   readonly parts: Readonly<Partial<Record<PartName, string>>>;
-  /** Travel in metres along +Z of the bolt, slide or pump. */
+  /** Travel in metres along +Z of the bolt or slide. */
   readonly cycleTravel: number;
   /** Distance from the rear sight back to the eye, in metres. */
   readonly eyeRelief: number;

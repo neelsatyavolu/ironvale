@@ -135,7 +135,7 @@ describe('bot snapshot', () => {
 describe('shot', () => {
   const shot: ShotMessage = {
     actor: 1,
-    weapon: 'r870',
+    weapon: 'm24',
     muzzle: [1, 1.5, -2],
     direction: [0, 0, -1],
     ends: [
@@ -148,7 +148,7 @@ describe('shot', () => {
     const decoded = decodeBinary(encodeShot(shot));
     if (decoded?.type !== 'shot') throw new Error('expected a shot');
     expect(decoded.shot.actor).toBe(1);
-    expect(decoded.shot.weapon).toBe('r870');
+    expect(decoded.shot.weapon).toBe('m24');
     expect(decoded.shot.muzzle).toEqual([1, 1.5, -2]);
     expect(decoded.shot.direction[2]).toBeCloseTo(-1, 3);
     expect(decoded.shot.ends).toHaveLength(2);

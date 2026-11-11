@@ -1,41 +1,29 @@
 /**
  * M24 sniper rifle. Mesh: "R700V2" by Domevans, CC BY 4.0 (a Remington 700 in
- * the M24 configuration: heavy barrel, olive stock, rail and scope), processed
- * by scripts/process-gun-m24.mjs. The detachable magazine (M24A2 pattern) is
- * built in code. Measurements are in the processed file's space (metres,
- * barrel -Z, bore on x = 0, origin at the wrist of the stock).
+ * the M24 configuration: heavy barrel, olive stock and rail), processed by
+ * scripts/process-gun-m24.mjs. The scope and its rings, the bipod, sling
+ * swivel, barrel fittings and detachable magazine (M24A2 pattern) are built
+ * in code, and the finishes are extended there too (lib/m24-*.ts).
+ * Measurements are in the processed file's space (metres, barrel -Z, bore on
+ * x = 0, origin at the wrist of the stock).
  */
-import * as THREE from 'three/webgpu';
 import type { GunModule } from './api';
 import { addMagazine, type MagazineSpec } from './lib/guns-b-magazine';
 import { buildRifle, originIn, type RifleSpec } from './lib/guns-b-rig';
-import { lensMaterial } from './materials';
+import { addDetails } from './lib/m24-details';
 
 /** Bore axis height above the origin, and the crown's distance down the barrel. */
 export const M24_BORE = { y: 0.057, muzzleZ: -0.781 } as const;
 
 const MAGAZINE: MagazineSpec = { top: [0, 0.022, -0.116], length: 0.066, width: 0.025, height: 0.056, stockBottom: 0.0065 };
-
-let lenses: { readonly ocular: THREE.Material; readonly objective: THREE.Material } | null = null;
-
-/** One pair of lens materials for every copy of the gun. */
-function lensMaterials(): { readonly ocular: THREE.Material; readonly objective: THREE.Material } {
-  if (lenses) return lenses;
-  // The eyepiece is close to opaque so the shooter does not look down a hollow tube.
-  const ocular = lensMaterial(0x0b1016);
-  ocular.opacity = 0.96;
-  ocular.name = 'lens-ocular';
-  const objective = lensMaterial(0x2a3f55);
-  objective.opacity = 0.8;
-  objective.name = 'lens-objective';
-  lenses = { ocular, objective };
-  return lenses;
-}
-
-function setMaterial(mesh: THREE.Object3D, name: string, material: THREE.Material): void {
-  const node = mesh.getObjectByName(name);
-  if (node instanceof THREE.Mesh) node.material = material;
-}
+/** Top of the receiver rail, barrel radius at the crown, and the undersides the bipod and rear swivel mount on. */
+const FITTINGS = {
+  railTop: 0.0799,
+  muzzleRadius: 0.0104,
+  bipodAt: [0, 0.027, -0.428],
+  swivelAt: [0, -0.0875, 0.235],
+} as const;
+const round = (value: number): number => Math.round(value * 1e5) / 1e5;
 
 const SPEC: RifleSpec = {
   weaponId: 'm24',
@@ -55,10 +43,14 @@ const SPEC: RifleSpec = {
   // Short-action bolt throw.
   cycleTravel: 0.09,
   dress(mesh) {
-    const { ocular, objective } = lensMaterials();
-    setMaterial(mesh, 'lens_ocular', ocular);
-    setMaterial(mesh, 'lens_objective', objective);
     addMagazine(mesh, MAGAZINE);
+    // The scope is built around the two lens discs of the source mesh.
+    const ocular = originIn(mesh, 'lens_ocular');
+    const objective = originIn(mesh, 'lens_objective');
+    addDetails(mesh, {
+      scope: { axisY: round(ocular.y), ocularZ: round(ocular.z), objectiveZ: round(objective.z), railTop: FITTINGS.railTop },
+      furniture: { bore: M24_BORE, muzzleRadius: FITTINGS.muzzleRadius, bipodAt: FITTINGS.bipodAt, swivelAt: FITTINGS.swivelAt },
+    });
   },
 };
 

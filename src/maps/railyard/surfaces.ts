@@ -32,14 +32,26 @@ export const worldNoise = (scale: number): TslNode => mx_noise_float(positionWor
 
 export function steelPaint(): THREE.MeshStandardNodeMaterial {
   const material = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, metalness: 0.15 });
-  // Vertical streaks of dirt plus scattered rust blooms.
-  const streak: TslNode = mx_noise_float(positionWorld.mul(vec3(1.7, 0.22, 1.7))).mul(0.5).add(0.5);
+  const p: TslNode = positionWorld;
+  const upright: TslNode = smoothstep(0.5, 0.8, abs(normalWorld.y)).oneMinus();
+  const top: TslNode = smoothstep(0.6, 0.9, normalWorld.y);
+  // Broad curtains of dirt, thin dark drips, a splash band at the foot and standing wet on flat tops.
+  const streak: TslNode = mx_noise_float(p.mul(vec3(1.7, 0.22, 1.7))).mul(0.5).add(0.5);
   const fine: TslNode = worldNoise(7);
   const grime: TslNode = smoothstep(0.35, 0.9, streak.mul(0.7).add(fine.mul(0.3)));
-  const rust: TslNode = smoothstep(0.74, 0.86, worldNoise(2.3).mul(0.6).add(fine.mul(0.4)));
-  const base: TslNode = mix(vec3(1, 1, 1), vec3(0.5, 0.47, 0.44), grime);
-  material.colorNode = mix(base, vec3(0.42, 0.2, 0.1), rust.mul(0.8));
-  material.roughnessNode = mix(float(0.34), float(0.72), max(grime, rust));
+  const drip: TslNode = smoothstep(0.62, 0.8, mx_noise_float(p.mul(vec3(6.5, 0.3, 6.5))).mul(0.5).add(0.5)).mul(upright);
+  const foot: TslNode = smoothstep(0.42, 0.9, smoothstep(0.02, 0.7, p.y).oneMinus().mul(0.75).add(fine.mul(0.35)));
+  // Rust: soft blooms, plus chipped specks where the paint has been knocked.
+  const bloom: TslNode = worldNoise(2.3).mul(0.6).add(fine.mul(0.4));
+  const rust: TslNode = smoothstep(0.7, 0.84, bloom);
+  const chips: TslNode = smoothstep(0.74, 0.8, worldNoise(16)).mul(smoothstep(0.45, 0.7, streak));
+  const pooled: TslNode = smoothstep(0.45, 0.6, bloom).mul(top);
+  const base: TslNode = mix(vec3(1, 1, 1), vec3(0.5, 0.47, 0.44), grime)
+    .mul(mix(float(1), float(0.55), drip))
+    .mul(mix(float(1), float(0.5), foot))
+    .mul(mix(float(1), float(0.7), pooled));
+  material.colorNode = mix(base, vec3(0.38, 0.17, 0.08), max(rust.mul(0.8), chips.mul(0.9)));
+  material.roughnessNode = mix(mix(float(0.3), float(0.74), max(max(grime, rust), max(foot, chips))), float(0.07), pooled);
   material.vertexColors = true;
   return material;
 }

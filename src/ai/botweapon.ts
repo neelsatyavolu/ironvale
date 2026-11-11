@@ -34,11 +34,10 @@ export class BotWeapon {
     this.magazine = def.magazineSize;
   }
 
-  /** Seconds the reload in progress (or the next one) takes. Shotguns load shell by shell. */
+  /** Seconds the reload in progress (or the next one) takes. */
   get reloadDuration(): number {
     if (this.reloading) return this.reloadTotal;
-    const missing = this.def.magazineSize - this.magazine;
-    return this.def.reloadStyle === 'single-shell' ? this.def.reloadTime * missing : this.def.reloadTime;
+    return this.def.reloadTime;
   }
 
   /** true while waiting between bursts. */

@@ -19,6 +19,18 @@ export const LOGO_ROWS = [
   'ROW B',
   'ROW C',
   'ROW D',
+  'HIGH VOLTAGE',
+  'NO ENTRY',
+  'CAUTION',
+  'FUEL',
+  'AUTHORISED ONLY',
+  'RELAY 01',
+  'RELAY 02',
+  'RELAY 03',
+  'NHVU 482913 7',
+  'KSTU 305518 2',
+  'TRNU 771264 0',
+  'MAX GR 30480 KG',
 ] as const;
 export type LogoText = (typeof LOGO_ROWS)[number];
 

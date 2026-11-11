@@ -1,8 +1,8 @@
 // Stands five soldiers 25, 35, 45, 55 and 65 m away on a clear sight line and photographs them, to judge how far
 // the player can really see on a map. Compare with the bots' sight range in src/ai/perception.ts (VISION.fogVisibility).
-// Usage: node scripts/dev/review-play-fog.mjs pinewood   ->  shots/review-play-fog-<map>.png and -crop.png
+// Usage: node scripts/dev/review-play-fog.mjs headworks   ->  shots/review-play-fog-<map>.png and -crop.png
 import { chromium } from 'playwright';
-const map = process.argv[2] ?? 'pinewood';
+const map = process.argv[2] ?? 'headworks';
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-unsafe-webgpu', '--enable-gpu', '--use-angle=metal', '--ignore-gpu-blocklist', '--hide-scrollbars'] });
 const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
 await page.routeWebSocket(/.*/, () => undefined);

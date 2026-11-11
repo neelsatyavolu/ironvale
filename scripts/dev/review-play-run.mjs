@@ -1,10 +1,10 @@
 // Plays scripted matches against the bots in the running dev server and reports whether the game plays.
-// Usage: node scripts/dev/review-play-run.mjs --mode survey [--maps railyard,harbor,pinewood] [--difficulty regular]
+// Usage: node scripts/dev/review-play-run.mjs --mode survey [--maps railyard,harbor,headworks] [--difficulty regular]
 //        node scripts/dev/review-play-run.mjs --mode difficulty [--maps railyard] [--levels recruit,regular,veteran,elite]
 //                                             [--scenarios still,strafe,cover] [--seconds 90]
 //        node scripts/dev/review-play-run.mjs --mode fight [--maps railyard] [--levels recruit,elite] [--seconds 300]
 //        node scripts/dev/review-play-run.mjs --mode rules
-//        node scripts/dev/review-play-run.mjs --mode nav --maps railyard,harbor,pinewood
+//        node scripts/dev/review-play-run.mjs --mode nav --maps railyard,harbor,headworks
 // survey: 8 bots, 90 s of game time (--scenario idle leaves the player at the spawn instead). The player (kept alive) walks toward the enemy for 45 s, then stands
 //   and shoots what it can see. Writes shots/review-play-<map>.json and a top-down shots/review-play-<map>.png
 //   with every bot's trail drawn on it.
@@ -23,7 +23,7 @@ const arg = (name, fallback) => {
   return index >= 0 ? process.argv[index + 1] : fallback;
 };
 const mode = arg('mode', 'survey');
-const maps = arg('maps', mode === 'survey' ? 'railyard,harbor,pinewood' : 'railyard').split(',');
+const maps = arg('maps', mode === 'survey' ? 'railyard,harbor,headworks' : 'railyard').split(',');
 const levels = arg('levels', mode === 'fight' ? 'recruit,elite' : 'recruit,regular,veteran,elite').split(',');
 const scenarios = arg('scenarios', 'still,strafe,cover').split(',');
 const seconds = Number(arg('seconds', mode === 'fight' ? '300' : '90'));

@@ -116,16 +116,16 @@ async function play(a, b, tag, target = 10) {
   await faceOff(a, b);
   const walkSteps = await Promise.all([a, b].map((p) => inGame(p, () => window.__heard.steps)));
   check('each heard the other walk', walkSteps[0] > 0 && walkSteps[1] > 0, `${walkSteps[0]} and ${walkSteps[1]} footsteps`);
-  // One round from the pistol: enough to hurt, not to kill.
+  // One round from the MP5: enough to hurt, not to kill.
   await inGame(a, (game) => {
-    game.weapons.debugInput = { slot: 7 };
+    game.weapons.debugInput = { slot: 2 };
   });
-  const pistol = await until(b, (game) => game.net.sync.remote.weapon === 'm1911' && window.__heard.switches.includes('m1911'), 4000);
-  check('the guest saw and heard the host change weapon', pistol === true);
-  await until(a, (game) => game.weapons.current.def.id === 'm1911', 4000);
+  const switched = await until(b, (game) => game.net.sync.remote.weapon === 'mp5' && window.__heard.switches.includes('mp5'), 4000);
+  check('the guest saw and heard the host change weapon', switched === true);
+  await until(a, (game) => game.weapons.current.def.id === 'mp5', 4000);
   await wait(400);
   const healthBefore = await inGame(b, (game) => game.player.health);
-  // Hold the trigger until the round has left: a semi-automatic fires once per pull however long it is held.
+  // Hold the trigger only until the round has left, so the automatic fires once.
   const fired = await inGame(a, (game) => {
     const before = game.shotsFired;
     game.weapons.debugInput = { fire: true, aim: true };

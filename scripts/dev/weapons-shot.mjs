@@ -1,6 +1,6 @@
 // Drives the player's weapons in the running dev server and takes screenshots.
 // Usage:
-//   node scripts/dev/weapons-shot.mjs --steps "slot:2;wait:900;shot:weapons-garand-hip;aim:1;wait:600;center:1;shot:weapons-garand-aim"
+//   node scripts/dev/weapons-shot.mjs --steps "slot:3;wait:900;shot:weapons-m24-hip;aim:1;wait:600;center:1;shot:weapons-m24-aim"
 //     [--params "map=range&bots=0&pose=0,0.05,6,0,0"] [--size 1600x900] [--settle 2500]
 // Steps (separated by ;):
 //   slot:N        equip loadout slot N          aim:0|1     lower or raise the sights

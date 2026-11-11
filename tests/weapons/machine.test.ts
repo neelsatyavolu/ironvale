@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { WeaponActionStage } from '../../src/game/contracts';
+import type { WeaponActionStage, WeaponDef } from '../../src/game/contracts';
 import { WEAPON_DEFS } from '../../src/weapons/defs';
 import { WeaponMachine, type MachineSink, type TriggerInput } from '../../src/weapons/machine';
 import { shotInterval } from '../../src/weapons/math';
@@ -9,6 +9,9 @@ const IDLE: TriggerInput = { fireHeld: false, firePressed: false, reloadPressed:
 const HOLD: TriggerInput = { ...IDLE, fireHeld: true };
 const PRESS: TriggerInput = { ...IDLE, fireHeld: true, firePressed: true };
 const RELOAD: TriggerInput = { ...IDLE, reloadPressed: true };
+/** No gun in the loadout is semi-automatic, so the mode is tested on the M4A1 with a slower trigger. */
+const SEMI: WeaponDef = { ...WEAPON_DEFS.m4a1, fireMode: 'semi', roundsPerMinute: 320 };
+const SEMI_FAST: WeaponDef = { ...SEMI, roundsPerMinute: 380 };
 
 interface Log {
   time: number;
@@ -16,12 +19,11 @@ interface Log {
   dry: number[];
   stages: { stage: WeaponActionStage; time: number }[];
   ejects: number[];
-  clips: number[];
   lastRound: boolean[];
 }
 
-function rig(id: keyof typeof WEAPON_DEFS) {
-  const log: Log = { time: 0, shots: [], dry: [], stages: [], ejects: [], clips: [], lastRound: [] };
+function rig(weapon: keyof typeof WEAPON_DEFS | WeaponDef) {
+  const log: Log = { time: 0, shots: [], dry: [], stages: [], ejects: [], lastRound: [] };
   const sink: MachineSink = {
     fire: (last) => {
       log.shots.push(log.time);
@@ -30,9 +32,8 @@ function rig(id: keyof typeof WEAPON_DEFS) {
     dryFire: () => log.dry.push(log.time),
     stage: (stage) => log.stages.push({ stage, time: log.time }),
     eject: () => log.ejects.push(log.time),
-    clipEject: () => log.clips.push(log.time),
   };
-  const machine = new WeaponMachine(WEAPON_DEFS[id]);
+  const machine = new WeaponMachine(typeof weapon === 'string' ? WEAPON_DEFS[weapon] : weapon);
   const step = (input: TriggerInput, dt = DT) => {
     machine.step(dt, input, sink);
     log.time += dt;
@@ -102,15 +103,15 @@ describe('automatic fire', () => {
 
 describe('semi-automatic fire', () => {
   it('fires once per press however long the trigger is held', () => {
-    const { log, step, run } = rig('m1garand');
+    const { log, step, run } = rig(SEMI);
     step(PRESS);
     run(1, HOLD);
     expect(log.shots.length).toBe(1);
   });
 
   it('buffers a press made during the cooldown and fires when it ends', () => {
-    const { log, tap, run } = rig('m1garand');
-    const interval = shotInterval(WEAPON_DEFS.m1garand);
+    const { log, tap, run } = rig(SEMI);
+    const interval = shotInterval(SEMI);
     tap();
     run(0.06);
     tap(); // about 80 ms in, well inside the 187 ms cooldown
@@ -121,14 +122,14 @@ describe('semi-automatic fire', () => {
   });
 
   it('does not eat fast taps, and never exceeds the rate of fire', () => {
-    const { log, tap, run } = rig('m1911');
+    const { log, tap, run } = rig(SEMI_FAST);
     // Ten taps a second for 0.7 s against a 158 ms cooldown.
     for (let i = 0; i < 7; i++) {
       tap();
       run(0.1 - 2 * DT);
     }
     run(0.4);
-    const interval = shotInterval(WEAPON_DEFS.m1911);
+    const interval = shotInterval(SEMI_FAST);
     expect(log.shots.length).toBe(5);
     for (let i = 1; i < log.shots.length; i++) {
       expect(log.shots[i]! - log.shots[i - 1]!).toBeGreaterThan(interval - DT * 1.01);
@@ -136,7 +137,7 @@ describe('semi-automatic fire', () => {
   });
 
   it('keeps only one shot in the buffer', () => {
-    const { log, tap, run } = rig('m1garand');
+    const { log, tap, run } = rig(SEMI);
     tap();
     tap();
     tap();
@@ -155,7 +156,7 @@ describe('semi-automatic fire', () => {
   });
 
   it('holds a press while the gun is not ready and fires when it is', () => {
-    const { log, step, run } = rig('m1911');
+    const { log, step, run } = rig(SEMI);
     step({ ...PRESS, ready: false });
     run(0.4, { ...IDLE, ready: false });
     expect(log.shots.length).toBe(0);
@@ -166,7 +167,7 @@ describe('semi-automatic fire', () => {
 
 describe('dry fire and automatic reload', () => {
   it('clicks once per press on an empty gun with no reserve', () => {
-    const { machine, log, step, run, tap } = rig('m1911');
+    const { machine, log, step, run, tap } = rig(SEMI);
     machine.setAmmo(0, 0);
     step(PRESS);
     run(0.5, HOLD);
@@ -217,15 +218,6 @@ describe('magazine reload', () => {
     expect(machine.magazine).toBe(30);
     expect(machine.reserve).toBe(120);
     expect(log.time).toBeCloseTo(WEAPON_DEFS.m4a1.reloadTime, 1);
-  });
-
-  it('drops the slide on an empty pistol', () => {
-    const { machine, step, stages, settle } = rig('m1911');
-    machine.setAmmo(0, 49);
-    step(RELOAD);
-    settle();
-    expect(stages()).toEqual(['magOut', 'magIn', 'slideRelease']);
-    expect(machine.magazine).toBe(7);
   });
 
   it('loads what is left when the reserve is short', () => {
@@ -281,134 +273,6 @@ describe('magazine reload', () => {
     // The bolt still has to go forward before the gun fires.
     step(IDLE);
     expect(machine.busy).toBe(true);
-  });
-});
-
-describe('M1 Garand en-bloc clip', () => {
-  it('pings and throws the clip with the eighth shot', () => {
-    const { machine, log, tap, run, stages } = rig('m1garand');
-    for (let i = 0; i < 8; i++) {
-      tap();
-      run(0.25);
-    }
-    expect(log.shots.length).toBe(8);
-    expect(log.lastRound.filter(Boolean).length).toBe(1);
-    expect(stages()).toEqual(['clipPing']);
-    expect(log.clips.length).toBe(1);
-    expect(log.clips[0]).toBe(log.shots[7]);
-    expect(log.ejects.length).toBe(8);
-    expect(machine.magazine).toBe(0);
-  });
-
-  it('loads a full clip into an empty rifle', () => {
-    const { machine, log, step, stages, settle } = rig('m1garand');
-    machine.setAmmo(0, 64);
-    step(RELOAD);
-    settle();
-    expect(stages()).toEqual(['clipInsert', 'boltForward']);
-    expect(machine.magazine).toBe(8);
-    expect(machine.reserve).toBe(56);
-    expect(log.time).toBeCloseTo(WEAPON_DEFS.m1garand.reloadTime, 1);
-  });
-
-  it('swaps a partly used clip and keeps the loose rounds', () => {
-    const { machine, log, step, stages, settle } = rig('m1garand');
-    machine.setAmmo(5, 64);
-    step(RELOAD);
-    settle();
-    expect(stages()).toEqual(['boltBack', 'magOut', 'clipInsert', 'boltForward']);
-    expect(machine.magazine).toBe(8);
-    expect(machine.reserve).toBe(61);
-    expect(log.clips.length).toBe(1);
-  });
-});
-
-describe('pump shotgun', () => {
-  it('pumps between shots and ejects on the back stroke', () => {
-    const { log, tap, run, stages } = rig('r870');
-    tap();
-    expect(log.ejects.length).toBe(0);
-    run(1.2);
-    expect(stages()).toEqual(['pumpBack', 'pumpForward']);
-    expect(log.ejects.length).toBe(1);
-    expect(log.ejects[0]).toBeCloseTo(log.stages[0]!.time, 5);
-  });
-
-  it('cannot fire again until the pump is done', () => {
-    const { log, step, run } = rig('r870');
-    const interval = shotInterval(WEAPON_DEFS.r870);
-    step(PRESS);
-    run(interval - 0.15);
-    step(PRESS);
-    run(0.6);
-    expect(log.shots.length).toBe(2);
-    expect(log.shots[1]!).toBeGreaterThanOrEqual(interval - DT);
-  });
-
-  it('loads one shell at a time', () => {
-    const { machine, log, step, stages, settle } = rig('r870');
-    machine.setAmmo(2, 36);
-    step(RELOAD);
-    settle();
-    expect(stages()).toEqual(['shellInsert', 'shellInsert', 'shellInsert', 'shellInsert']);
-    expect(machine.magazine).toBe(6);
-    expect(machine.reserve).toBe(32);
-    const gap = log.stages[1]!.time - log.stages[0]!.time;
-    expect(gap).toBeCloseTo(WEAPON_DEFS.r870.reloadTime, 2);
-  });
-
-  it('does not pump after the last shell, and pumps at the end of the reload instead', () => {
-    const { machine, log, tap, step, run, stages, settle } = rig('r870');
-    machine.setAmmo(1, 2);
-    tap();
-    run(1.5);
-    expect(stages()).toEqual([]);
-    expect(log.ejects.length).toBe(0);
-    step(RELOAD);
-    settle();
-    expect(stages()).toEqual(['shellInsert', 'shellInsert', 'pumpBack', 'pumpForward']);
-    expect(log.ejects.length).toBe(1);
-    expect(machine.magazine).toBe(2);
-    expect(machine.reserve).toBe(0);
-  });
-
-  it('stops loading when fire is pressed and shoots', () => {
-    const { machine, log, step, run, stages } = rig('r870');
-    machine.setAmmo(2, 36);
-    step(RELOAD);
-    while (stages().length < 2) run(DT);
-    step(PRESS);
-    run(0.5);
-    expect(log.shots.length).toBe(1);
-    expect(stages().filter((stage) => stage === 'shellInsert').length).toBe(2);
-    expect(machine.magazine).toBe(3);
-    expect(machine.reserve).toBe(34);
-  });
-
-  it('pumps first when interrupted with an empty chamber', () => {
-    const { machine, log, tap, step, run, stages } = rig('r870');
-    machine.setAmmo(1, 36);
-    tap();
-    run(1);
-    step(RELOAD);
-    while (stages().length < 1) run(DT);
-    step(PRESS);
-    run(1.5);
-    expect(stages().slice(0, 3)).toEqual(['shellInsert', 'pumpBack', 'pumpForward']);
-    expect(log.shots.length).toBe(2);
-    expect(log.shots[1]!).toBeGreaterThan(log.stages[2]!.time - DT);
-  });
-
-  it('ignores the trigger while there is still nothing loaded', () => {
-    const { machine, log, step, run } = rig('r870');
-    machine.setAmmo(1, 36);
-    step(PRESS);
-    run(1);
-    step(RELOAD);
-    step(PRESS);
-    run(0.1);
-    expect(machine.reloading).toBe(true);
-    expect(log.dry.length).toBe(0);
   });
 });
 

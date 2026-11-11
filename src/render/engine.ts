@@ -23,6 +23,8 @@ const SHADOW_DISTANCE = 160;
 const MAX_FRAME_DT = 0.05;
 const BACKDROP_GAIN = 1.5;
 const MIN_RENDER_SCALE = 0.5;
+/** Vertical field of view (degrees) below which the camera is looking through a magnifying scope. */
+const SCOPED_FOV = 25;
 /** On the low tier the sun shadow map is redrawn every this many frames; the pass is about half the triangles drawn. */
 const LOW_TIER_SHADOW_INTERVAL = 2;
 
@@ -111,7 +113,9 @@ export class Engine {
 
   /** Effective fraction of device pixels being rendered right now. */
   get renderScale(): number {
-    return this.graphics.renderScale * this.dynamicResolution.scale;
+    const scale = this.graphics.renderScale * this.dynamicResolution.scale;
+    // Through a magnifying scope a reduced render scale reads as haze, so draw at full size.
+    return this.camera.fov < SCOPED_FOV ? Math.max(1, scale) : scale;
   }
 
   get graphicsSettings(): GraphicsSettings {
@@ -127,8 +131,10 @@ export class Engine {
 
   setFov(fov: number): void {
     if (Math.abs(this.camera.fov - fov) < 1e-3) return;
+    const wasScoped = this.camera.fov < SCOPED_FOV;
     this.camera.fov = fov;
     this.camera.updateProjectionMatrix();
+    if (wasScoped !== fov < SCOPED_FOV) this.resize();
   }
 
   /**

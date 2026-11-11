@@ -4,8 +4,6 @@ import {
   chamberPlan,
   isManual,
   reloadPlan,
-  shellEndPlan,
-  shellStartPlan,
   type ActionPlan,
   type Mark,
 } from './plans';
@@ -18,8 +16,6 @@ export interface MachineSink {
   stage(stage: WeaponActionStage): void;
   /** A spent casing left the gun. */
   eject(): void;
-  /** The Garand threw its clip. */
-  clipEject(): void;
 }
 
 export interface TriggerInput {
@@ -32,8 +28,6 @@ export interface TriggerInput {
 
 /** A press this long before the gun can fire still fires. Covers the whole cooldown of the semi-automatics. */
 const PRESS_BUFFER = 0.2;
-/** Time to bring a shotgun back on target after breaking off a reload. */
-const SHELL_ABORT_SECONDS = 0.2;
 
 /**
  * One gun's trigger, magazine and action. Pure logic: no rendering, no input
@@ -48,7 +42,7 @@ export class WeaponMachine implements WeaponState {
 
   private rounds: number;
   private reserveRounds: number;
-  /** A fired case is still in the chamber (bolt and pump guns before the action is worked). */
+  /** A fired case is still in the chamber (bolt guns before the action is worked). */
   private spentCase = false;
   private cooldown = 0;
   private pressBuffer = 0;
@@ -81,7 +75,7 @@ export class WeaponMachine implements WeaponState {
     return this.action !== null || this.cooldown > 0;
   }
 
-  /** true while the firing hand is working a bolt or pump after a shot. */
+  /** true while the firing hand is working a bolt after a shot. */
   get cycling(): boolean {
     const action = this.action;
     return (
@@ -131,7 +125,6 @@ export class WeaponMachine implements WeaponState {
   }
 
   private think(input: TriggerInput, sink: MachineSink): void {
-    if (input.firePressed && this.inReload && this.rounds > 0 && this.loadingShells()) this.breakOffShells();
     if (this.action) return;
 
     if (!this.chambered && this.rounds > 0) {
@@ -177,41 +170,12 @@ export class WeaponMachine implements WeaponState {
     this.chambered = !last;
     sink.fire(last);
     sink.eject();
-    if (last && this.def.reloadStyle === 'enbloc') {
-      sink.stage('clipPing');
-      sink.clipEject();
-    }
   }
 
   private startReload(): void {
     this.inReload = true;
     this.reloadQueued = false;
-    if (this.def.reloadStyle === 'single-shell') this.begin(shellStartPlan(this.def));
-    else this.begin(reloadPlan(this.def, this.chambered, this.rounds));
-  }
-
-  private loadingShells(): boolean {
-    const kind = this.action?.kind;
-    return kind === 'shellStart' || kind === 'shell' || kind === 'shellEnd';
-  }
-
-  /** Fire was pressed while feeding shells: stop, pump if the chamber is empty, then shoot. */
-  private breakOffShells(): void {
-    if (this.chambered) {
-      this.action = null;
-      this.actionTime = 0;
-      this.inReload = false;
-      this.cooldown = Math.max(this.cooldown, SHELL_ABORT_SECONDS);
-      this.pressBuffer = SHELL_ABORT_SECONDS + PRESS_BUFFER;
-      return;
-    }
-    const pump = chamberPlan(this.def);
-    this.begin(pump);
-    this.pressBuffer = pump.duration + PRESS_BUFFER;
-  }
-
-  private canLoadShell(): boolean {
-    return this.reserveRounds > 0 && this.rounds < this.def.magazineSize;
+    this.begin(reloadPlan(this.def, this.chambered));
   }
 
   private begin(action: ActionPlan): void {
@@ -234,21 +198,10 @@ export class WeaponMachine implements WeaponState {
         return;
       }
       remaining = to - action.duration;
-      this.finish(action);
+      this.action = null;
+      this.actionTime = 0;
+      this.inReload = false;
     }
-  }
-
-  private finish(action: ActionPlan): void {
-    let next: ActionPlan | null = null;
-    if (action.kind === 'shellStart') {
-      next = this.canLoadShell() ? reloadPlan(this.def, this.chambered, this.rounds) : shellEndPlan(this.def);
-    } else if (action.kind === 'shell') {
-      if (this.canLoadShell()) next = action;
-      else next = this.chambered ? shellEndPlan(this.def) : chamberPlan(this.def);
-    }
-    this.action = next;
-    this.actionTime = 0;
-    if (!next) this.inReload = false;
   }
 
   private applyMark(mark: Mark, sink: MachineSink): void {
@@ -271,18 +224,6 @@ export class WeaponMachine implements WeaponState {
         this.reserveRounds = pool - take;
         break;
       }
-      case 'unload':
-        this.reserveRounds += this.rounds;
-        this.rounds = 0;
-        this.chambered = false;
-        sink.clipEject();
-        break;
-      case 'shell':
-        if (this.canLoadShell()) {
-          this.rounds++;
-          this.reserveRounds--;
-        }
-        break;
       default:
         break;
     }

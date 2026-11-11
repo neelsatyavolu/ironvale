@@ -16,7 +16,6 @@ const SINK: MachineSink = {
   dryFire: () => undefined,
   stage: () => undefined,
   eject: () => undefined,
-  clipEject: () => undefined,
 };
 
 function setup(id: WeaponId) {
@@ -101,9 +100,8 @@ describe('stand-in guns', () => {
   });
 
   it('gives each gun the parts its action needs', () => {
-    expect(buildFallbackGun('m1911').parts.slide).toBeDefined();
-    expect(buildFallbackGun('m1911').parts.magazine).toBeDefined();
-    expect(buildFallbackGun('r870').parts.pump).toBeDefined();
+    expect(buildFallbackGun('mp5').parts.bolt).toBeDefined();
+    expect(buildFallbackGun('mp5').parts.magazine).toBeDefined();
     expect(buildFallbackGun('m24').parts.bolt).toBeDefined();
     expect(buildFallbackGun('m249').parts.cover).toBeDefined();
     expect(buildFallbackGun('m4a1').parts.magazine).toBeDefined();
@@ -260,9 +258,9 @@ describe('parts in time with the action', () => {
     expect(view.parts.tilt).toBeLessThan(0.02);
   });
 
-  it('snaps the slide back with a shot and locks it open on the last round', () => {
-    const { machine, view, rig, step, run } = act('m1911');
-    const slide = view.model.parts.slide!;
+  it('snaps the bolt back with a shot and locks it open on the last round', () => {
+    const { machine, view, rig, step, run } = act('m4a1');
+    const slide = view.model.parts.bolt!;
     const rest = slide.position.z;
     step(PRESS);
     rig.fired(0, 0);
@@ -270,29 +268,15 @@ describe('parts in time with the action', () => {
     expect(slide.position.z).toBeGreaterThan(rest + view.model.cycleTravel * 0.5);
     run(0.3);
     expect(slide.position.z).toBeCloseTo(rest, 4);
-    machine.setAmmo(1, 14);
+    machine.setAmmo(1, 60);
     step(PRESS);
     rig.fired(0, 0);
     run(0.5);
     expect(slide.position.z).toBeCloseTo(rest + view.model.cycleTravel, 3);
     step(RELOAD);
     run(3);
-    expect(machine.magazine).toBe(7);
+    expect(machine.magazine).toBe(30);
     expect(slide.position.z).toBeCloseTo(rest, 4);
-  });
-
-  it('strokes the pump back and forward between the two marks', () => {
-    const { machine, view, step, run } = act('r870');
-    const pump = view.model.parts.pump!;
-    const rest = pump.position.z;
-    step(PRESS);
-    const action = machine.action!;
-    const back = action.marks.find((mark) => mark.stage === 'pumpBack')!.time;
-    const forward = action.marks.find((mark) => mark.stage === 'pumpForward')!.time;
-    run(back);
-    expect(pump.position.z).toBeCloseTo(rest + view.model.cycleTravel, 2);
-    run(forward - back + 0.02);
-    expect(pump.position.z).toBeCloseTo(rest, 2);
   });
 
   it('lifts and draws the bolt, and moves the firing hand to it', () => {

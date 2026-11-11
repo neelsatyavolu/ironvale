@@ -25,7 +25,7 @@ export interface RoleDef {
 export const ROLES: Readonly<Record<BotRole, RoleDef>> = {
   rifleman: { weapon: 'm4a1', minRange: 8, idealRange: 24, maxRange: 55, burstMin: 3, burstMax: 5, pauseMin: 0.5, pauseMax: 1.1, pushes: false, holds: false },
   rusher: { weapon: 'mp5', minRange: 4, idealRange: 11, maxRange: 22, burstMin: 4, burstMax: 8, pauseMin: 0.3, pauseMax: 0.7, pushes: true, holds: false },
-  breacher: { weapon: 'r870', minRange: 2, idealRange: 6, maxRange: 12, burstMin: 1, burstMax: 1, pauseMin: 0.15, pauseMax: 0.45, pushes: true, holds: false },
+  breacher: { weapon: 'mp5', minRange: 2, idealRange: 6, maxRange: 12, burstMin: 5, burstMax: 9, pauseMin: 0.15, pauseMax: 0.45, pushes: true, holds: false },
   marksman: { weapon: 'm24', minRange: 25, idealRange: 50, maxRange: 120, burstMin: 1, burstMax: 1, pauseMin: 1.7, pauseMax: 2.8, pushes: false, holds: true },
   gunner: { weapon: 'm249', minRange: 12, idealRange: 32, maxRange: 80, burstMin: 10, burstMax: 18, pauseMin: 0.9, pauseMax: 1.6, pushes: false, holds: true },
 };

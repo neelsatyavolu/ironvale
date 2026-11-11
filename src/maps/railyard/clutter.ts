@@ -27,25 +27,28 @@ export class Clutter {
     kit.collide(1.03, count * TYRE_HEIGHT, 1.03, x, 0, z, 'dirt');
   }
 
-  /** Steel bollard in safety yellow with a black band. */
+  /** Steel bollard in yellow and black hazard bands, with a domed cap and a base flange. */
   bollard(x: number, z: number): void {
     const { kit, m } = this;
-    kit.post(m.steel, 0.085, 1.0, x, 0, z, SAFETY_YELLOW, 10);
-    kit.post(m.matte, 0.088, 0.14, x, 0.7, z, RUBBER, 10);
-    kit.post(m.steel, 0.14, 0.02, x, 0, z, 0x3a3d3f, 10);
+    kit.post(m.hazard, 0.085, 0.98, x, 0, z, undefined, 12);
+    const cap = new THREE.SphereGeometry(0.086, 12, 5, 0, Math.PI * 2, 0, Math.PI / 2);
+    kit.add(m.steel, cap, new THREE.Matrix4().makeTranslation(x, 0.98, z), SAFETY_YELLOW);
+    cap.dispose();
+    kit.post(m.steel, 0.15, 0.025, x, 0, z, 0x3a3d3f, 12);
     kit.collide(0.2, 1.0, 0.2, x, 0, z, 'metal');
   }
 
   /** Cast-iron inspection cover set in a concrete collar. */
   manhole(x: number, z: number): void {
     const { kit, m } = this;
-    const collar = new THREE.CylinderGeometry(0.5, 0.5, 0.008, 20);
-    const lid = new THREE.CylinderGeometry(0.38, 0.38, 0.012, 20);
-    kit.add(m.wall, collar, new THREE.Matrix4().makeTranslation(x, 0.003, z), 0x9a9891);
-    kit.add(m.rawSteel, lid, kit.transform(x, 0.006, z, kit.range(0, Math.PI)), 0x3d3a37);
+    const collar = new THREE.CylinderGeometry(0.5, 0.5, 0.008, 28);
+    const lid = new THREE.CylinderGeometry(0.38, 0.38, 0.012, 28);
+    kit.add(m.wall, collar, new THREE.Matrix4().makeTranslation(x, 0.003, z), 0x5e5d59);
+    // Painted cast iron, not bare steel: a mirror-bright lid reads as a paper disc at sunset.
+    kit.add(m.steel, lid, kit.transform(x, 0.006, z, kit.range(0, Math.PI)), 0x2b2927);
     collar.dispose();
     lid.dispose();
-    for (const offset of [-0.2, -0.07, 0.07, 0.2]) kit.box(m.rawSteel, 0.5, 0.004, 0.03, x, 0.012, z + offset, { color: 0x57534f });
+    for (const offset of [-0.2, -0.07, 0.07, 0.2]) kit.box(m.steel, 0.5, 0.004, 0.03, x, 0.012, z + offset, { color: 0x1c1b1a });
   }
 
   /** Slot drain: a dark slit between two steel edge rails, set in the paving from (ax, az) to (bx, bz). */

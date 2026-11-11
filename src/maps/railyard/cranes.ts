@@ -1,7 +1,9 @@
 import * as THREE from 'three/webgpu';
+import { MeshBuilder } from './builder';
 import type { Kit } from './kit';
 import type { Materials } from './materials';
 import { YARD } from './plan';
+import { addWheel } from './shapes';
 
 const V = (x: number, y: number, z: number): THREE.Vector3 => new THREE.Vector3(x, y, z);
 
@@ -12,17 +14,18 @@ export const STS = { west: -24, east: -6, waterside: YARD.quay + 2.6, landside: 
 
 /** Yard gantry: wheeled sills, four legs with hazard bands, twin girders, trolley, cab and a container on the spreader. */
 export function buildYardGantry(kit: Kit, m: Materials): void {
-  const yellow = 0xc79a1c;
+  const yellow = 0x9d7d26;
   const midZ = (RTG.north + RTG.south) / 2;
-  const tyre = new THREE.CylinderGeometry(0.72, 0.72, 0.46, 20).rotateZ(Math.PI / 2);
-  const hub = new THREE.CylinderGeometry(0.3, 0.3, 0.48, 12).rotateZ(Math.PI / 2);
+  const rubber = new MeshBuilder();
+  const rims = new MeshBuilder();
 
   for (const x of [RTG.west, RTG.east]) {
     // Sill beam on two bogies of two tyres each.
     kit.box(m.steel, 0.95, 0.85, 10.6, x, 1.25, midZ, { color: yellow });
     for (const z of [RTG.north - 0.9, RTG.north + 0.9, RTG.south - 0.9, RTG.south + 0.9]) {
-      kit.add(m.matte, tyre, new THREE.Matrix4().makeTranslation(x, 0.72, z), 0x141516);
-      kit.add(m.steel, hub, new THREE.Matrix4().makeTranslation(x, 0.72, z), yellow);
+      addWheel(rubber, rims, [x, 0.72, z], 0.72, 0.5, x < 0 ? -1 : 1, { tyre: 0x141516, rim: yellow, hub: 0x2a2c2e });
+      // Bogie fork down each side of the wheel to its axle.
+      for (const side of [-0.34, 0.34]) kit.box(m.steel, 0.07, 0.62, 0.3, x + side, 0.68, z, { color: 0x2a2c2e });
     }
     for (const z of [RTG.north, RTG.south]) {
       kit.box(m.steel, 1.25, 0.2, 3.6, x, 1.46, z, { color: 0x2a2c2e });
@@ -40,8 +43,12 @@ export function buildYardGantry(kit: Kit, m: Materials): void {
     reel.dispose();
     kit.box(m.steel, 0.7, 1.5, 1.4, x, 2.1, midZ + 2.2, { color: 0x9aa0a2 });
   }
-  tyre.dispose();
-  hub.dispose();
+  const rubberGeometry = rubber.build();
+  const rimGeometry = rims.build();
+  kit.add(m.matte, rubberGeometry, new THREE.Matrix4());
+  kit.add(m.steel, rimGeometry, new THREE.Matrix4());
+  rubberGeometry.dispose();
+  rimGeometry.dispose();
 
   // Twin box girders with end ties and a walkway rail.
   const span = RTG.east - RTG.west + 2.4;

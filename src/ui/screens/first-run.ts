@@ -20,7 +20,7 @@ export function createFirstRun(actions: { play(): void; useMouse(): void }): Fir
     ['Jump', key(bindings.jump)],
     ['Crouch', key(bindings.crouch)],
     ['Reload', key(bindings.reload)],
-    ['Weapons', `${key(bindings.slot1)} to ${key(bindings.slot7)} or two-finger scroll`],
+    ['Weapons', `${key(bindings.slot1)} to ${key(bindings.slot4)} or two-finger scroll`],
     ['Pause', key(bindings.pause)],
   ];
   const play = button('Play', 'accent', actions.play);

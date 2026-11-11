@@ -128,6 +128,12 @@ export class Kit {
     this.ctx.world.addCollider(UNIT_BOX, matrix, surface);
   }
 
+  /** Unseen upright limit with its underside at `y`: stops bodies, lets bullets and sight lines through. */
+  limit(width: number, height: number, depth: number, x: number, y: number, z: number): void {
+    const matrix = new THREE.Matrix4().compose(new THREE.Vector3(x, y + height / 2, z), this.quaternion.identity(), new THREE.Vector3(width, height, depth));
+    this.ctx.world.addBoundary(UNIT_BOX, matrix);
+  }
+
   /** Slab collider running from `a` to `b` (ramps and stairs). `thickness` hangs below the line. */
   collideRamp(a: THREE.Vector3, b: THREE.Vector3, width: number, thickness: number, surface: Surface): void {
     const drop = new THREE.Vector3(0, -thickness / 2, 0);

@@ -226,7 +226,7 @@ function addHarbourWorks(kit: Kit): void {
 
   // Basin floor (you wade, you do not swim) and an unseen kerb across the harbour mouth.
   colliders.span(WEST - 0.8, EAST + 0.8, SEABED_Y - 1, SEABED_Y, QUAY_EDGE, BASIN_SOUTH + 0.5, 'water');
-  colliders.span(WEST - 0.8, EAST + 0.8, SEABED_Y, 0.4, BASIN_SOUTH, BASIN_SOUTH + 0.5, 'water');
+  colliders.boundary(WEST - 0.8, EAST + 0.8, SEABED_Y, 0.4, BASIN_SOUTH, BASIN_SOUTH + 0.5);
 }
 
 /** Town walls with shut gates that close the street and terrace at each end. */

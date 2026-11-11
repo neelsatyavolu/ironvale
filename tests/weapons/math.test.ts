@@ -65,7 +65,7 @@ describe('zone multipliers and damage', () => {
 describe('shotInterval', () => {
   it('converts rounds per minute to seconds', () => {
     expect(shotInterval(WEAPON_DEFS.m4a1)).toBeCloseTo(0.075, 6);
-    expect(shotInterval(WEAPON_DEFS.m1garand)).toBeCloseTo(0.1875, 6);
+    expect(shotInterval(WEAPON_DEFS.m24)).toBeCloseTo(60 / 42, 6);
   });
 });
 

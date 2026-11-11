@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const MAPS = ['harbor', 'pinewood', 'railyard'];
+const MAPS = ['harbor', 'headworks', 'railyard'];
 const TIERS = [
   ['1k', 'medium'],
   ['2k', 'high'],

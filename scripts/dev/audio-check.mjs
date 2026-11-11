@@ -164,7 +164,7 @@ const result = await page.evaluate(async () => {
   let crowdHrtf = 0;
   for (let i = 0; i < 30; i++) {
     const angle = (i / 30) * Math.PI * 2;
-    shot(at(Math.cos(angle) * (6 + i), 1, Math.sin(angle) * (6 + i)), false, i % 2 ? WEAPON_DEFS.m1garand : WEAPON_DEFS.mp5, 700 + i);
+    shot(at(Math.cos(angle) * (6 + i), 1, Math.sin(angle) * (6 + i)), false, i % 2 ? WEAPON_DEFS.m24 : WEAPON_DEFS.mp5, 700 + i);
     crowdVoices = Math.max(crowdVoices, debug.playing);
     crowdHrtf = Math.max(crowdHrtf, debug.hrtf);
   }
@@ -190,7 +190,7 @@ const result = await page.evaluate(async () => {
     safe(`casing ${surface}`, () => game.events.emit('casingLanded', { kind: 'pistol', position: at(1, -1.6, 1), surface }));
     await sleep(40);
   }
-  const stages = ['magOut', 'magIn', 'boltBack', 'boltForward', 'boltLift', 'boltClose', 'pumpBack', 'pumpForward', 'shellInsert', 'clipInsert', 'clipPing', 'beltOpen', 'beltClose', 'slideRelease'];
+  const stages = ['magOut', 'magIn', 'boltBack', 'boltForward', 'boltLift', 'boltClose', 'shellInsert', 'beltOpen', 'beltClose'];
   for (const weapon of Object.values(WEAPON_DEFS)) {
     for (const stage of stages) {
       safe(`${weapon.id} ${stage}`, () => game.events.emit('weaponAction', { shooterId: game.player.id, weapon, stage, position: at(0, 0, 0), local: true }));

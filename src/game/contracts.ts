@@ -91,10 +91,9 @@ export interface CombatRegistry {
 // ---------------------------------------------------------------- weapons
 
 export type WeaponClass = 'pistol' | 'rifle' | 'carbine' | 'smg' | 'shotgun' | 'sniper' | 'lmg';
-export type FireMode = 'semi' | 'auto' | 'bolt' | 'pump';
-export type ReloadStyle = 'magazine' | 'enbloc' | 'single-shell' | 'belt';
-/** `clip` is the M1 Garand's en-bloc clip, thrown clear with the last round. */
-export type CasingKind = 'pistol' | 'rifle' | 'shotgun' | 'clip';
+export type FireMode = 'semi' | 'auto' | 'bolt';
+export type ReloadStyle = 'magazine' | 'belt';
+export type CasingKind = 'pistol' | 'rifle' | 'shotgun';
 
 /** A step in a reload or cycling animation. Audio and the view model key off these. */
 export type WeaponActionStage =
@@ -104,14 +103,9 @@ export type WeaponActionStage =
   | 'boltForward'
   | 'boltLift'
   | 'boltClose'
-  | 'pumpBack'
-  | 'pumpForward'
   | 'shellInsert'
-  | 'clipInsert'
-  | 'clipPing'
   | 'beltOpen'
-  | 'beltClose'
-  | 'slideRelease';
+  | 'beltClose';
 
 export interface RecoilProfile {
   /** Degrees of muzzle climb per shot. */
@@ -128,7 +122,7 @@ export interface WeaponDef {
   readonly id: string;
   readonly name: string;
   readonly weaponClass: WeaponClass;
-  /** Loadout slot, 1 - 7. */
+  /** Loadout slot, 1 - 4. */
   readonly slot: number;
   readonly fireMode: FireMode;
   readonly roundsPerMinute: number;
@@ -142,7 +136,7 @@ export interface WeaponDef {
   readonly range: number;
   /** Metres per second. Sets tracer speed, hit delay at range and the sound of distant shots. */
   readonly muzzleVelocity: number;
-  /** Projectiles per trigger pull (9 for buckshot, 1 otherwise). */
+  /** Projectiles per trigger pull (1 for every current gun). */
   readonly pellets: number;
   /** Cone half-angles in degrees. */
   readonly spreadHip: number;
@@ -152,7 +146,7 @@ export interface WeaponDef {
   readonly magazineSize: number;
   readonly reserveAmmo: number;
   readonly reloadStyle: ReloadStyle;
-  /** Seconds for a full reload (per shell for `single-shell`). */
+  /** Seconds for a full reload. */
   readonly reloadTime: number;
   /** Seconds to raise the sights. */
   readonly aimTime: number;
@@ -185,16 +179,15 @@ export interface GunModel {
     readonly slide?: Object3D;
     readonly magazine?: Object3D;
     readonly trigger?: Object3D;
-    readonly pump?: Object3D;
     readonly chargingHandle?: Object3D;
     readonly cover?: Object3D;
   };
-  /** Local travel in metres along +Z for bolt, slide or pump when cycled. */
+  /** Local travel in metres along +Z for bolt or slide when cycled. */
   readonly cycleTravel: number;
   /**
    * Where the hands hold the gun. Each is an empty whose origin is the palm
    * centre, -Z along the fingers' forward direction and +Y toward the thumb side.
-   * `support` is the off hand (fore-end, pump or magazine well).
+   * `support` is the off hand (fore-end or magazine well).
    */
   readonly grips: { readonly trigger: Object3D; readonly support: Object3D };
 }

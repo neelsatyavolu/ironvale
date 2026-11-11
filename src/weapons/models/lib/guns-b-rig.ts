@@ -1,5 +1,5 @@
 /**
- * Shared assembly for the guns-b rifles (M1 Garand, M24 slot). Each gun file
+ * Shared assembly for the guns-b rifles (the M24). Each gun file
  * supplies measurements taken from its processed glTF; this turns them into a
  * `GunModel` with anchors as direct children of the root.
  */

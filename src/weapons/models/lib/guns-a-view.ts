@@ -1,11 +1,11 @@
 /**
- * Model-viewer page shared by the m1911, mp5 and r870 guns.
+ * Model-viewer page for the mp5.
  *
  * URL parameters on top of the viewer's own:
  * - `markers=0` hides the anchor markers (muzzle red, ejection yellow with a
  *   line along +X, sight cyan, sight line white, trigger hand green, support
  *   hand magenta; each hand shows its finger axis and a shorter thumb axis).
- * - `cycle=0..1` pulls the bolt, slide or pump back by that share of `cycleTravel`.
+ * - `cycle=0..1` pulls the bolt or slide back by that share of `cycleTravel`.
  * - `mag=0.08` drops the magazine by that many metres.
  * - `aim=1` moves the gun so its sight anchor sits at the world origin looking
  *   down -Z: shoot it with `cam=0,0,0&look=0,0,-1&fov=50` to check the sights.
@@ -59,7 +59,7 @@ export function gunView(module: GunModule): Viewable {
     create(assets) {
       gun = module.build(assets);
       const cycle = Number(params.get('cycle') ?? 0) * gun.cycleTravel;
-      for (const part of [gun.parts.bolt, gun.parts.slide, gun.parts.pump]) {
+      for (const part of [gun.parts.bolt, gun.parts.slide]) {
         if (part) part.position.z = cycle;
       }
       if (gun.parts.magazine) gun.parts.magazine.position.y = -Number(params.get('mag') ?? 0);

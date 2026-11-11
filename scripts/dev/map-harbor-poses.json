@@ -1,0 +1,58 @@
+{
+  "note": "Fixed review poses for the harbor map: x,y,z,yawDeg,pitchDeg (y is feet height). Shoot with scripts/dev/map-harbor-shots.sh <prefix>.",
+  "params": "map=harbor&bots=0&ui=off&q=high",
+  "poses": [
+    {
+      "name": "street",
+      "pose": "44,0.05,-1,90,2"
+    },
+    {
+      "name": "quay-west",
+      "pose": "36,0.05,15,90,0"
+    },
+    {
+      "name": "boats",
+      "pose": "4.2,0.05,23,150,-14"
+    },
+    {
+      "name": "square",
+      "pose": "0,0.05,0.5,0,6"
+    },
+    {
+      "name": "terrace",
+      "pose": "-22,3.11,-19,-90,0"
+    },
+    {
+      "name": "quay-east",
+      "pose": "-30,0.05,15,-90,2"
+    },
+    {
+      "name": "cafe",
+      "pose": "-9,0.05,6,-90,0"
+    },
+    {
+      "name": "sea-sun",
+      "pose": "-12,0.05,18.5,138,-2"
+    },
+    {
+      "name": "mole-town",
+      "pose": "-48.6,0.05,40,-52,2"
+    },
+    {
+      "name": "jetty-town",
+      "pose": "3,0.05,36,0,4"
+    },
+    {
+      "name": "alley",
+      "pose": "-30.75,0.05,-4.5,0,10"
+    },
+    {
+      "name": "net-store",
+      "pose": "-27,0.05,3.2,150,0"
+    },
+    {
+      "name": "ramp",
+      "pose": "32,0.05,-3.5,0,8"
+    }
+  ]
+}

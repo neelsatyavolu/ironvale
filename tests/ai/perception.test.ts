@@ -46,7 +46,7 @@ describe('vision range', () => {
   });
 
   it('does not see further through thick mist than a player can', () => {
-    // Pinewood: on screen a soldier fades out between 45 and 55 m, whatever the difficulty.
+    // Thick mist (density 0.0215): on screen a soldier fades out between 45 and 55 m, whatever the difficulty.
     for (const base of [45, 60, 75, 90]) {
       const range = effectiveVisionRange(base, 0.0215, false, 4);
       expect(range).toBeGreaterThan(35);

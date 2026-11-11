@@ -19,7 +19,6 @@ const FIRE_MODES: Readonly<Record<FireMode, string>> = {
   semi: 'Semi',
   auto: 'Auto',
   bolt: 'Bolt action',
-  pump: 'Pump action',
 };
 
 const WEAPON_CLASSES: Readonly<Record<WeaponClass, string>> = {

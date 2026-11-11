@@ -9,7 +9,7 @@ export interface WeaponIntent {
   reloadPressed: boolean;
   holdBreath: boolean;
   sprintPressed: boolean;
-  /** Loadout slot asked for this frame (1 - 7), or 0. */
+  /** Loadout slot asked for this frame (1 - 4), or 0. */
   slot: number;
   /** +1 next weapon, -1 previous, 0 none. */
   cycle: number;
@@ -30,7 +30,7 @@ export interface DebugInput {
   cycle?: number;
 }
 
-const SLOT_ACTIONS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6', 'slot7'];
+const SLOT_ACTIONS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4'];
 
 /** Turns device input (or scripted input) into a `WeaponIntent`. One reused object, no allocation. */
 export class IntentReader {

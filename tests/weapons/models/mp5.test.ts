@@ -1,5 +1,5 @@
 import gun, { MP5_LAYOUT } from '../../../src/weapons/models/mp5.gun';
-import { describeGun } from './m1911-helpers';
+import { describeGun } from './guns-a-helpers';
 
 // 0.68 m long with the sliding stock pulled out, like the real gun; its sight radius is 340 mm.
 describeGun(gun, MP5_LAYOUT, {

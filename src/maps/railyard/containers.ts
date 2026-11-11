@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { instancedBufferAttribute } from 'three/tsl';
 import { MeshBuilder } from './builder';
 import type { Kit } from './kit';
 import { logoGeometry, type LogoText, type Materials } from './materials';
@@ -12,6 +13,9 @@ const RIB_PITCH = 0.278;
 /** Real-world size of one repeat of the container paint texture. */
 const PAINT_TILE = 1.94;
 const SHIPPING_LINES: readonly LogoText[] = ['NORDHAVN', 'KESTREL LINE', 'HALCYON', 'TERNMARK'];
+const SERIALS: readonly LogoText[] = ['NHVU 482913 7', 'KSTU 305518 2', 'TRNU 771264 0'];
+const LIGHT_INK = 0xdedbd2;
+const DARK_INK = 0x1d2b3c;
 
 /**
  * Trapezoidal corrugated sheet in the XY plane, `length` along X, facing +Z.
@@ -129,6 +133,10 @@ export function buildContainers(kit: Kit, materials: Materials, spots: readonly 
     backdrop: { geometry: prototypes.short, matrices: [] as THREE.Matrix4[], colors: [] as THREE.Color[], cast: false },
   };
   const logos = new Map<LogoText, THREE.BufferGeometry>(SHIPPING_LINES.map((name) => [name, logoGeometry(name, 3.4)]));
+  // Owner code and serial on both sides and the right-hand door, a weights line and the data plate.
+  const serials = SERIALS.map((text) => ({ side: logoGeometry(text, 1.15), door: logoGeometry(text, 0.42) }));
+  const weights = { side: logoGeometry('MAX GR 30480 KG', 0.8), door: logoGeometry('MAX GR 30480 KG', 0.4) };
+  const plate = new THREE.BoxGeometry(0.2, 0.26, 0.006);
 
   spots.forEach((spot, index) => {
     // Backdrop stacks thin out from the top at lower detail; the decision uses the index, not the random stream.
@@ -145,20 +153,33 @@ export function buildContainers(kit: Kit, materials: Materials, spots: readonly 
     if (spot.stackBase && !spot.backdrop) {
       kit.collide(CONTAINER.width, CONTAINER.height * spot.stackLevels, length, spot.x, spot.y, spot.z, 'metal', spot.yaw);
     }
-    if (spot.lettered && !spot.backdrop) {
-      const ink = spot.livery >= LIGHT_LIVERY_FROM ? 0x1d2b3c : 0xdedbd2;
-      const base = kit.transform(spot.x, spot.y, spot.z, spot.yaw);
-      for (const sx of [-1, 1]) {
-        const local = new THREE.Matrix4()
-          .makeRotationY((sx * Math.PI) / 2)
-          .setPosition(sx * (CONTAINER.width / 2 - 0.012), 1.86, sx * (length / 2 - 2.4));
-        kit.add(materials.lettering, logos.get(line) as THREE.BufferGeometry, base.clone().multiply(local), ink);
-      }
+    if (spot.backdrop) return;
+    const ink = spot.livery >= LIGHT_LIVERY_FROM ? DARK_INK : LIGHT_INK;
+    const base = kit.transform(spot.x, spot.y, spot.z, spot.yaw);
+    const mark = (geometry: THREE.BufferGeometry, turn: number, lx: number, ly: number, lz: number): void => {
+      kit.add(materials.lettering, geometry, base.clone().multiply(new THREE.Matrix4().makeRotationY(turn).setPosition(lx, ly, lz)), ink);
+    };
+    const serial = serials[index % serials.length] as (typeof serials)[number];
+    for (const sx of [-1, 1]) {
+      const face = sx * (CONTAINER.width / 2 - 0.012);
+      const turn = (sx * Math.PI) / 2;
+      if (spot.lettered) mark(logos.get(line) as THREE.BufferGeometry, turn, face, 1.86, sx * (length / 2 - 2.4));
+      // Top right corner as you face each side.
+      mark(serial.side, turn, face, 2.3, -sx * (length / 2 - 0.95));
+      mark(weights.side, turn, face, 2.12, -sx * (length / 2 - 0.78));
     }
+    const doorZ = length / 2 - 0.02;
+    mark(serial.door, 0, 0.57, 2.28, doorZ);
+    mark(weights.door, 0, 0.57, 2.19, doorZ);
+    kit.add(materials.steel, plate, base.clone().multiply(new THREE.Matrix4().makeTranslation(-0.57, 1.0, doorZ)), 0x9a9d9c);
   });
 
-  for (const geometry of logos.values()) geometry.dispose();
+  for (const geometry of [...logos.values(), ...serials.flatMap((entry) => [entry.side, entry.door]), weights.side, weights.door, plate]) geometry.dispose();
   for (const group of Object.values(groups)) {
-    kit.instances(group.geometry, materials.container, group.matrices, group.colors, { cast: group.cast, receive: true });
+    if (group.matrices.length === 0) continue;
+    // The livery goes in as its own instanced attribute, so rust and dirt are not tinted by it.
+    const liveries = new THREE.InstancedBufferAttribute(new Float32Array(group.colors.flatMap((color) => [color.r, color.g, color.b])), 3);
+    const material = materials.containerPaint(instancedBufferAttribute(liveries));
+    kit.instances(group.geometry, material, group.matrices, undefined, { cast: group.cast, receive: true });
   }
 }

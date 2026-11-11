@@ -12,7 +12,7 @@ describe('roles', () => {
   it('arms each role with its weapon', () => {
     expect(ROLES.rifleman.weapon).toBe('m4a1');
     expect(ROLES.rusher.weapon).toBe('mp5');
-    expect(ROLES.breacher.weapon).toBe('r870');
+    expect(ROLES.breacher.weapon).toBe('mp5');
     expect(ROLES.marksman.weapon).toBe('m24');
     expect(ROLES.gunner.weapon).toBe('m249');
     for (const role of Object.values(ROLES)) expect(WEAPON_DEFS[role.weapon]).toBeDefined();

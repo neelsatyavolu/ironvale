@@ -45,7 +45,7 @@ export function buildTracks(kit: Kit, m: Materials): void {
 }
 
 function buildBufferStop(kit: Kit, m: Materials, x: number, z: number, facing: number): void {
-  const red = 0x742820;
+  const red = 0x4f2622;
   for (const side of [-1, 1]) {
     const rx = x + (side * GAUGE) / 2;
     kit.beam(m.steel, V(rx, 0.1, z - facing * 1.6), V(rx, 1.05, z), 0.1, 0.14, red);

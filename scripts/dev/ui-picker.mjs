@@ -13,8 +13,8 @@ const key = (type, code) => page.evaluate(([t, c]) => window.dispatchEvent(new K
 await key('keydown', 'KeyE');
 await page.waitForTimeout(200);
 const t0 = await page.evaluate(() => window.__ironvale.game.time);
-await key('keydown', 'Digit5');
-await key('keyup', 'Digit5');
+await key('keydown', 'Digit3');
+await key('keyup', 'Digit3');
 await page.waitForTimeout(700);
 const t1 = await page.evaluate(() => window.__ironvale.game.time);
 await page.screenshot({ path: 'shots/ui-picker.png' });

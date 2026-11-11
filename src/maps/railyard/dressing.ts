@@ -73,7 +73,7 @@ export function dressYard(p: Props): void {
   p.crate(10.9, 25.5, 1.2, 1.0, 1.8, 0);
 
   // Road along the warehouse.
-  p.skip(-13.2, 27.5, HALF_PI, 0x7a3b22);
+  p.skip(-13.2, 27.5, HALF_PI, 0x63392a);
   p.blocks(-12.5, -13, 2, 2, HALF_PI);
   p.blocks(-15.5, -29.4, 3, 2, 0);
   p.barrels(-12.5, -1, 2);

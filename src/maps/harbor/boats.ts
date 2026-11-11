@@ -1,213 +1,154 @@
 import * as THREE from 'three/webgpu';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { abs, attribute, color, float, mix, positionLocal, smoothstep, step, texture, vec2 } from 'three/tsl';
 import type { Assets } from '../../core/assets';
+import { addClutter, addFenders, addJoinery, addMast, addOars, addOutboard, addWheelhouse, type BoatSpec } from './boat-fittings';
+import { mergeBoat, slackLine, type Point } from './boat-parts';
 import type { Kit } from './facade';
+import { grimeSampler, type TslNode } from './grime';
+import { hullDecal, hullShell, hullTimbers } from './hull';
+import { DEPTH, DRAFT, section } from './hull-shape';
 import { projectUv } from './kit';
-import { JETTIES, QUAY_EDGE, SEABED_Y, WATER_Y, type Jetty } from './layout';
-
-interface BoatSpec {
-  readonly x: number;
-  readonly z: number;
-  /** Bow points along +X at yaw 0. */
-  readonly yaw: number;
-  readonly length: number;
-  readonly beam: number;
-  readonly hull: number;
-  readonly stripe: number;
-  readonly cabin?: boolean;
-  readonly mast?: boolean;
-  /** Height of the keel when the boat is ashore; afloat boats leave this unset. */
-  readonly ashore?: number;
-  /** Laid up under a tarpaulin on a ridge pole: tall enough to hide behind. */
-  readonly covered?: boolean;
-}
+import { JETTIES, QUAY_EDGE, WATER_Y } from './layout';
 
 const BOATS: readonly BoatSpec[] = [
-  { x: -28.75, z: 27.5, yaw: Math.PI / 2, length: 5.6, beam: 2.0, hull: 0xe9e4d6, stripe: 0x2f5f86 },
-  { x: -23.2, z: 31.5, yaw: -Math.PI / 2, length: 6.4, beam: 2.2, hull: 0x2f6f8f, stripe: 0xe9e4d6, mast: true },
-  { x: 0.1, z: 26.5, yaw: Math.PI / 2, length: 7.4, beam: 2.5, hull: 0xe9e4d6, stripe: 0xa5392f, cabin: true, mast: true },
-  { x: 5.75, z: 30, yaw: -Math.PI / 2, length: 5.4, beam: 1.9, hull: 0xd9b55a, stripe: 0x3d6b4a },
-  { x: 3.5, z: 39.5, yaw: 0.04, length: 6.8, beam: 2.3, hull: 0x3d6b4a, stripe: 0xe9e4d6, cabin: true },
-  { x: 26.35, z: 28.5, yaw: Math.PI / 2, length: 5.8, beam: 2.0, hull: 0xa5392f, stripe: 0xe9e4d6 },
-  { x: 31.6, z: 25.5, yaw: -Math.PI / 2, length: 5.2, beam: 1.9, hull: 0xe9e4d6, stripe: 0x3d6b4a, mast: true },
-  { x: -38, z: 21.6, yaw: Math.PI, length: 5.6, beam: 2.0, hull: 0x7fa6b8, stripe: 0xe9e4d6 },
+  { x: -28.75, z: 27.5, yaw: Math.PI / 2, length: 5.6, beam: 2.0, hull: 0xe9e4d6, stripe: 0x2f5f86, stern: 'transom', clinker: true, outboard: true, name: 'ROSINA', reg: '3PA 418' },
+  { x: -23.2, z: 31.5, yaw: -Math.PI / 2, length: 6.4, beam: 2.2, hull: 0x2f6f8f, stripe: 0xe9e4d6, stern: 'pointed', mast: true, name: 'SAN PIETRO', reg: '3PA 207' },
+  { x: 0.1, z: 26.5, yaw: Math.PI / 2, length: 7.4, beam: 2.5, hull: 0xe9e4d6, stripe: 0xa5392f, stern: 'pointed', cabin: true, mast: true, name: 'STELLA MARIS', reg: '3PA 112' },
+  { x: 5.75, z: 30, yaw: -Math.PI / 2, length: 5.4, beam: 1.9, hull: 0xd9b55a, stripe: 0x3d6b4a, stern: 'pointed', clinker: true, name: 'LUCIA', reg: '3PA 533' },
+  { x: 3.5, z: 39.5, yaw: 0.04, length: 6.8, beam: 2.3, hull: 0x3d6b4a, stripe: 0xe9e4d6, stern: 'pointed', cabin: true, name: 'GABBIANO', reg: '3PA 096' },
+  { x: 26.35, z: 28.5, yaw: Math.PI / 2, length: 5.8, beam: 2.0, hull: 0xa5392f, stripe: 0xe9e4d6, stern: 'transom', outboard: true, name: 'NINA', reg: '3PA 381' },
+  { x: 31.6, z: 25.5, yaw: -Math.PI / 2, length: 5.2, beam: 1.9, hull: 0xe9e4d6, stripe: 0x3d6b4a, stern: 'pointed', clinker: true, mast: true, name: 'DELFINO', reg: '3PA 264' },
+  { x: -38, z: 21.6, yaw: Math.PI, length: 5.6, beam: 2.0, hull: 0x7fa6b8, stripe: 0xe9e4d6, stern: 'pointed', clinker: true, name: 'MARETTA', reg: '3PA 470' },
   // Laid up across the east end of the quay: it screens the players' spawn from the long view down the quay.
-  { x: 42.3, z: 14.9, yaw: 1.3, length: 5.6, beam: 2.0, hull: 0x2f5f86, stripe: 0xd9b55a, ashore: 0.6, covered: true },
+  { x: 42.3, z: 14.9, yaw: 1.3, length: 5.6, beam: 2.0, hull: 0x2f5f86, stripe: 0xd9b55a, stern: 'pointed', name: 'ASSUNTA', reg: '3PA 059', ashore: 0.6, covered: true },
 ];
 
-const DEPTH = 0.95;
-const DRAFT = 0.34;
-const STATIONS = 16;
-const RING = 7;
-const WOOD = 0x8a6f4d;
+const CELL_W = 512;
+const CELL_H = 96;
 
-function tint(geometry: THREE.BufferGeometry, hex: number): THREE.BufferGeometry {
-  const flat = geometry.index ? geometry.toNonIndexed() : geometry;
+/** Lettering mask for every boat: registration in the left column, name in the right. Alpha only; the paint colour comes from the decal. */
+function letteringAtlas(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = CELL_W * 2;
+  canvas.height = CELL_H * BOATS.length;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Harbor: 2D canvas is not available for the boat lettering');
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  BOATS.forEach((spec, i) => {
+    const y = i * CELL_H + CELL_H / 2 + 3;
+    ctx.font = `bold 70px 'Arial Narrow', Arial, sans-serif`;
+    ctx.fillText(spec.reg, CELL_W / 2, y, CELL_W - 30);
+    ctx.font = `bold 58px Georgia, 'Times New Roman', serif`;
+    ctx.fillText(spec.name, CELL_W * 1.5, y, CELL_W - 30);
+  });
+  const map = new THREE.CanvasTexture(canvas);
+  map.anisotropy = 4;
+  return map;
+}
+
+/** Atlas rectangle [u0, v0, u1, v1] of a boat's registration (column 0) or name (column 1). */
+function cell(index: number, column: 0 | 1): readonly [number, number, number, number] {
+  const rows = BOATS.length;
+  return [column / 2, 1 - (index + 1) / rows, (column + 1) / 2, 1 - index / rows];
+}
+
+const luma = (hex: number): number => {
   const c = new THREE.Color(hex);
-  const count = flat.getAttribute('position').count;
-  const colors = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    colors[i * 3] = c.r;
-    colors[i * 3 + 1] = c.g;
-    colors[i * 3 + 2] = c.b;
+  return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+};
+
+/**
+ * One material for every boat. Fittings take their vertex paint as it is; the
+ * planking adds what the sea does to it: antifouling below the waterline, a
+ * band of weed and slime along it, rust-brown weeps from the fastenings, salt
+ * bloom and patches where the paint has gone to bare wood.
+ */
+function boatMaterial(assets: Assets, grime: THREE.Texture, lettering: THREE.Texture): THREE.MeshStandardNodeMaterial {
+  const material = new THREE.MeshStandardNodeMaterial({ roughness: 0.6, side: THREE.DoubleSide, alphaTest: 0.5 });
+  const planks = assets.pbr('pbr-harbor-blue-planks');
+  material.normalMap = planks.normal;
+  material.normalScale = new THREE.Vector2(0.6, 0.6);
+
+  const paint: TslNode = attribute('paint', 'vec4');
+  const isHull = step(0.5, paint.a).mul(step(paint.a, 1.5));
+  const isDecal = step(1.5, paint.a);
+  const g = grimeSampler(grime);
+  const y = positionLocal.y;
+  const coord = vec2(positionLocal.x.add(positionLocal.z.mul(0.6)), y);
+  const blotch = g(coord, 1.7).r;
+  const fine = g(coord, 0.33).b;
+  const drips = g(coord, 1.1, 0.23).g;
+  const islands = g(coord, 2.6, 0.41).a;
+
+  const waterline = float(DRAFT).add(blotch.sub(0.5).mul(0.05));
+  const below = smoothstep(0.025, -0.02, y.sub(waterline)).mul(isHull);
+  const slime = smoothstep(0.17, 0.0, abs(y.sub(waterline).sub(0.03))).mul(mix(float(0.45), float(1), fine)).mul(isHull);
+  const weep = smoothstep(0.6, 0.92, drips).mul(smoothstep(0.0, 0.35, y.sub(waterline))).mul(isHull);
+  const bare = smoothstep(0.79, 0.82, islands.add(fine.sub(0.5).mul(0.12))).mul(isHull);
+  const salt = smoothstep(0.3, 0.05, y.sub(waterline)).mul(smoothstep(0.55, 0.8, fine)).mul(isHull);
+
+  const coat = paint.rgb.mul(mix(float(0.78), float(1.06), fine)).mul(mix(float(0.85), float(1.06), blotch));
+  const worn = mix(coat, color(0x6f5d47).mul(mix(float(0.6), float(1.1), fine)), bare.mul(0.85));
+  const streaked = mix(worn, worn.mul(color(0x9a6a48)), weep.mul(0.65));
+  const antifoul = color(0x5a2a23).mul(mix(float(0.6), float(1.15), fine)).mul(mix(float(0.8), float(1.1), blotch));
+  const wetted = mix(mix(streaked, antifoul, below), color(0x39472a), slime.mul(0.7));
+  material.colorNode = mix(wetted, color(0xd9d6cb), salt.mul(0.35));
+  material.roughnessNode = mix(mix(float(0.62), float(0.9), bare), float(0.28), below.max(slime.mul(0.8)));
+  material.opacityNode = mix(float(1), texture(lettering, attribute('duv', 'vec2')).a, isDecal);
+  return material;
+}
+
+/** Point of the nearest jetty or quay edge to a world position, where a mooring line can be made fast. */
+function mooringPoint(x: number, z: number): { x: number; z: number; distance: number } {
+  const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(a, v));
+  const candidates = [{ x, z: QUAY_EDGE - 0.1 }];
+  for (const jetty of JETTIES) {
+    const z1 = QUAY_EDGE + jetty.length;
+    candidates.push({ x: clamp(x, jetty.x - jetty.width / 2 + 0.1, jetty.x + jetty.width / 2 - 0.1), z: clamp(z, QUAY_EDGE, z1 - 0.1) });
+    if (jetty.head > 0) candidates.push({ x: clamp(x, jetty.x - jetty.head + 0.1, jetty.x + jetty.head - 0.1), z: clamp(z, z1 - 2.7, z1 - 0.1) });
   }
-  flat.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  if (!flat.getAttribute('uv')) projectUv(flat, 1);
-  return flat;
+  let best = { x, z, distance: Infinity };
+  for (const c of candidates) {
+    const distance = Math.hypot(c.x - x, c.z - z);
+    if (distance < best.distance) best = { ...c, distance };
+  }
+  return best;
 }
 
-function part(w: number, h: number, d: number, x: number, y: number, z: number, hex: number, yaw = 0): THREE.BufferGeometry {
-  const geometry = new THREE.BoxGeometry(w, h, d);
-  projectUv(geometry, 1);
-  if (yaw !== 0) geometry.rotateY(yaw);
-  geometry.translate(x, y, z);
-  return tint(geometry, hex);
-}
+function boatGeometry(spec: BoatSpec, index: number, baseY: number, random: () => number): THREE.BufferGeometry {
+  const paint = { hull: spec.hull, stripe: spec.stripe };
+  const parts = [...hullShell(spec, paint, spec.clinker ?? false), ...hullTimbers(spec, paint)];
+  const ink = luma(spec.hull) > 0.35 ? 0x1c2a3c : 0xece6d6;
+  for (const side of [1, -1] as const) {
+    parts.push(hullDecal(spec, side, 0.7, 0.86, 0.6, 0.8, cell(index, 0), ink));
+    parts.push(hullDecal(spec, side, 0.12, 0.3, 0.6, 0.8, cell(index, 1), ink));
+  }
+  addJoinery(parts, spec);
+  if (spec.cabin) addWheelhouse(parts, spec);
+  if (spec.outboard) addOutboard(parts, spec);
+  if (spec.mast) addMast(parts, spec);
+  if (!spec.cabin && !spec.outboard && !spec.covered) addOars(parts, spec);
+  const cleats = addFenders(parts, spec);
+  addClutter(parts, spec, random);
 
-/** Section shape of a double-ended fishing boat at `t` along its length (0 stern, 1 bow). */
-function section(t: number, beam: number) {
-  const fullness = Math.max(0.03, Math.pow(Math.sin(Math.PI * t), 0.6));
-  const end = Math.abs(2 * t - 1);
-  const gunwale = DEPTH + 0.3 * end * end * (t > 0.5 ? 1.5 : 1);
-  const keel = 0.34 * end * end * end;
-  return {
-    gunwale,
-    keel,
-    half: (s: number) => (beam / 2) * fullness * Math.pow(s, 0.5),
-    height: (s: number) => keel + (gunwale - keel) * Math.pow(s, 1.7),
-    /** Hull half-width at a given height, 0 below the keel. */
-    halfAt: (y: number) => {
-      if (y <= keel) return 0;
-      const s = Math.pow(Math.min(1, (y - keel) / (gunwale - keel)), 1 / 1.7);
-      return (beam / 2) * fullness * Math.pow(s, 0.5);
-    },
-  };
-}
-
-function hullGeometry(spec: BoatSpec): THREE.BufferGeometry {
-  const ringCount = RING * 2 + 1;
-  const positions: number[] = [];
-  const uvs: number[] = [];
-  for (let i = 0; i <= STATIONS; i++) {
-    const t = i / STATIONS;
-    const shape = section(t, spec.beam);
-    for (let j = 0; j < ringCount; j++) {
-      const side = j < RING ? -1 : 1;
-      const s = Math.abs(j - RING) / RING;
-      positions.push((t - 0.5) * spec.length, shape.height(s), side * shape.half(s));
-      uvs.push(t * spec.length, j * 0.2);
+  // Mooring lines from each cleat to whatever is close enough to tie up to.
+  if (spec.ashore === undefined) {
+    const cos = Math.cos(spec.yaw);
+    const sin = Math.sin(spec.yaw);
+    for (const cleat of cleats) {
+      const wx = spec.x + cleat[0] * cos + cleat[2] * sin;
+      const wz = spec.z - cleat[0] * sin + cleat[2] * cos;
+      const fast = mooringPoint(wx, wz);
+      if (fast.distance > 3.2 || fast.distance < 0.25) continue;
+      const dx = fast.x - spec.x;
+      const dz = fast.z - spec.z;
+      const end: Point = [dx * cos - dz * sin, 0.06 - baseY, dx * sin + dz * cos];
+      parts.push(slackLine(cleat, end, 0.12 + fast.distance * 0.1, 0.014, 0xb09a72));
     }
   }
-  const indices: number[] = [];
-  for (let i = 0; i < STATIONS; i++) {
-    for (let j = 0; j < ringCount - 1; j++) {
-      const a = i * ringCount + j;
-      const b = a + ringCount;
-      indices.push(a, b, a + 1, a + 1, b, b + 1);
-    }
-  }
-  const indexed = new THREE.BufferGeometry();
-  indexed.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  indexed.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-  indexed.setIndex(indices);
-  indexed.computeVertexNormals();
-  const hull = indexed.toNonIndexed();
-  indexed.dispose();
-
-  // Paint by band: antifouling below the waterline, hull colour, then a contrasting top strake.
-  const bottom = new THREE.Color(0x5b2a24);
-  const body = new THREE.Color(spec.hull);
-  const strake = new THREE.Color(spec.stripe);
-  const count = hull.getAttribute('position').count;
-  const colors = new Float32Array(count * 3);
-  const quadsPerStation = ringCount - 1;
-  for (let v = 0; v < count; v++) {
-    const quad = Math.floor(v / 6) % quadsPerStation;
-    const s = Math.abs(quad + 0.5 - RING) / RING;
-    const c = s < 0.42 ? bottom : s < 0.8 ? body : strake;
-    colors[v * 3] = c.r;
-    colors[v * 3 + 1] = c.g;
-    colors[v * 3 + 2] = c.b;
-  }
-  hull.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  return hull;
-}
-
-function boatGeometry(spec: BoatSpec, random: () => number): THREE.BufferGeometry {
-  const parts: THREE.BufferGeometry[] = [hullGeometry(spec)];
-  const at = (t: number) => ({ x: (t - 0.5) * spec.length, shape: section(t, spec.beam) });
-
-  // Gunwale cap and bottom boards, station by station.
-  for (let i = 1; i < STATIONS - 1; i++) {
-    const a = at(i / STATIONS);
-    const b = at((i + 1) / STATIONS);
-    const length = b.x - a.x;
-    for (const side of [-1, 1]) {
-      const za = side * a.shape.half(1);
-      const zb = side * b.shape.half(1);
-      const yaw = -Math.atan2(zb - za, length);
-      parts.push(part(Math.hypot(length, zb - za) + 0.02, 0.05, 0.11, (a.x + b.x) / 2, (a.shape.gunwale + b.shape.gunwale) / 2 + 0.02, (za + zb) / 2, spec.stripe, yaw));
-    }
-    const floorY = DEPTH * 0.34;
-    const width = Math.min(a.shape.halfAt(floorY), b.shape.halfAt(floorY)) * 2 - 0.04;
-    if (width > 0.2) parts.push(part(length + 0.01, 0.03, width, (a.x + b.x) / 2, floorY, 0, WOOD));
-  }
-  // Thwarts.
-  for (const t of spec.cabin ? [0.22, 0.74] : [0.28, 0.5, 0.72]) {
-    const { x, shape } = at(t);
-    const y = DEPTH * 0.7;
-    parts.push(part(0.26, 0.045, shape.halfAt(y) * 2 - 0.03, x, y, 0, WOOD));
-  }
-  // Stem and stern posts.
-  for (const t of [0.012, 0.988]) {
-    const { x, shape } = at(t);
-    parts.push(part(0.1, 0.5, 0.09, x, shape.gunwale - 0.08, 0, spec.stripe));
-  }
-  if (spec.cabin) {
-    const { x } = at(0.44);
-    const w = spec.beam * 0.5;
-    parts.push(part(1.5, 1.25, w, x, DEPTH + 0.5, 0, 0xe9e4d6));
-    parts.push(part(1.7, 0.06, w + 0.2, x, DEPTH + 1.15, 0, spec.stripe));
-    parts.push(part(0.04, 0.42, w - 0.2, x + 0.75, DEPTH + 0.8, 0, 0x16202a));
-    for (const side of [-1, 1]) parts.push(part(0.9, 0.38, 0.04, x, DEPTH + 0.8, (side * w) / 2, 0x16202a));
-  }
-  if (spec.mast) {
-    const { x } = at(spec.cabin ? 0.68 : 0.6);
-    const mast = new THREE.CylinderGeometry(0.035, 0.05, 3.4, 8);
-    mast.translate(x, DEPTH * 0.34 + 1.7, 0);
-    parts.push(tint(mast, WOOD));
-    parts.push(part(1.9, 0.05, 0.05, x - 0.8, DEPTH + 1.0, 0, WOOD));
-  }
-  // Working clutter: fish boxes, a heap of net, floats and fenders.
-  const boxes = 1 + Math.floor(random() * 3);
-  for (let i = 0; i < boxes; i++) {
-    const { x } = at(0.3 + random() * 0.12 + (spec.cabin ? 0.42 : 0.25 * i));
-    parts.push(part(0.6, 0.24, 0.4, x, DEPTH * 0.34 + 0.135 + (i % 2) * 0.24, (random() - 0.5) * 0.3, [0x2f5f86, 0xc9d2d6, 0xb5483a][i % 3]!, random() * 0.6));
-  }
-  const heap = new THREE.IcosahedronGeometry(0.42, 1);
-  heap.scale(1.3, 0.42, 1);
-  heap.translate(at(0.16).x + 0.3, DEPTH * 0.34 + 0.16, 0);
-  parts.push(tint(heap, 0x35564d));
-  for (let i = 0; i < 4; i++) {
-    const ball = new THREE.SphereGeometry(0.09, 8, 6);
-    ball.translate(at(0.16).x + 0.1 + random() * 0.5, DEPTH * 0.34 + 0.36, (random() - 0.5) * 0.5);
-    parts.push(tint(ball, 0xd4622a));
-  }
-  for (const [t, side] of [
-    [0.36, 1],
-    [0.62, 1],
-    [0.4, -1],
-    [0.66, -1],
-  ] as const) {
-    const { x, shape } = at(t);
-    const fender = new THREE.CylinderGeometry(0.085, 0.085, 0.42, 8);
-    fender.translate(x, shape.gunwale - 0.3, side * (shape.half(1) + 0.07));
-    parts.push(tint(fender, 0xd8d6cf));
-  }
-  const merged = mergeGeometries(parts, false);
-  for (const geometry of parts) geometry.dispose();
-  if (!merged) throw new Error('Harbor: could not merge boat geometry');
-  return merged;
+  return mergeBoat(parts);
 }
 
 const TARP_RISE = 1.05;
@@ -218,7 +159,7 @@ function tarpGeometry(spec: BoatSpec): THREE.BufferGeometry {
   const steps = 12;
   const station = (i: number) => {
     const t = 0.03 + (0.94 * i) / steps;
-    const shape = section(t, spec.beam);
+    const shape = section(t, spec);
     // The ridge runs level amidships and drops to the stem and stern posts.
     const ends = Math.pow(Math.abs(2 * t - 1), 3);
     return { x: (t - 0.5) * spec.length, ridge: shape.gunwale + TARP_RISE * (1 - ends) + 0.12, eave: shape.gunwale - 0.16, half: shape.half(1) + 0.07 };
@@ -250,19 +191,18 @@ export interface Fleet {
 
 /** Moored fishing boats that rock gently on the water, plus one hauled out on the quay. */
 export function addBoats(kit: Kit, root: THREE.Object3D, assets: Assets): Fleet {
-  const material = new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.6, side: THREE.DoubleSide });
-  const planks = assets.pbr('pbr-harbor-blue-planks');
-  material.normalMap = planks.normal;
-  material.normalScale = new THREE.Vector2(0.7, 0.7);
+  const lettering = letteringAtlas();
+  const material = boatMaterial(assets, kit.mats.grime, lettering);
 
   const afloat: { mesh: THREE.Mesh; phase: number; baseY: number }[] = [];
   const geometries: THREE.BufferGeometry[] = [];
-  for (const spec of BOATS) {
-    const geometry = boatGeometry(spec, kit.random);
+  BOATS.forEach((spec, index) => {
+    const baseY = spec.ashore ?? WATER_Y - DRAFT;
+    const geometry = boatGeometry(spec, index, baseY, kit.random);
     geometries.push(geometry);
     const mesh = new THREE.Mesh(geometry, material);
-    const baseY = spec.ashore ?? WATER_Y - DRAFT;
     mesh.position.set(spec.x, baseY, spec.z);
+    mesh.name = 'harbor-boat';
     mesh.rotation.order = 'YXZ';
     mesh.rotation.y = spec.yaw;
     mesh.castShadow = true;
@@ -314,7 +254,7 @@ export function addBoats(kit: Kit, root: THREE.Object3D, assets: Assets): Fleet 
     const top = baseY + DEPTH + (spec.covered ? TARP_RISE : 0.15);
     const bottom = Math.min(baseY, WATER_Y - 0.3);
     kit.colliders.box(spec.length * 0.88, top - bottom, spec.beam * 0.82, spec.x, (top + bottom) / 2, spec.z, 'wood', spec.yaw);
-  }
+  });
 
   return {
     update: (elapsed) => {
@@ -327,53 +267,7 @@ export function addBoats(kit: Kit, root: THREE.Object3D, assets: Assets): Fleet 
     dispose: () => {
       for (const geometry of geometries) geometry.dispose();
       material.dispose();
+      lettering.dispose();
     },
   };
-}
-
-/** Timber jetties on piles, flush with the quay. */
-export function addJetties(kit: Kit): void {
-  for (const jetty of JETTIES) addJetty(kit, jetty);
-}
-
-function addJetty(kit: Kit, jetty: Jetty): void {
-  const { batch, colliders, mats } = kit;
-  const x0 = jetty.x - jetty.width / 2;
-  const x1 = jetty.x + jetty.width / 2;
-  const z0 = QUAY_EDGE + 0.06;
-  const z1 = QUAY_EDGE + jetty.length;
-  const deck = (ax: number, bx: number, az: number, bz: number): void => {
-    batch.span(mats.planksPale, ax, bx, -0.07, 0, az, bz, { tile: 1.5, swap: true });
-    batch.span(mats.planks, ax + 0.12, ax + 0.3, -0.3, -0.07, az, bz, { tile: 1.5 });
-    batch.span(mats.planks, bx - 0.3, bx - 0.12, -0.3, -0.07, az, bz, { tile: 1.5 });
-    colliders.span(ax, bx, -0.34, 0, az, bz, 'wood');
-  };
-  deck(x0, x1, z0, z1);
-  if (jetty.head > 0) {
-    deck(jetty.x - jetty.head, x0, z1 - 2.8, z1);
-    deck(x1, jetty.x + jetty.head, z1 - 2.8, z1);
-  }
-
-  const pile = (x: number, z: number, tall: boolean): void => {
-    const top = tall ? 0.85 + kit.random() * 0.25 : 0.04;
-    const bottom = SEABED_Y - 0.3;
-    const geometry = new THREE.CylinderGeometry(0.12, 0.14, top - bottom, 10);
-    batch.place(mats.planks, geometry, x, (top + bottom) / 2, z, kit.random() * 3);
-    geometry.dispose();
-    if (tall) colliders.box(0.26, top, 0.26, x, top / 2, z, 'wood');
-  };
-  const bays = Math.max(2, Math.round((z1 - z0) / 3.2));
-  for (let i = 1; i <= bays; i++) {
-    const z = z0 + ((z1 - z0) * i) / bays - 0.25;
-    const tall = i % 2 === 0;
-    pile(x0 - 0.1, z, tall);
-    pile(x1 + 0.1, z, tall && i !== bays);
-    batch.span(mats.planks, x0 - 0.2, x1 + 0.2, -0.46, -0.3, z - 0.08, z + 0.08, { tile: 1.5, swap: true });
-  }
-  if (jetty.head > 0) {
-    for (const x of [jetty.x - jetty.head + 0.1, jetty.x + jetty.head - 0.1]) {
-      pile(x, z1 - 0.2, true);
-      pile(x, z1 - 2.6, false);
-    }
-  }
 }

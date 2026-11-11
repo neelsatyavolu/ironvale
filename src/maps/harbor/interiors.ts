@@ -41,6 +41,22 @@ function addTable(kit: Kit, x: number, z: number, chairs: number, y = 0): void {
   }
 }
 
+/** Enamel pendant on a flex: ceiling rose, coned shade and a bare bulb just under its rim. `y` is the bulb. */
+export function addPendant(kit: Kit, x: number, y: number, z: number): void {
+  const { batch, mats } = kit;
+  const shade = new THREE.CylinderGeometry(0.035, 0.21, 0.13, 14);
+  const collar = new THREE.CylinderGeometry(0.03, 0.035, 0.07, 8);
+  const rose = new THREE.CylinderGeometry(0.05, 0.06, 0.03, 10);
+  const bulb = new THREE.SphereGeometry(0.045, 10, 8);
+  batch.box(mats.iron, 0.012, 2.9 - y - 0.2, 0.012, x, (2.9 + y + 0.2) / 2, z);
+  batch.place(mats.iron, rose, x, 2.9, z);
+  batch.place(mats.iron, collar, x, y + 0.2, z);
+  batch.place(mats.paint[1]!, shade, x, y + 0.1, z);
+  batch.place(mats.lamp, bulb, x, y, z);
+  for (const geometry of [shade, collar, rose, bulb]) geometry.dispose();
+  kit.lanterns.push([x, y, z, 0, 0]);
+}
+
 export interface Interiors {
   update(elapsed: number): void;
   dispose(): void;
@@ -75,9 +91,7 @@ export function addInteriors(kit: Kit, root: THREE.Object3D): Interiors {
     [-3.6, 6.2],
     [0.2, 5.4],
   ] as const) {
-    batch.box(mats.iron, 0.012, 0.5, 0.012, x, 2.47, z);
-    batch.box(mats.lamp, 0.14, 0.12, 0.14, x, 2.18, z);
-    batch.box(mats.iron, 0.3, 0.02, 0.3, x, 2.25, z);
+    addPendant(kit, x, 2.18, z);
   }
 
   // Canvas awning over the cafe front.
@@ -123,9 +137,7 @@ export function addInteriors(kit: Kit, root: THREE.Object3D): Interiors {
     [-32.4, 5.6],
     [-28.4, 6.8],
   ] as const) {
-    batch.box(mats.iron, 0.012, 0.45, 0.012, x, 2.5, z);
-    batch.box(mats.lamp, 0.14, 0.12, 0.14, x, 2.22, z);
-    batch.box(mats.iron, 0.3, 0.02, 0.3, x, 2.29, z);
+    addPendant(kit, x, 2.22, z);
   }
 
   return {

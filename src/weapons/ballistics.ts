@@ -9,9 +9,8 @@ const NEAR_MISS_RADIUS = 1.2;
 const CASING_BEHIND_MUZZLE = 0.45;
 const CASING_SIDE_SPEED = 2.2;
 const CASING_UP_SPEED = 1.5;
-/** Seconds after the shot at which a bot's bolt or pump throws the case. */
+/** Seconds after the shot at which a bot's bolt throws the case. */
 const BOLT_EJECT_DELAY = 0.6;
-const PUMP_EJECT_DELAY = 0.3;
 
 interface Pending {
   readonly due: number;
@@ -162,8 +161,8 @@ export function createBallisticsSystem(ctx: GameContext, random: () => number = 
       }
 
       if (local) return;
-      if (weapon.fireMode === 'bolt' || weapon.fireMode === 'pump') {
-        later(weapon.fireMode === 'bolt' ? BOLT_EJECT_DELAY : PUMP_EJECT_DELAY, {
+      if (weapon.fireMode === 'bolt') {
+        later(BOLT_EJECT_DELAY, {
           kind: 'casing',
           weapon,
           shooterId: shooter.id,

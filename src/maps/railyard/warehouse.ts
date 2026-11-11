@@ -255,8 +255,8 @@ const RACK_HEIGHT = 5.6;
 
 /** Uprights, beams and loads. Each run gets one box collider; shelf loads are decoration. */
 export function buildRacking(kit: Kit, m: Materials, props: Props): void {
-  const blue = 0x1d4a82;
-  const orange = 0xc2601c;
+  const blue = 0x24456e;
+  const orange = 0xa85a26;
   const cartons = [0x8c7352, 0x7d6748, 0x94805e, 0x756650] as const;
   for (const run of RACKS) {
     const bays = Math.round((run.south - run.north) / RACK_BAY);

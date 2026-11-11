@@ -1,4 +1,4 @@
-// Mesh helpers for the guns-b processing scripts (m1garand, m24). Texture helpers are in guns-b-texture.mjs.
+// Mesh helpers for the guns-b processing script (m24). Texture helpers are in guns-b-texture.mjs.
 // Everything here works on @gltf-transform documents in Node.
 import { Primitive } from '@gltf-transform/core';
 

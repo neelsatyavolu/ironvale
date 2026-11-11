@@ -15,7 +15,7 @@ export const VISION = {
   proximity: 2.2,
   /**
    * Sight range in fog is this divided by the fog density. Set from what the
-   * player can make out on screen: in Pinewood (density 0.0215) a soldier is a
+   * player can make out on screen: in thick mist (density 0.0215) a soldier is a
    * faint shape at 35 m and gone by 45 to 55 m, so sight there stops near 42 m.
    */
   fogVisibility: 0.9,

@@ -54,7 +54,7 @@ export const TRAILER = { x: -24, z: 41.5, yaw: Math.PI / 2 + 0.07, deck: 1.3 } a
 export const BOUNDS = { min: [-43, -1, -47], max: [43, 14, 50.5] } as const;
 
 /** Paint colours for containers. The last two are light, so lettering on them is dark. */
-export const LIVERIES = [0x7c3a2b, 0x234262, 0x2f6259, 0x94703a, 0x6f3033, 0x36506a, 0x4b563c, 0x9a5630, 0x858a8e, 0xbab8ae] as const;
+export const LIVERIES = [0x6a372c, 0x22384f, 0x2b504a, 0x77623f, 0x5a2f33, 0x33485c, 0x444c3b, 0x744a34, 0x787d81, 0xa3a29a] as const;
 export const LIGHT_LIVERY_FROM = 8;
 
 export interface ContainerSpot {

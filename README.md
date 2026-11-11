@@ -1,6 +1,6 @@
 # Ironvale
 
-Ironvale is a first-person shooter that runs in a browser tab. You fight bots on three maps (Railyard, Harbor, Pinewood) with seven guns: M1911, MP5, Remington 870, M1 Garand, M24, M4A1 and M249. There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, two lives), and a two-player mode that connects two games directly for co-op or a duel.
+Ironvale is a first-person shooter that runs in a browser tab. You fight bots on three maps (Railyard, Harbor, Headworks) with four guns: M4A1, MP5, M24 and M249. There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, two lives), and a two-player mode that connects two games directly for co-op or a duel.
 
 It is written in TypeScript on Three.js r187. It renders with WebGPU and falls back to WebGL 2 on its own when WebGPU is missing. The models, textures and recordings are all CC0 or CC BY 4.0; [CREDITS.md](CREDITS.md) lists them, and the same list is in the game under Credits.
 
@@ -57,7 +57,7 @@ There are two presets. The game starts on Trackpad; switch under Settings or on 
 | Hold breath while aiming | Shift | Shift |
 | Reload | R | R |
 | Next or previous weapon | Two-finger scroll, or ] and [ | Wheel, or ] and [ |
-| Pick a weapon | 1 to 7 | 1 to 7 |
+| Pick a weapon | 1 to 4 | 1 to 4 |
 | Scores | Tab | Tab |
 | Pause | Esc or P | Esc or P |
 
@@ -88,12 +88,12 @@ Measured on 2026-11-09 with `node scripts/dev/docs-download-size.mjs`, which sta
 
 | | 1k tier (Low, Medium) | 2k tier (High, Ultra) |
 | --- | --- | --- |
-| Shared by every map (guns, arms, soldier, most sounds) | 14.8 MB | 14.8 MB |
+| Shared by every map (guns, arms, soldier, most sounds) | 10.3 MB | 10.3 MB |
 | Harbor | 35.4 MB | 61.6 MB |
-| Pinewood | 35.8 MB | 56.7 MB |
+| Headworks (measured 2026-11-10) | 16.5 MB | 38.8 MB |
 | Railyard | 37.8 MB | 60.2 MB |
 
-Each map's figure includes the shared set. The largest single files are the 2k-tier sky panoramas and HDR skies: Pinewood's sky JPG is 11.5 MB, Railyard's HDR 6.5 MB and Harbor's HDR 5.7 MB.
+Each map's figure includes the shared set. The largest single files are the 2k-tier sky panoramas and HDR skies: Railyard's HDR is 6.5 MB, Headworks' HDR and sky JPG are 6.0 MB each and Harbor's HDR is 5.7 MB.
 
 ## Developer URL parameters
 
@@ -102,7 +102,7 @@ Add these to the address. None of them is saved.
 | Parameter | Effect |
 | --- | --- |
 | `autostart` | Starts a match with no menu. Combine with the next three. |
-| `map=harbor` | Map to start: `railyard`, `harbor`, `pinewood` or the test map `range`. |
+| `map=harbor` | Map to start: `railyard`, `harbor`, `headworks` or the test map `range`. |
 | `bots=8` | Number of bots (default 0, which leaves you alone on the map). |
 | `pose=x,y,z,yaw,pitch` | Puts the camera there. Metres and degrees; y is feet height. |
 | `q=low` | Forces a quality tier (`low`, `medium`, `high`, `ultra`) and turns dynamic resolution off. |
@@ -139,8 +139,8 @@ assets/*.json    asset manifests        scripts/   asset pipeline and dev tools 
 
 Sound
 
-- Nobody has listened to the sounds. All 327 files were cut, layered and levelled by script and checked by measurement only (loudness, peaks, leading silence, loop seams). Expect some to be wrong in ways numbers do not show.
-- Several guns use recordings of other guns. The MP5's shots are a Carl Gustav M45 with a Walther PPQ layered in, because no live-fire MP5 recording exists under CC0, and its magazine sounds come from an airsoft replica. The M249's shots are a KAC LAMG. The M24's are a Blaser Tactical 2, a Tikka and a Mosin Nagant. Some M1 Garand takes use an M1917, and some Remington 870 takes use a Benelli Nova and a Winchester Model 12.
+- Nobody has listened to the sounds. All 288 files were cut, layered and levelled by script and checked by measurement only (loudness, peaks, leading silence, loop seams). Expect some to be wrong in ways numbers do not show.
+- Several guns use recordings of other guns. The MP5's shots are a Carl Gustav M45 with a Walther PPQ layered in, because no live-fire MP5 recording exists under CC0, and its magazine sounds come from an airsoft replica. The M249's shots are a KAC LAMG. The M24's are a Blaser Tactical 2, a Tikka and a Mosin Nagant.
 - Bullet impacts are foley (metal struck on rock, rocks thrown at wood and dirt), not recorded bullet strikes, and 15 sounds are synthesised.
 - The Freesound sources are the site's public MP3 previews, not the lossless originals, so every sound has been through lossy compression twice.
 
@@ -153,8 +153,8 @@ Two-player
 Graphics and assets
 
 - The 60 frames a second figure (each map, 8 bots) was measured in headless Chrome on one MacBook. There is no record of a run on a slower machine, or of a full match in Firefox or Safari.
-- The seven gun models, the arms and the soldier come from an Objaverse mirror of the Sketchfab originals with 1k textures only, so they do not get sharper on the 2k tier.
-- Real maker marks were painted out of the M1911's textures. There is no record of the other guns being checked for them.
+- The four gun models, the arms and the soldier come from an Objaverse mirror of the Sketchfab originals with 1k textures only, so they do not get sharper on the 2k tier.
+- There is no record of the gun textures being checked for real maker marks.
 - The menu's map cards have no pictures until `node scripts/dev/ui-thumbs.mjs` has been run to write `public/assets/thumbs/`.
 - `public/assets/dl/` is not in the repository. A fresh clone shows a loading error until `npm run assets` has run, and the build ships both texture tiers whether or not a player uses them.
 - Six files under `public/assets/dl/pbr/forrest_ground_01/` (12 MB) are left over from an earlier manifest. Nothing loads them, but they are copied into `dist/` and the Mac app until deleted.

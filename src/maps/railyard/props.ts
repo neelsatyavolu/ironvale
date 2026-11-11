@@ -1,7 +1,10 @@
 import * as THREE from 'three/webgpu';
 import { MeshBuilder } from './builder';
+import { buildForklift } from './forklift';
 import type { Kit } from './kit';
 import type { Materials } from './materials';
+import { buildGenerator } from './plant';
+import { addChamferBox, rod } from './shapes';
 import { shelter } from './shelter';
 
 const WALL_TILE = 2.71;
@@ -149,9 +152,9 @@ export class Props {
     const cage = builder.build();
     kit.add(m.rawSteel, cage, at, GALVANISED);
     cage.dispose();
-    kit.box(m.matte, 1.12, 0.96, 0.92, x, y + 0.16, z, { yaw, color: 0xa6aaa0 });
+    kit.box(m.matte, 1.12, 0.96, 0.92, x, y + 0.16, z, { yaw, color: 0x959d9f });
     // Fill level showing through the translucent tank.
-    kit.box(m.matte, 1.125, 0.5, 0.925, x, y + 0.165, z, { yaw, color: 0x7e8580 });
+    kit.box(m.matte, 1.125, 0.5, 0.925, x, y + 0.165, z, { yaw, color: 0x5f6a6f });
     kit.box(m.matte, 0.3, 0.2, 0.01, x + Math.sin(yaw) * 0.47, y + 0.7, z + Math.cos(yaw) * 0.47, { yaw, color: 0xe9e9e4 });
     const cap = new THREE.CylinderGeometry(0.11, 0.11, 0.05, 12);
     kit.add(m.matte, cap, kit.transform(x, y + 1.145, z, yaw), 0x7a1f1a);
@@ -206,22 +209,55 @@ export class Props {
     }
   }
 
-  /** Open steel waste skip. */
+  /** Open steel waste skip, part full of rubble, boards and sacks. */
   skip(x: number, z: number, yaw: number, color: number): void {
     const { kit, m } = this;
+    const at = kit.transform(x, 0, z, yaw);
     const builder = new MeshBuilder();
     builder.box(3.3, 0.08, 1.7, 0, 0.14, 0);
     for (const s of [-1, 1]) {
       builder.box(3.4, 1.1, 0.06, 0, 0.7, s * 0.85);
       builder.box(0.06, 1.1, 1.7, s * 1.7, 0.7, 0, 0xffffff, [0, 0, s * 0.16]);
-      builder.box(3.5, 0.08, 0.1, 0, 1.25, s * 0.87);
-      for (const rib of [-1.1, 0, 1.1]) builder.box(0.08, 1.0, 0.05, rib, 0.7, s * 0.9);
+      // Rolled top rail, pressed side ribs, skids, and the lugs the lorry's chains hook.
+      addChamferBox(builder, [3.56, 0.1, 0.12], [0, 1.27, s * 0.87], 0xffffff, 0.03);
+      addChamferBox(builder, [0.12, 0.1, 1.86], [s * 1.79, 1.27, 0], 0xffffff, 0.03);
+      for (const rib of [-1.1, 0, 1.1]) addChamferBox(builder, [0.1, 1.02, 0.06], [rib, 0.7, s * 0.9], 0xffffff, 0.02);
       builder.box(0.18, 0.1, 1.5, s * 1.2, 0.05, 0);
+      for (const lug of [-1.25, 1.25]) rod(builder, [lug, 0.95, s * 0.88], [lug, 0.95, s * 0.99], 0.04, 0xdddddd, 8);
     }
     const body = builder.build();
-    kit.add(m.steel, body, kit.transform(x, 0, z, yaw), color);
+    kit.add(m.steel, body, at, color);
     body.dispose();
-    kit.box(m.matte, 3.1, 0.5, 1.5, x, 0.2, z, { yaw, color: 0x2b2a27 });
+
+    // Load: a heap of rubble with odds and ends lying on it.
+    const heap = new THREE.PlaneGeometry(3.2, 1.6, 44, 24).rotateX(-Math.PI / 2);
+    const position = heap.getAttribute('position');
+    for (let i = 0; i < position.count; i++) {
+      const px = position.getX(i);
+      const pz = position.getZ(i);
+      const lump = Math.sin(px * 3.7 + x) * Math.cos(pz * 5.1 + z) * 0.09 + Math.sin(px * 9.3 + pz * 7.7) * 0.035;
+      // Broken brick and concrete: sharp-edged chunks a hand or two across.
+      const chunk = Math.abs(Math.sin(px * 23.1 + pz * 5.3 + x) * Math.sin(pz * 27.7 - px * 7.9 + z)) ** 0.6 * 0.07;
+      position.setY(i, 0.6 + lump + chunk + (1 - (px / 1.7) ** 2) * 0.16);
+    }
+    heap.computeVertexNormals();
+    kit.add(m.wall, heap, at, 0x6a655c);
+    heap.dispose();
+    const junk = new MeshBuilder();
+    const timber = new MeshBuilder();
+    addChamferBox(junk, [0.58, 0.16, 0.36], [-0.8, 0.86, 0.2], 0x4c4a42, 0.07, [0.06, 0.5, 0.1]);
+    addChamferBox(junk, [0.52, 0.15, 0.34], [-0.3, 0.88, -0.3], 0x56534a, 0.07, [-0.06, -0.3, 0.05]);
+    junk.box(0.7, 0.012, 0.5, 0.9, 0.8, -0.2, 0x6b5539, [0.2, 0.9, 0.1]);
+    rod(junk, [0.2, 0.74, 0.5], [1.3, 1.0, 0.1], 0.03, 0x5a5d5e, 6);
+    timber.box(0.1, 0.03, 1.9, 0.4, 0.92, 0.1, 0x8d7f6c, [0.18, 1.2, 0]);
+    timber.box(0.1, 0.03, 1.5, -1.0, 0.9, -0.1, 0x8d7f6c, [-0.22, 0.4, 0]);
+    timber.box(0.1, 0.03, 1.3, 1.1, 0.95, 0.3, 0x8d7f6c, [0.35, -0.5, 0]);
+    const junkGeometry = junk.build();
+    const timberGeometry = timber.build();
+    kit.add(m.matte, junkGeometry, at);
+    kit.add(m.wood, timberGeometry, at);
+    junkGeometry.dispose();
+    timberGeometry.dispose();
     kit.collide(3.6, 1.3, 1.8, x, 0, z, 'metal', yaw);
   }
 
@@ -254,74 +290,12 @@ export class Props {
 
   /** Skid-mounted diesel generator. */
   generator(x: number, z: number, yaw: number): void {
-    const { kit, m } = this;
-    kit.box(m.steel, 2.5, 0.16, 1.15, x, 0, z, { yaw, color: 0x1e2022 });
-    kit.box(m.steel, 2.3, 1.25, 1.05, x, 0.16, z, { yaw, color: 0x3a6a4d });
-    kit.box(m.cladding, 0.9, 0.7, 1.07, x - Math.cos(yaw) * 0.55, 0.5, z + Math.sin(yaw) * 0.55, { yaw, tile: 0.5, color: 0x2e3133 });
-    kit.box(m.matte, 0.5, 0.36, 0.02, x + Math.cos(yaw) * 0.7 + Math.sin(yaw) * 0.53, 0.8, z - Math.sin(yaw) * 0.7 + Math.cos(yaw) * 0.53, { yaw, color: 0x17191b });
-    kit.post(m.rawSteel, 0.05, 0.55, x + Math.cos(yaw) * 0.8, 1.41, z - Math.sin(yaw) * 0.8, 0x3b3835, 8);
-    kit.collide(2.5, 1.42, 1.15, x, 0, z, 'metal', yaw);
+    buildGenerator(this.kit, this.m, x, z, yaw);
   }
 
   /** Counterbalance forklift truck, parked. Forks point along local -Z. */
   forklift(x: number, z: number, yaw: number): void {
-    const { kit, m } = this;
-    const body = new MeshBuilder();
-    const dark = new MeshBuilder();
-    body.box(1.1, 0.62, 1.5, 0, 0.62, 0.35);
-    body.box(1.1, 0.5, 0.55, 0, 0.85, 1.05);
-    body.box(1.0, 0.3, 0.6, 0, 0.5, -0.55);
-    for (const sx of [-1, 1]) {
-      for (const sz of [-0.45, 0.95]) body.box(0.06, 1.15, 0.06, sx * 0.5, 1.5, sz);
-      body.box(0.06, 0.06, 1.46, sx * 0.5, 2.1, 0.25);
-      dark.box(0.1, 2.3, 0.14, sx * 0.34, 1.25, -0.92);
-      dark.box(0.1, 0.05, 1.05, sx * 0.25, 0.09, -1.5);
-      dark.box(0.1, 0.5, 0.05, sx * 0.25, 0.32, -1.0);
-    }
-    for (const sz of [-0.2, 0.25, 0.7]) body.box(1.06, 0.04, 0.05, 0, 2.11, sz);
-    dark.box(0.82, 0.1, 0.1, 0, 2.3, -0.92);
-    dark.box(0.82, 0.1, 0.1, 0, 0.55, -0.92);
-    dark.box(0.9, 0.45, 0.06, 0, 0.6, -1.0);
-    dark.box(0.5, 0.1, 0.5, 0, 0.98, 0.42);
-    dark.box(0.5, 0.45, 0.1, 0, 1.2, 0.68);
-    dark.box(0.05, 0.5, 0.05, 0, 1.15, -0.2, 0xffffff, [0.5, 0, 0]);
-    const wheel = new THREE.CylinderGeometry(0.3, 0.3, 0.24, 22).rotateZ(Math.PI / 2);
-    const hub = new THREE.CylinderGeometry(0.15, 0.15, 0.26, 12).rotateZ(Math.PI / 2);
-    for (const sx of [-1, 1]) {
-      dark.add(wheel, new THREE.Matrix4().makeTranslation(sx * 0.52, 0.3, -0.5));
-      dark.add(wheel, new THREE.Matrix4().makeScale(1, 0.8, 0.8).setPosition(sx * 0.5, 0.24, 0.95));
-      body.add(hub, new THREE.Matrix4().makeTranslation(sx * 0.52, 0.3, -0.5));
-      body.add(hub, new THREE.Matrix4().makeScale(1, 0.8, 0.8).setPosition(sx * 0.5, 0.24, 0.95));
-    }
-    wheel.dispose();
-    hub.dispose();
-    // Steering wheel, load backrest and the gas bottle strapped across the counterweight.
-    const steering = new THREE.TorusGeometry(0.15, 0.018, 6, 14).rotateX(-1.05);
-    dark.add(steering, new THREE.Matrix4().makeTranslation(0, 1.36, -0.02));
-    steering.dispose();
-    for (const lx of [-0.36, -0.12, 0.12, 0.36]) dark.box(0.025, 0.7, 0.025, lx, 0.95, -1.03);
-    dark.box(0.86, 0.03, 0.03, 0, 1.3, -1.03);
-    const trim = new MeshBuilder();
-    const bottle = new THREE.CylinderGeometry(0.15, 0.15, 0.72, 14).rotateZ(Math.PI / 2);
-    trim.add(bottle, new THREE.Matrix4().makeTranslation(0, 1.27, 1.12), 0x9aa0a2);
-    bottle.dispose();
-    for (const sx of [-0.2, 0.2]) trim.box(0.03, 0.32, 0.34, sx, 1.27, 1.12, 0x24282b);
-    for (const sx of [-0.42, 0.42]) trim.box(0.14, 0.09, 0.02, sx, 0.9, 1.335, 0x6d1512);
-    const at = kit.transform(x, 0, z, yaw);
-    const bodyGeometry = body.build();
-    const darkGeometry = dark.build();
-    const trimGeometry = trim.build();
-    kit.add(m.steel, bodyGeometry, at, 0xc99a16);
-    kit.add(m.matte, darkGeometry, at, 0x1b1c1e);
-    kit.add(m.steel, trimGeometry, at);
-    bodyGeometry.dispose();
-    darkGeometry.dispose();
-    trimGeometry.dispose();
-    const beacon = new THREE.CylinderGeometry(0.05, 0.05, 0.09, 8);
-    kit.add(m.lamp, beacon, at.clone().multiply(new THREE.Matrix4().makeTranslation(0.4, 2.18, 0.9)), 0xff8a1a);
-    beacon.dispose();
-    kit.collide(1.2, 2.15, 2.1, x - Math.sin(yaw) * -0.25, 0, z - Math.cos(yaw) * -0.25, 'metal', yaw);
-    kit.collide(0.7, 0.14, 1.1, x - Math.sin(yaw) * 1.5, 0, z - Math.cos(yaw) * 1.5, 'metal', yaw);
+    buildForklift(this.kit, this.m, x, z, yaw);
   }
 
   /** Steel workbench with a timber top. */

@@ -1,9 +1,12 @@
 import * as THREE from 'three/webgpu';
-import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { seededRandom } from '../../core/random';
+import { addCapes } from './capes';
 import type { Kit } from './facade';
 import { addHouse } from './house';
 import { projectUv } from './kit';
 import { TERRACE_NORTH, TERRACE_Y } from './layout';
+import { cypressTree, scrubBush, stonePineCrown, stonePineTrunk } from './trees';
 
 /** Two more terraces of houses climb the hill behind the town. Nobody can reach them. */
 const TIERS = [
@@ -70,38 +73,6 @@ function hillHeight(x: number, z: number): number {
   const outcrop = Math.max(0, fbm(x * 0.05 + 9.4, z * 0.05) - 0.55) * 34;
   const relief = (Math.min(gully, 0.35) * 40 - 9 + outcrop + (fbm(x * 0.11, z * 0.11) - 0.5) * 5) * Math.min(1, t * 3);
   return TIERS[1].base - 2 + Math.max(0, rise + (ridge + summit) * Math.min(1, t * 2.5) + relief - flank * t);
-}
-
-/** Icosphere welded and bulged, so it shades as a soft mass rather than a faceted ball. */
-function clump(radius: number, detail: number, squash: number, bulge: number): THREE.BufferGeometry {
-  const raw = new THREE.IcosahedronGeometry(radius, detail);
-  raw.deleteAttribute('normal');
-  raw.deleteAttribute('uv');
-  const welded = mergeVertices(raw, 1e-4);
-  raw.dispose();
-  const position = welded.getAttribute('position');
-  for (let i = 0; i < position.count; i++) {
-    const x = position.getX(i);
-    const y = position.getY(i);
-    const z = position.getZ(i);
-    const lump = 1 + bulge * Math.sin((x * 5.3 + y * 3.1) / radius) * Math.cos((z * 4.7 - y * 2.3) / radius);
-    position.setXYZ(i, x * lump, y * lump * squash, z * lump);
-  }
-  welded.computeVertexNormals();
-  return welded;
-}
-
-/** Unit-height cypress: a narrow flame shape. */
-function cypressGeometry(): THREE.BufferGeometry {
-  const profile = [
-    [0.001, 0],
-    [0.1, 0.02],
-    [0.15, 0.2],
-    [0.14, 0.45],
-    [0.09, 0.75],
-    [0.001, 1],
-  ].map(([r, y]) => new THREE.Vector2(r, y));
-  return new THREE.LatheGeometry(profile, 7);
 }
 
 interface Tree {
@@ -222,6 +193,7 @@ export function addBackdrop(kit: Kit, root: THREE.Object3D): { dispose(): void }
   }
 
   // Scrub everywhere the ground is not too steep, pines in groves, cypresses in ones and twos.
+  const grove2 = seededRandom(0x9147e);
   const attempts = Math.round(6500 * Math.max(0.35, density));
   for (let i = 0; i < attempts; i++) {
     const x = -250 + random() * 500;
@@ -233,7 +205,18 @@ export function addBackdrop(kit: Kit, root: THREE.Object3D): { dispose(): void }
     const roll = random();
     if (grove > 0.55 && roll < 0.3) {
       const size = 7 + random() * 6;
-      pines.push(tree(x, y - 0.4, z, size * (0.9 + random() * 0.5), size, random() * 6, 0.7 + random() * 0.5));
+      const spread = 0.9 + random() * 0.5;
+      const yaw = random() * 6;
+      const shade = 0.7 + random() * 0.5;
+      // Each draw from the map's stream plants a pair of smaller pines, the second placed from the grove's own stream,
+      // so the wood reads as many trees at their true size and nothing placed after the hill moves.
+      pines.push(tree(x, y - 0.4, z, size * spread * 0.6, size * 0.66, yaw, shade));
+      const nx = x + (grove2() - 0.5) * 16;
+      const nz = z + (grove2() - 0.5) * 12;
+      if (slopeAt(nx, nz) < 1.9) {
+        const small = 4.6 + grove2() * 3.6;
+        pines.push(tree(nx, hillHeight(nx, nz) - 0.4, nz, small * (0.85 + grove2() * 0.4), small, grove2() * 6, 0.65 + grove2() * 0.5));
+      }
     } else if (roll > 0.985) {
       const height = 9 + random() * 8;
       cypresses.push(tree(x, y - 0.5, z, height * 0.8, height, random() * 6, 0.75 + random() * 0.4));
@@ -243,20 +226,22 @@ export function addBackdrop(kit: Kit, root: THREE.Object3D): { dispose(): void }
     }
   }
 
-  const cypress = cypressGeometry();
-  const canopy = clump(0.5, 1, 0.5, 0.1);
-  canopy.translate(0, 0.8, 0);
-  const trunk = new THREE.CylinderGeometry(0.028, 0.045, 0.66, 5);
-  trunk.translate(0, 0.33, 0);
-  const shrub = clump(0.5, 0, 0.8, 0.25);
-  shrub.translate(0, 0.3, 0);
+  const cypress = cypressTree();
+  const canopy = stonePineCrown();
+  const limbs = stonePineTrunk();
+  const trunk = mergeGeometries(limbs, false) ?? new THREE.BufferGeometry();
+  for (const limb of limbs) limb.dispose();
+  const shrub = scrubBush();
   forest(root, cypress, mats.cypress, cypresses);
   forest(root, canopy, mats.pine, pines);
   forest(root, trunk, mats.planksShade, pines);
   forest(root, shrub, mats.pine, shrubs);
 
+  const capes = addCapes(kit, root);
+
   return {
     dispose: () => {
+      capes.dispose();
       for (const geometry of [cypress, canopy, trunk, shrub]) geometry.dispose();
     },
   };

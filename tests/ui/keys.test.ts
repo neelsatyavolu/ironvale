@@ -5,7 +5,7 @@ import { bindingRows, keyName } from '../../src/ui/keys';
 describe('keyName', () => {
   it('names letters, digits and punctuation by their cap', () => {
     expect(keyName('KeyW', 'trackpad')).toBe('W');
-    expect(keyName('Digit7', 'trackpad')).toBe('7');
+    expect(keyName('Digit4', 'trackpad')).toBe('4');
     expect(keyName('BracketLeft', 'mouse')).toBe('[');
     expect(keyName('BracketRight', 'mouse')).toBe(']');
   });
@@ -42,7 +42,7 @@ describe('bindingRows', () => {
   });
 
   it('folds the weapon slots into one range', () => {
-    expect(find('mouse', 'Choose weapon')?.keys).toEqual(['1 to 7']);
+    expect(find('mouse', 'Choose weapon')?.keys).toEqual(['1 to 4']);
   });
 
   it('lists every key bound to an action, in binding order', () => {

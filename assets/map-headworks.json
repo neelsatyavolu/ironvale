@@ -1,0 +1,120 @@
+{
+  "assets": [
+    {
+      "id": "hdri-headworks",
+      "kind": "hdri",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/kiara_5_noon",
+      "files": {
+        "hdr@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kiara_5_noon_1k.hdr",
+          "path": "hdri/kiara_5_noon_1k.hdr"
+        },
+        "hdr@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kiara_5_noon_2k.hdr",
+          "path": "hdri/kiara_5_noon_2k.hdr"
+        },
+        "sky": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/kiara_5_noon.jpg",
+          "path": "hdri/kiara_5_noon_sky.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-headworks-formed",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/wood_textured_concrete",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_textured_concrete/wood_textured_concrete_diff_1k.jpg",
+          "path": "pbr/wood_textured_concrete/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_textured_concrete/wood_textured_concrete_nor_gl_1k.jpg",
+          "path": "pbr/wood_textured_concrete/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_textured_concrete/wood_textured_concrete_arm_1k.jpg",
+          "path": "pbr/wood_textured_concrete/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/wood_textured_concrete/wood_textured_concrete_diff_2k.jpg",
+          "path": "pbr/wood_textured_concrete/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/wood_textured_concrete/wood_textured_concrete_nor_gl_2k.jpg",
+          "path": "pbr/wood_textured_concrete/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/wood_textured_concrete/wood_textured_concrete_arm_2k.jpg",
+          "path": "pbr/wood_textured_concrete/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-headworks-paving",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/concrete_floor_worn_001",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_arm_1k.jpg",
+          "path": "pbr/concrete_floor_worn_001/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_diff_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_arm_2k.jpg",
+          "path": "pbr/concrete_floor_worn_001/arm_2k.jpg"
+        }
+      }
+    },
+    {
+      "id": "pbr-headworks-road",
+      "kind": "pbr",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/dirty_concrete",
+      "files": {
+        "color@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/dirty_concrete/dirty_concrete_diff_1k.jpg",
+          "path": "pbr/dirty_concrete/diff_1k.jpg"
+        },
+        "normal@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/dirty_concrete/dirty_concrete_nor_gl_1k.jpg",
+          "path": "pbr/dirty_concrete/nor_gl_1k.jpg"
+        },
+        "arm@1k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/dirty_concrete/dirty_concrete_arm_1k.jpg",
+          "path": "pbr/dirty_concrete/arm_1k.jpg"
+        },
+        "color@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dirty_concrete/dirty_concrete_diff_2k.jpg",
+          "path": "pbr/dirty_concrete/diff_2k.jpg"
+        },
+        "normal@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dirty_concrete/dirty_concrete_nor_gl_2k.jpg",
+          "path": "pbr/dirty_concrete/nor_gl_2k.jpg"
+        },
+        "arm@2k": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dirty_concrete/dirty_concrete_arm_2k.jpg",
+          "path": "pbr/dirty_concrete/arm_2k.jpg"
+        }
+      }
+    }
+  ]
+}

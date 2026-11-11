@@ -81,14 +81,9 @@ const STAGES: readonly WeaponActionStage[] = [
   'boltForward',
   'boltLift',
   'boltClose',
-  'pumpBack',
-  'pumpForward',
   'shellInsert',
-  'clipInsert',
-  'clipPing',
   'beltOpen',
   'beltClose',
-  'slideRelease',
 ];
 const MAP_ID = /^[a-z0-9-]{1,24}$/;
 export const MAX_NET_BOTS = 32;

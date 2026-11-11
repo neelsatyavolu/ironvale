@@ -289,11 +289,6 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     this.throwBrass(2 + Math.random() * 0.8, 1.2 + Math.random() * 0.6, 0.2 + Math.random() * 0.4);
   }
 
-  /** The Garand's clip leaves upward. There is no clip casing kind, so it goes out as rifle brass. */
-  clipEject(): void {
-    this.throwBrass(0.5, 3.2, 0.6);
-  }
-
   private throwBrass(side: number, up: number, back: number): void {
     const { ctx, rig } = this;
     if (!rig) return;

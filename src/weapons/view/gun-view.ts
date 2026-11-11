@@ -10,10 +10,6 @@ const scratchPosition = new THREE.Vector3();
 const scratchQuaternion = new THREE.Quaternion();
 const noRaycast = (): void => undefined;
 
-/** Loading port of a tube-fed shotgun, relative to the firing grip. */
-const LOADING_PORT_FROM_GRIP = new THREE.Vector3(-0.015, 0.03, -0.14);
-const CLIP_ABOVE_PORT = 0.045;
-
 /**
  * One gun as the player sees it: the model, its hip and aimed poses, the
  * parts animator and the points the hands move between.
@@ -34,7 +30,6 @@ export class GunView {
 
   /** Where the support hand goes during a reload, in gun space. Null when the gun has nowhere obvious. */
   private readonly awayNode: THREE.Object3D | null;
-  private readonly awayOffset = new THREE.Vector3();
   private readonly triggerRest = new THREE.Vector3();
   private readonly triggerRestQuaternion = new THREE.Quaternion();
 
@@ -82,14 +77,8 @@ export class GunView {
   }
 
   private pickAwayNode(): THREE.Object3D | null {
-    const { parts, ejection, grips } = this.model;
+    const { parts } = this.model;
     switch (this.def.reloadStyle) {
-      case 'enbloc':
-        this.awayOffset.set(0, CLIP_ABOVE_PORT, 0);
-        return ejection;
-      case 'single-shell':
-        this.awayOffset.copy(LOADING_PORT_FROM_GRIP);
-        return grips.trigger;
       case 'belt':
         return parts.cover ?? parts.magazine ?? null;
       case 'magazine':
@@ -109,7 +98,7 @@ export class GunView {
     scratchMatrix.decompose(this.supportTarget.position, this.supportTarget.quaternion, scratchScale);
     if (this.awayNode && parts.supportAway > 0.001) {
       scratchMatrix.multiplyMatrices(inverseRoot, this.awayNode.matrixWorld);
-      scratchPosition.setFromMatrixPosition(scratchMatrix).add(this.awayOffset);
+      scratchPosition.setFromMatrixPosition(scratchMatrix);
       this.supportTarget.position.lerp(scratchPosition, parts.supportAway);
     }
 

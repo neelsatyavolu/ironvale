@@ -1,8 +1,9 @@
 import * as THREE from 'three/webgpu';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { GunModel } from '../../../src/game/contracts';
+import { triangleCount } from '../../../src/weapons/models/lib/m24-shapes';
 import m24, { M24_BORE } from '../../../src/weapons/models/m24.gun';
-import { centroid, loadGunFile, surfacePoints, withMaterial, worldAxis, worldPoint, worldVertices, type GunFile } from './m1garand-m24.fixture';
+import { centroid, loadGunFile, surfacePoints, withMaterial, worldAxis, worldPoint, worldVertices, type GunFile } from './guns-b.fixture';
 
 const MM = 0.001;
 
@@ -14,8 +15,9 @@ describe('m24.glb', () => {
 
   it('is small and uses only formats the loader can decode', () => {
     expect(file.bytes).toBeLessThan(1_000_000);
-    expect(file.triangles).toBeGreaterThan(9_000);
-    expect(file.triangles).toBeLessThan(12_000);
+    // The scope, rings and fittings are built in code, so the file holds only the rifle itself.
+    expect(file.triangles).toBeGreaterThan(4_000);
+    expect(file.triangles).toBeLessThan(6_000);
     expect(file.extensions).toEqual(['EXT_texture_webp']);
     expect(new Set(file.textureTypes)).toEqual(new Set(['image/webp']));
     expect(file.textureSizes.length).toBeLessThanOrEqual(5);
@@ -39,6 +41,7 @@ describe('m24 gun module', () => {
   let bounds: THREE.Box3;
   let metal: THREE.Vector3[];
   let stock: THREE.Vector3[];
+  let scope: THREE.Vector3[];
   beforeAll(async () => {
     file = await loadGunFile('m24.glb', 'mdl-gun-m24');
     model = m24.build(file.assets);
@@ -46,6 +49,7 @@ describe('m24 gun module', () => {
     bounds = new THREE.Box3().setFromObject(model.root, true);
     metal = surfacePoints(model.root, withMaterial('metal'), 4);
     stock = surfacePoints(model.root, withMaterial('stock'));
+    scope = worldVertices(model.root, withMaterial('scope_black'));
   });
 
   it('declares its weapon and asset', () => {
@@ -108,7 +112,7 @@ describe('m24 gun module', () => {
       expect(disc.max.z - disc.min.z).toBeLessThan(0.5 * MM);
     }
     // The scope tube around the line of sight is centred on it.
-    const tube = metal.filter((point) => point.z < rear.z - 0.03 && point.z > front.z + 0.03 && Math.hypot(point.x - eye.x, point.y - eye.y) < 0.016);
+    const tube = scope.filter((point) => point.z < rear.z - 0.03 && point.z > front.z + 0.03 && Math.hypot(point.x - eye.x, point.y - eye.y) < 0.016);
     expect(tube.length).toBeGreaterThan(50);
     const tubeCentre = new THREE.Box3().setFromPoints(tube.filter((point) => Math.abs(point.z - (rear.z - 0.05)) < 0.015)).getCenter(new THREE.Vector3());
     expect(Math.hypot(tubeCentre.x - eye.x, tubeCentre.y - eye.y)).toBeLessThan(1.5 * MM);
@@ -266,7 +270,8 @@ describe('m24 gun module', () => {
     expect(b.geometry).toEqual(a.geometry);
     b.materials.forEach((material, index) => expect(material).toBe(a.materials[index]));
     expect(other.root).not.toBe(model.root);
-    expect(a.geometry.length).toBeLessThanOrEqual(12);
+    // The loaded parts, the magazine and its collar, and one mesh per finish for everything built in code.
+    expect(a.geometry.length).toBeLessThanOrEqual(15);
   });
 
   it('casts and receives shadows on every mesh, including the parts built in code', () => {
@@ -275,5 +280,87 @@ describe('m24 gun module', () => {
       expect(node.castShadow).toBe(true);
       expect(node.receiveShadow).toBe(true);
     });
+  });
+
+  it('stays inside the triangle budget with the code-built detail', () => {
+    let triangles = 0;
+    model.root.traverse((node) => {
+      if (node instanceof THREE.Mesh) triangles += triangleCount(node.geometry);
+    });
+    expect(triangles).toBeGreaterThan(15_000);
+    expect(triangles).toBeLessThan(35_000);
+  });
+
+  it('adds the scope and fittings as one mesh per finish, wound to face outward', () => {
+    for (const name of ['m24-black', 'm24-steel', 'm24-marks', 'm24-matte']) {
+      const part = model.root.getObjectByName(name) as THREE.Mesh | undefined;
+      if (!part) throw new Error(`${name} missing`);
+      const { position, normal, wear } = part.geometry.attributes;
+      expect(wear.count).toBe(position.count);
+      const [a, b, c, n] = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+      let inward = 0;
+      for (let index = 0; index < position.count; index += 3) {
+        a.fromBufferAttribute(position, index);
+        b.fromBufferAttribute(position, index + 1).sub(a);
+        c.fromBufferAttribute(position, index + 2).sub(a);
+        const face = b.cross(c);
+        if (face.lengthSq() < 1e-20) continue;
+        if (face.dot(n.fromBufferAttribute(normal, index)) <= 0) inward++;
+      }
+      expect(inward).toBe(0);
+    }
+  });
+
+  it('builds a scope with an objective bell, three knobs and two rings on the rail', () => {
+    const eye = worldPoint(model.sight);
+    const front = worldPoint(model.root.getObjectByName('lens_objective') as THREE.Object3D);
+    const rear = worldPoint(model.root.getObjectByName('lens_ocular') as THREE.Object3D);
+    const radius = (point: THREE.Vector3): number => Math.hypot(point.x - eye.x, point.y - eye.y);
+    const reach = (points: readonly THREE.Vector3[]): number => Math.max(...points.map(radius));
+    // Main tube is 30 mm; the bell around the objective and the eyepiece are wider, and both shade their lens.
+    const middle = scope.filter((point) => point.z < rear.z - 0.062 && point.z > rear.z - 0.068);
+    expect(reach(middle)).toBeCloseTo(0.015, 3);
+    const bell = scope.filter((point) => point.z < front.z);
+    expect(reach(bell)).toBeGreaterThan(0.021);
+    expect(front.z - Math.min(...bell.map((point) => point.z))).toBeGreaterThan(0.012);
+    const eyecup = worldVertices(model.root, withMaterial('matte_black')).filter((point) => point.z > rear.z && radius(point) > 0.017 && radius(point) < 0.03);
+    expect(Math.max(...eyecup.map((point) => point.z)) - rear.z).toBeGreaterThan(0.005);
+    // Elevation knob above the saddle, windage on the right, focus on the left.
+    const saddle = scope.filter((point) => point.z < -0.125 && point.z > -0.162);
+    expect(Math.max(...saddle.map((point) => point.y)) - eye.y).toBeGreaterThan(0.03);
+    expect(Math.max(...saddle.map((point) => point.x)) - eye.x).toBeGreaterThan(0.03);
+    expect(eye.x - Math.min(...saddle.map((point) => point.x))).toBeGreaterThan(0.028);
+    // Each ring's clamp reaches down over the rail.
+    const rail = metal.filter((point) => Math.abs(point.x) < 0.012 && point.y > worldPoint(model.muzzle).y + 0.018 && point.y < eye.y - 0.02);
+    const railTop = Math.max(...rail.map((point) => point.y));
+    for (const z of [-0.196, -0.092]) {
+      const clamp = scope.filter((point) => Math.abs(point.z - z) < 0.008);
+      expect(Math.min(...clamp.map((point) => point.y))).toBeLessThan(railTop - 0.003);
+      expect(reach(clamp.filter((point) => point.y > eye.y))).toBeGreaterThan(0.019);
+      expect(Math.min(...rail.map((point) => point.z))).toBeLessThan(z - 0.02);
+      expect(Math.max(...rail.map((point) => point.z))).toBeGreaterThan(z + 0.02);
+    }
+  });
+
+  it('folds the bipod under the fore-end, behind the muzzle and below the barrel', () => {
+    const muzzle = worldPoint(model.muzzle);
+    const tip = Math.min(...stock.map((point) => point.z));
+    const below = scope.filter((point) => point.y < muzzle.y - 0.014);
+    const legs = below.filter((point) => point.z < tip - 0.02);
+    expect(legs.length).toBeGreaterThan(100);
+    expect(tip - Math.min(...legs.map((point) => point.z))).toBeGreaterThan(0.1);
+    expect(Math.min(...legs.map((point) => point.z))).toBeGreaterThan(muzzle.z + 0.1);
+    // Nothing else hangs under the barrel ahead of the stock.
+    expect(scope.filter((point) => point.z < tip - 0.02 && point.z > muzzle.z + 0.06 && point.y < muzzle.y).length).toBe(legs.length);
+    // Its body sits against the underside of the stock, ahead of the support hand.
+    const support = worldPoint(model.grips.support);
+    const body = scope.filter((point) => point.z > tip && point.z < tip + 0.08 && point.y < muzzle.y - 0.02);
+    expect(Math.max(...body.map((point) => point.z))).toBeLessThan(support.z - 0.07);
+    const middle = (Math.max(...body.map((point) => point.z)) + Math.min(...body.map((point) => point.z))) / 2;
+    const under = stock.filter((point) => Math.abs(point.z - middle) < 0.012);
+    const seated = Math.max(...body.map((point) => point.y)) - Math.min(...under.map((point) => point.y));
+    // Let into the stock by a millimetre or two, never hanging clear of it.
+    expect(seated).toBeGreaterThan(0);
+    expect(seated).toBeLessThan(4 * MM);
   });
 });

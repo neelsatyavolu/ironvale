@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 import sharp from 'sharp';
 
 // Overall length in metres and how far forward of the grip the middle of the gun sits.
-const GUNS = { m4a1: [0.84, 0.12], m1garand: [1.1, 0.2], mp5: [0.68, 0.08], r870: [1.1, 0.2], m24: [1.15, 0.2], m249: [1.04, 0.18], m1911: [0.22, 0.04] };
+const GUNS = { m4a1: [0.84, 0.12], mp5: [0.68, 0.08], m24: [1.15, 0.2], m249: [1.04, 0.18] };
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-unsafe-webgpu', '--use-angle=metal', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 1200, height: 480 } });
 await mkdir('public/assets/weapons', { recursive: true });

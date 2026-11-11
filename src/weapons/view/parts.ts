@@ -6,7 +6,7 @@ import { markTime, type ActionPlan } from '../plans';
 import { damp, ramp } from './motion';
 
 /**
- * Moves a gun's parts (bolt, slide, magazine, pump, feed cover) in time with
+ * Moves a gun's parts (bolt, slide, magazine, feed cover) in time with
  * the weapon machine's action plan, so each motion ends on the mark where its
  * sound plays. Also reports how far the gun body and the hands should move
  * into their reload and bolt-working poses.
@@ -39,17 +39,17 @@ const turn = new Quaternion();
 /** Guns whose bolt or slide stays back on an empty magazine. */
 function locksOpen(def: WeaponDef): boolean {
   if (def.fireMode !== 'semi' && def.fireMode !== 'auto') return false;
-  return def.weaponClass === 'pistol' || def.weaponClass === 'carbine' || def.reloadStyle === 'enbloc';
+  return def.weaponClass === 'carbine';
 }
 
 export class PartsAnimator {
   /** 0 - 1: gun body in its reload pose. */
   tilt = 0;
-  /** 0 - 1: gun body canted for working a bolt or pump. */
+  /** 0 - 1: gun body canted for working a bolt. */
   work = 0;
-  /** 0 - 1 bump as a shell or magazine goes home. */
+  /** 0 - 1 bump as a magazine goes home. */
   seat = 0;
-  /** 0 - 1: support hand has left the fore-end for the magazine, clip or loading port. */
+  /** 0 - 1: support hand has left the fore-end for the magazine or feed cover. */
   supportAway = 0;
   /** 0 - 1: firing hand is on the bolt handle. */
   triggerAway = 0;
@@ -66,7 +66,7 @@ export class PartsAnimator {
     private readonly model: GunModel,
     private readonly def: WeaponDef,
   ) {
-    this.manual = def.fireMode === 'bolt' || def.fireMode === 'pump';
+    this.manual = def.fireMode === 'bolt';
     this.locks = locksOpen(def);
     for (const part of Object.values(model.parts)) {
       if (part) this.rests.push({ part, position: part.position.clone(), quaternion: part.quaternion.clone() });
@@ -101,7 +101,6 @@ export class PartsAnimator {
     let supportAway = 0;
     let triggerAway = 0;
     let magazineOut = 0;
-    let pump = 0;
     let boltBack = 0;
     let boltLift = 0;
     let cover = 0;
@@ -112,24 +111,13 @@ export class PartsAnimator {
       const tBack = markTime(action, 'boltBack');
       const tForward = markTime(action, 'boltForward');
       const tClose = markTime(action, 'boltClose');
-      const tPumpBack = markTime(action, 'pumpBack');
-      const tPumpForward = markTime(action, 'pumpForward');
       const tMagOut = markTime(action, 'magOut');
       const tMagIn = markTime(action, 'magIn');
-      const tClip = markTime(action, 'clipInsert');
-      const tShell = markTime(action, 'shellInsert');
       const tOpen = markTime(action, 'beltOpen');
       const tShut = markTime(action, 'beltClose');
-      const tRelease = Math.max(tForward, markTime(action, 'slideRelease'));
 
       if (action.kind === 'reload') {
         tilt = ramp(0, 0.22, time) * (1 - ramp(action.duration - 0.28, action.duration, time));
-      } else if (action.kind === 'shellStart') {
-        tilt = ramp(0, action.duration, time);
-      } else if (action.kind === 'shell') {
-        tilt = 1;
-      } else if (action.kind === 'shellEnd') {
-        tilt = 1 - ramp(0, action.duration, time);
       } else {
         work = workWeight(action, time);
       }
@@ -138,19 +126,6 @@ export class PartsAnimator {
         magazineOut = ramp(tMagOut - 0.02, tMagOut + MAG_FALL_SECONDS, time) * (1 - ramp(tMagIn - MAG_SEAT_SECONDS, tMagIn, time));
         supportAway = ramp(tMagOut - 0.24, tMagOut - 0.04, time) * (1 - ramp(tMagIn + 0.05, tMagIn + 0.3, time));
         seat = bump(time - tMagIn, 0.1);
-      }
-      if (tClip >= 0) {
-        supportAway = Math.max(supportAway, ramp(tClip - 0.45, tClip - 0.12, time) * (1 - ramp(tClip + 0.06, tClip + 0.3, time)));
-        seat = Math.max(seat, bump(time - tClip, 0.12));
-      }
-      if (tShell >= 0) {
-        supportAway = 1;
-        seat = bump(time - tShell, 0.14);
-      } else if (action.kind === 'shellStart') {
-        supportAway = ramp(0, action.duration, time);
-      }
-      if (tPumpBack >= 0) {
-        pump = ramp(tPumpBack - 0.1, tPumpBack, time) * (1 - ramp(tPumpForward - 0.09, tPumpForward, time));
       }
       if (tOpen >= 0) {
         cover = ramp(tOpen - 0.04, tOpen + 0.25, time) * (1 - ramp(tShut - 0.25, tShut, time));
@@ -164,7 +139,7 @@ export class PartsAnimator {
         if (tBack >= 0) boltBack = ramp(tBack - 0.1, tBack, time) * (1 - ramp(tForward - 0.1, tForward, time));
       } else if (tBack >= 0) {
         // A self-loader's bolt pulled by hand: stays back until released, or snaps home when only charged.
-        const until = tRelease >= 0 ? tRelease : tBack + 0.16;
+        const until = tForward >= 0 ? tForward : tBack + 0.16;
         if (time > tBack - 0.1 && time < until) holdOpen = true;
       }
     }
@@ -184,7 +159,7 @@ export class PartsAnimator {
       this.held = holdOpen ? damp(this.held, 1, RELEASE_RATE, dt) : damp(this.held, 0, RELEASE_RATE, dt);
       slide = Math.max(pulse, this.held);
     } else {
-      slide = Math.max(boltBack, pump);
+      slide = boltBack;
     }
 
     // The trigger blade swings back about its pin with each shot.
@@ -200,7 +175,6 @@ export class PartsAnimator {
     if (parts.chargingHandle && !this.manual && this.held > 0 && this.def.reloadStyle === 'belt') {
       parts.chargingHandle.position.z += travel * this.held;
     }
-    if (parts.pump) parts.pump.position.z += travel * pump;
     if (parts.cover && cover > 0) parts.cover.quaternion.multiply(turn.setFromAxisAngle(X_AXIS, cover * COVER_OPEN_RADIANS));
     if (parts.magazine) {
       parts.magazine.position.y -= MAG_DROP_METRES * magazineOut;

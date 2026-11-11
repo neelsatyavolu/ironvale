@@ -21,8 +21,8 @@ export function controlTips(bindings: Bindings, preset: ControlPreset): readonly
       ? `${aim} raises the sights. Press it again to lower them.`
       : `Hold ${aim.toLowerCase()} to aim. Shots spread less through the sights.`,
     preset === 'trackpad'
-      ? `A two-finger scroll changes weapon. Keys ${first(bindings.slot1)} to ${first(bindings.slot7)} pick one directly.`
-      : `The wheel changes weapon. Keys ${first(bindings.slot1)} to ${first(bindings.slot7)} pick one directly.`,
+      ? `A two-finger scroll changes weapon. Keys ${first(bindings.slot1)} to ${first(bindings.slot4)} pick one directly.`
+      : `The wheel changes weapon. Keys ${first(bindings.slot1)} to ${first(bindings.slot4)} pick one directly.`,
     `Hold ${first(bindings.sprint)} while moving forward to sprint. ${first(bindings.crouch)} crouches.`,
     `${first(bindings.reload)} reloads. Do it behind cover.`,
     `${first(bindings.jump)} jumps. ${first(bindings.pause)} pauses and frees the pointer.`,

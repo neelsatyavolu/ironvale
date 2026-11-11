@@ -13,12 +13,6 @@ import { gunMaterials, lensMaterial } from '../models/materials';
 type Material = THREE.Material;
 type Parts = { -readonly [K in keyof GunModel['parts']]: GunModel['parts'][K] };
 
-let woodMaterial: THREE.MeshStandardNodeMaterial | null = null;
-function wood(): THREE.MeshStandardNodeMaterial {
-  woodMaterial ??= new THREE.MeshStandardNodeMaterial({ color: 0x4a2c18, roughness: 0.52, metalness: 0 });
-  return woodMaterial;
-}
-
 /** Accumulates meshes and anchors into a gun. */
 class Builder {
   readonly root = new THREE.Group();
@@ -148,31 +142,6 @@ function m4a1(b: Builder): void {
   b.cycleTravel = 0.07;
 }
 
-function m1garand(b: Builder): void {
-  const steel = gunMaterials.parkerized();
-  const bore = 0.07;
-  b.box(wood(), 0.046, 0.05, 0.62, 0, bore - 0.035, -0.19);
-  b.box(wood(), 0.042, 0.062, 0.14, 0, bore - 0.06, 0.13, 0.32);
-  b.box(wood(), 0.044, 0.11, 0.24, 0, bore - 0.09, 0.3, 0.1);
-  b.box(steel, 0.04, 0.036, 0.22, 0, bore, 0.0);
-  b.tube(wood(), 0.021, -0.42, -0.13, bore + 0.004);
-  b.tube(steel, 0.0095, -0.74, -0.42, bore);
-  b.tube(steel, 0.0085, -0.74, -0.46, bore - 0.02);
-  b.box(steel, 0.03, 0.02, 0.014, 0, bore + 0.018, -0.72);
-  triggerGuard(b, bore - 0.06, -0.01);
-  b.part('bolt', 0.018, bore + 0.006, -0.02);
-  b.box(gunMaterials.bareSteel(), 0.012, 0.014, 0.09, 0.018, bore + 0.006, -0.02);
-  b.box(gunMaterials.bareSteel(), 0.014, 0.01, 0.016, 0.03, bore + 0.008, -0.06);
-  b.body();
-  ironSights(b, bore + 0.042, -0.72, 0.085, 0.1);
-  b.muzzle.position.set(0, bore, -0.74);
-  b.ejection.position.set(0.02, bore + 0.02, -0.02);
-  b.triggerGrip.position.set(0.02, bore - 0.055, 0.07);
-  b.triggerGrip.rotation.x = -0.35;
-  b.supportGrip.position.set(0, bore - 0.062, -0.26);
-  b.cycleTravel = 0.08;
-}
-
 function mp5(b: Builder): void {
   const steel = gunMaterials.parkerized();
   const poly = gunMaterials.polymer();
@@ -200,39 +169,6 @@ function mp5(b: Builder): void {
   b.ejection.position.set(0.022, bore + 0.01, -0.06);
   b.supportGrip.position.set(0, bore - 0.045, -0.26);
   b.cycleTravel = 0.06;
-}
-
-function r870(b: Builder): void {
-  const steel = gunMaterials.bluedSteel();
-  const bore = 0.066;
-  b.box(steel, 0.04, 0.056, 0.21, 0, bore - 0.01, -0.02);
-  b.tube(steel, 0.0115, -0.74, -0.12, bore);
-  b.tube(steel, 0.0115, -0.6, -0.12, bore - 0.028);
-  b.box(wood(), 0.04, 0.056, 0.13, 0, bore - 0.045, 0.13, 0.3);
-  b.box(wood(), 0.042, 0.11, 0.25, 0, bore - 0.075, 0.3, 0.1);
-  b.box(gunMaterials.rubber(), 0.042, 0.115, 0.02, 0, bore - 0.088, 0.43, 0.1);
-  triggerGuard(b, bore - 0.04, -0.005);
-  b.part('pump', 0, bore - 0.028, -0.36);
-  b.tube(wood(), 0.025, -0.46, -0.26, bore - 0.028, 0, 14);
-  b.part('bolt', 0.0205, bore, -0.03);
-  b.box(gunMaterials.bareSteel(), 0.003, 0.02, 0.07, 0.0205, bore, -0.03);
-  b.body();
-  // Bead front sight on a flat-topped receiver.
-  b.tube(gunMaterials.brass(), 0.003, -0.735, -0.729, bore + 0.015, 0, 10);
-  // The eye sits just above the receiver and looks slightly down onto the bead.
-  b.sight.position.set(0, bore + 0.024, 0.2);
-  b.sight.rotation.x = -Math.atan2(0.008, 0.93);
-  b.muzzle.position.set(0, bore, -0.74);
-  b.ejection.position.set(0.022, bore, -0.03);
-  b.triggerGrip.position.set(0.02, bore - 0.05, 0.085);
-  b.triggerGrip.rotation.x = -0.35;
-  // The support hand rides on the fore-end.
-  const pump = b.parts.pump;
-  if (pump) {
-    pump.add(b.supportGrip);
-    b.supportGrip.position.set(0, -0.017, 0);
-  }
-  b.cycleTravel = 0.09;
 }
 
 function m24(b: Builder): void {
@@ -301,29 +237,7 @@ function m249(b: Builder): void {
   b.cycleTravel = 0.06;
 }
 
-function m1911(b: Builder): void {
-  const steel = gunMaterials.bluedSteel();
-  const bore = 0.055;
-  b.box(steel, 0.026, 0.022, 0.16, 0, bore - 0.024, -0.05);
-  b.box(wood(), 0.031, 0.1, 0.045, 0, -0.022, 0.014, -0.26);
-  b.triggerGrip.position.set(0.017, -0.012, 0.01);
-  triggerGuard(b, bore - 0.034, -0.035);
-  b.part('magazine', 0, -0.02, 0.012);
-  b.box(gunMaterials.bareSteel(), 0.018, 0.105, 0.03, 0, -0.026, 0.014, -0.26);
-  b.part('slide', 0, bore, -0.05);
-  b.box(steel, 0.024, 0.03, 0.21, 0, bore, -0.05);
-  b.tube(gunMaterials.bareSteel(), 0.0075, -0.16, -0.14, bore - 0.002, 0, 12);
-  // The sights ride on the slide.
-  ironSights(b, bore + 0.021, -0.145, 0.04, 0.4);
-  b.body();
-  b.muzzle.position.set(0, bore - 0.002, -0.16);
-  b.ejection.position.set(0.014, bore + 0.006, -0.02);
-  b.ejection.rotation.z = 0.5;
-  b.supportGrip.position.set(-0.02, -0.024, 0.004);
-  b.cycleTravel = 0.045;
-}
-
-const SHAPES: Readonly<Record<WeaponId, (b: Builder) => void>> = { m4a1, m1garand, mp5, r870, m24, m249, m1911 };
+const SHAPES: Readonly<Record<WeaponId, (b: Builder) => void>> = { m4a1, mp5, m24, m249 };
 
 /** Build the stand-in model for a weapon. */
 export function buildFallbackGun(id: WeaponId): GunModel {

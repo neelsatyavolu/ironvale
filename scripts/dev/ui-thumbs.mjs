@@ -1,5 +1,5 @@
 // Renders a menu thumbnail for each playable map from the running dev server.
-// Usage: node scripts/dev/ui-thumbs.mjs [--maps railyard,harbor,pinewood] [--out public/assets/thumbs] [--wait 4000]
+// Usage: node scripts/dev/ui-thumbs.mjs [--maps railyard,harbor,headworks] [--out public/assets/thumbs] [--wait 4000]
 //        [--pose-<id> "x,y,z,yawDeg,pitchDeg"]
 // Writes <out>/<id>.jpg (640x360). A map that fails to load is skipped and reported.
 import { mkdir } from 'node:fs/promises';
@@ -12,7 +12,7 @@ const arg = (name, fallback) => {
   const index = process.argv.indexOf(`--${name}`);
   return index >= 0 ? process.argv[index + 1] : fallback;
 };
-const maps = arg('maps', 'railyard,harbor,pinewood').split(',').filter(Boolean);
+const maps = arg('maps', 'railyard,harbor,headworks').split(',').filter(Boolean);
 const out = join(root, arg('out', 'public/assets/thumbs'));
 const wait = Number(arg('wait', '4000'));
 const port = arg('port', '5311');

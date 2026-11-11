@@ -6,6 +6,7 @@ import { Clutter } from './clutter';
 import { buildContainers } from './containers';
 import { buildQuayCrane, buildYardGantry, RTG } from './cranes';
 import { dressDetails, dressYard, scatterDetail } from './dressing';
+import { dressPlant } from './extras';
 import { dressPerimeter, dressWarehouse } from './facades';
 import { Kit } from './kit';
 import { buildGround, buildPerimeter, buildQuay } from './layout';
@@ -71,6 +72,7 @@ function build(ctx: MapBuildContext): MapInstance {
   dressDetails(clutter);
   dressWarehouse(kit, materials, clutter);
   dressPerimeter(kit, materials, clutter);
+  dressPlant(kit, materials, clutter);
   const lights = buildLights(kit, materials);
   scatterDetail(kit, materials);
   props.flush();
@@ -97,8 +99,8 @@ function build(ctx: MapBuildContext): MapInstance {
       { sound: 'snd-loop-metal-creak', volume: 0.5, position: new THREE.Vector3(RTG.trolleyX, 11, 6), radius: 28 },
     ],
     interiors: [
-      { box: box([WAREHOUSE.west, 0, WAREHOUSE.north], [WAREHOUSE.east, WAREHOUSE.ridge, WAREHOUSE.south]), reverb: 'industrial' },
-      { box: box([OFFICE.west, 0, OFFICE.north], [OFFICE.east, OFFICE.height, OFFICE.south]), reverb: 'interior' },
+      { box: box([WAREHOUSE.west, 0, WAREHOUSE.north], [WAREHOUSE.east, WAREHOUSE.ridge, WAREHOUSE.south]), reverb: 'industrial', skyLight: 0.22 },
+      { box: box([OFFICE.west, 0, OFFICE.north], [OFFICE.east, OFFICE.height, OFFICE.south]), reverb: 'interior', skyLight: 0.28 },
     ],
     update: (_dt, elapsed) => {
       lights.flicker.intensity = lights.flickerBase * flickerLevel(elapsed);

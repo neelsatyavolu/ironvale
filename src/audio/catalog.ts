@@ -18,30 +18,25 @@ export const INTERFACE_PREFIX = 'snd-ui-';
 
 const CLASS_WEAPON: Readonly<Record<WeaponClass, string>> = {
   carbine: 'm4a1',
-  rifle: 'm1garand',
+  rifle: 'm24',
   smg: 'mp5',
-  shotgun: 'r870',
+  shotgun: 'm24',
   sniper: 'm24',
   lmg: 'm249',
-  pistol: 'm1911',
+  pistol: 'mp5',
 };
 
 /** Other stages of the same weapon that can stand in for a stage it has no recording of. */
 const STAGE_ALIASES: Readonly<Record<WeaponActionStage, readonly WeaponActionStage[]>> = {
   magOut: ['beltOpen'],
-  magIn: ['clipInsert', 'shellInsert'],
-  boltBack: ['boltLift', 'pumpBack'],
-  boltForward: ['slideRelease', 'boltClose', 'pumpForward'],
+  magIn: ['shellInsert'],
+  boltBack: ['boltLift'],
+  boltForward: ['boltClose'],
   boltLift: ['boltBack'],
   boltClose: ['boltForward'],
-  pumpBack: ['boltBack'],
-  pumpForward: ['boltForward'],
-  shellInsert: ['magIn', 'clipInsert'],
-  clipInsert: ['magIn'],
-  clipPing: [],
+  shellInsert: ['magIn'],
   beltOpen: ['magOut'],
   beltClose: ['magIn'],
-  slideRelease: ['boltForward'],
 };
 
 /** The weapon whose recording of a stage is used when the firing weapon has none at all. */
@@ -52,14 +47,9 @@ const STAGE_OWNER: Readonly<Record<WeaponActionStage, string>> = {
   boltForward: 'm4a1',
   boltLift: 'm24',
   boltClose: 'm24',
-  pumpBack: 'r870',
-  pumpForward: 'r870',
-  shellInsert: 'r870',
-  clipInsert: 'm1garand',
-  clipPing: 'm1garand',
+  shellInsert: 'm24',
   beltOpen: 'm249',
   beltClose: 'm249',
-  slideRelease: 'm1911',
 };
 
 const STEP_SURFACE: Readonly<Record<Surface, string>> = {

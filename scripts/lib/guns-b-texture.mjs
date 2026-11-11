@@ -1,4 +1,4 @@
-// Texture helpers for the guns-b processing scripts (m1garand, m24).
+// Texture helpers for the guns-b processing script (m24).
 import { EXTTextureWebP } from '@gltf-transform/extensions';
 import sharp from 'sharp';
 

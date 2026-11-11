@@ -1,4 +1,4 @@
-// Gunshots (close, tail, distant), dry fire and handling sounds for the seven weapons.
+// Gunshots (close, tail, distant), dry fire and handling sounds for the four weapons.
 import * as d from './dsp.mjs';
 import { add, addSet, from, matched, oneShot, part, src, takeStart } from './kit.mjs';
 
@@ -54,30 +54,6 @@ add('snd-m4a1-boltBack', ['ar15-various'], () => handling(part('ar15-various', 5
 add('snd-m4a1-boltForward', ['m4-reload-sequence'], () => handling(part('m4-reload-sequence', 6, cuts), -13));
 add('snd-m4a1-mech', ['ar15-various'], () => mech(part('ar15-various', 1, cuts)));
 
-// ---------------------------------------------------------------- M1 Garand
-addSet('snd-m1garand-shot', [['garand-shot'], ['ffsl-1917-near'], ['garand-shot-indoor', 'ffsl-1917-near']], shots([
-  near('garand-shot', 0, { length: 0.65, tau: 0.17 }),
-  near('ffsl-1917-near', 0, { length: 0.65, tau: 0.17 }),
-  // Indoor-range Garand for the crack only, over the body of the second .30-06 take.
-  () =>
-    close(
-      d.mix([
-        { clip: d.fade(d.highpass(d.cut(from('garand-shot-indoor', takeStart('garand-shot-indoor', 0), 0.2), 0, 0.09), 500), 0.0003, 0.05) },
-        { clip: from('ffsl-1917-near', takeStart('ffsl-1917-near', 1), 0.7), db: 2 },
-      ]),
-      { length: 0.65, tau: 0.17 },
-    ),
-]));
-add('snd-m1garand-tail', ['ffsl-1917-mid'], () => tail('ffsl-1917-mid', 1, 2.9), { stereo: true });
-add('snd-m1garand-dist-1', ['ffsl-1917-mid'], () => distant('ffsl-1917-mid', 0, 2.4));
-add('snd-m1garand-dry', ['garand-dryfire'], () => handling(part('garand-dryfire', 0, fine), -17));
-add('snd-m1garand-clipInsert', ['garand-reload'], () =>
-  handling(d.cut(src('garand-reload'), 0.55, 1.75), -17), { note: 'clip pressed into the receiver (the quiet part before the bolt runs home)' });
-add('snd-m1garand-boltForward', ['garand-reload'], () => handling(part('garand-reload', 2, fine, 0.12), -13));
-add('snd-m1garand-boltBack', ['garand-clip-eject'], () => handling(part('garand-clip-eject', 1, cuts)));
-add('snd-m1garand-clipPing', ['garand-ping'], () => d.press(d.fade(d.trim(src('garand-ping'), -34, -56), 0.001, 0.25), -13, -3, 0.05, 12));
-add('snd-m1garand-mech', ['garand-handling'], () => mech(part('garand-handling', 17, { thresholdDb: -26, minGap: 0.1 })));
-
 // ---------------------------------------------------------------- MP5
 addSet('snd-mp5-shot', [['ffsl-m45-near'], ['ffsl-m45-near'], ['ffsl-ppq-near', 'ffsl-m45-near']], shots([
   near('ffsl-m45-near', 0, { length: 0.45, tau: 0.11 }),
@@ -102,35 +78,6 @@ add('snd-mp5-boltBack', ['ar15-various'], () => handling(d.pitch(part('ar15-vari
 add('snd-mp5-boltForward', ['ar15-various'], () => handling(d.pitch(part('ar15-various', 2, cuts), 0.94), -12),
   { note: 'the HK slap: an AR-15 bolt slam, pitched down' });
 add('snd-mp5-mech', ['ar15-various'], () => mech(d.pitch(part('ar15-various', 6, cuts), 1.06), 0.09));
-
-// ---------------------------------------------------------------- Remington 870
-addSet('snd-r870-shot', [['r870-shot'], ['ffsl-nova-near'], ['ffsl-model12-near']], shots([
-  near('r870-shot', 0, { length: 0.7, tau: 0.2, hp: 40 }),
-  near('ffsl-nova-near', 0, { length: 0.7, tau: 0.2, hp: 40 }),
-  near('ffsl-model12-near', 0, { length: 0.7, tau: 0.2, hp: 40 }),
-]));
-add('snd-r870-tail', ['ffsl-nova-mid'], () => tail('ffsl-nova-mid', 0, 2.8), { stereo: true });
-addSet('snd-r870-dist', [['ffsl-model12-mid'], ['shotgun-echo']], [
-  () => distant('ffsl-model12-mid', 0, 2.2),
-  () => distant('shotgun-echo', 0, 2.6),
-]);
-add('snd-r870-dry', ['r870-dryfire'], () => handling(part('r870-dryfire', 1, cuts), -17));
-/** One rack is "back" then "forward" about 0.2 s apart; split at the quietest point between them. */
-function pumpHalf(rack, second) {
-  const clip = part('r870-pump', rack, { thresholdDb: -26, minGap: 0.1 }, 0.06);
-  const env = d.envelope(clip, 0.004);
-  let dip = Math.floor(env.length * 0.3);
-  for (let k = dip; k < env.length * 0.7; k++) if (env[k] < env[dip]) dip = k;
-  const at = dip * 0.004;
-  return handling(second ? d.cut(clip, at) : d.cut(clip, 0, at + 0.01), -13);
-}
-addSet('snd-r870-pumpBack', ['r870-pump'], [0, 4, 9].map((rack) => () => pumpHalf(rack, false)));
-addSet('snd-r870-pumpForward', ['r870-pump'], [0, 4, 9].map((rack) => () => pumpHalf(rack, true)));
-addSet('snd-r870-shellInsert', [['shell-insert'], ['shell-insert'], ['shell-insert-2']], [
-  () => handling(part('shell-insert', 0, cuts), -16),
-  () => handling(part('shell-insert', 3, cuts), -16),
-  () => handling(src('shell-insert-2'), -16),
-]);
 
 // ---------------------------------------------------------------- M24
 addSet('snd-m24-shot', [['sniper-shot'], ['ffsl-tikka-near'], ['ffsl-mosin-near']], shots([
@@ -180,19 +127,3 @@ add('snd-m249-magIn', ['mg-reload', 'casing-tile'], () =>
 add('snd-m249-boltBack', ['ar15-various'], () => handling(d.pitch(part('ar15-various', 5, cuts), 0.86), -14));
 add('snd-m249-boltForward', ['m4-reload-sequence'], () => handling(d.pitch(part('m4-reload-sequence', 6, cuts), 0.88), -12));
 add('snd-m249-mech', ['ar15-various'], () => mech(d.pitch(part('ar15-various', 1, cuts), 0.85), 0.12));
-
-// ---------------------------------------------------------------- M1911
-addSet('snd-m1911-shot', [['m1911-shot'], ['ffsl-1911-near'], ['ffsl-1911-near']], shots([
-  near('m1911-shot', 0, { length: 0.5, tau: 0.12 }),
-  near('ffsl-1911-near', 0, { length: 0.5, tau: 0.12 }),
-  near('ffsl-1911-near', 1, { length: 0.5, tau: 0.12 }),
-]));
-add('snd-m1911-tail', ['ffsl-1911-mid'], () => tail('ffsl-1911-mid', 0, 2.3), { stereo: true });
-add('snd-m1911-dist-1', ['ffsl-1911-mid'], () => distant('ffsl-1911-mid', 1, 1.9));
-add('snd-m1911-dry', ['m1911-dryfire'], () => handling(src('m1911-dryfire'), -18));
-add('snd-m1911-magOut', ['m1911-mag-out'], () => handling(src('m1911-mag-out'), -16));
-add('snd-m1911-magIn', ['pistol-mag-insert'], () => handling(part('pistol-mag-insert', 0, cuts), -15));
-add('snd-m1911-boltBack', ['m1911-slide-pull'], () => handling(src('m1911-slide-pull'), -16));
-add('snd-m1911-slideRelease', ['m1911-slide-release'], () => handling(src('m1911-slide-release'), -13));
-add('snd-m1911-boltForward', ['m1911-slide-release'], () => handling(d.pitch(src('m1911-slide-release'), 1.03), -13));
-add('snd-m1911-mech', ['m1911-slide-release'], () => mech(src('m1911-slide-release'), 0.09));

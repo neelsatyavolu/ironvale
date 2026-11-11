@@ -13,6 +13,7 @@ import {
   mod,
   normalView,
   normalWorld,
+  positionViewDirection,
   positionWorld,
   smoothstep,
   step,
@@ -50,9 +51,15 @@ export function plaster(maps: PbrMaps, tint: number, meanLuma: number, grime: TH
   const blotch = g(surfaceCoord, 9.3).r;
   const fine = g(surfaceCoord, 1.9).b;
   const drips = smoothstep(0.5, 0.92, g(surfaceCoord, 6.1, 0.21).g).mul(mix(float(0.3), float(1), blotch)).mul(wear);
-  const damp = smoothstep(0.05, 1.35, heightAboveStreet.add(blotch.sub(0.5).mul(1.2))).oneMinus().mul(wear);
+  const damp = smoothstep(0.05, 1.7, heightAboveStreet.add(blotch.sub(0.5).mul(1.5))).oneMinus().mul(wear);
 
-  const shade = detail.mul(mix(float(0.84), float(1.07), blotch)).mul(mix(float(1), float(0.72), drips)).mul(mix(float(1), float(0.58), damp));
+  // Soot and rain: long soft runs down the whole wall, wider than the drips and independent of them.
+  const runs = smoothstep(0.42, 0.8, g(vec2(surfaceCoord.x, surfaceCoord.y.mul(0.22)), 3.7, 0.63).g).mul(mix(float(0.35), float(1), g(surfaceCoord, 13.1, 0.2).a)).mul(wear);
+  const shade = detail
+    .mul(mix(float(0.76), float(1.09), blotch))
+    .mul(mix(float(1), float(0.62), drips))
+    .mul(mix(float(1), float(0.8), runs))
+    .mul(mix(float(1), float(0.52), damp));
   const coat = color(tint).mul(shade).mul(mix(WHITE, vec3(0.88, 0.92, 0.76), damp.mul(0.7)));
 
   const nearGround = smoothstep(0.3, 5, heightAboveStreet).oneMinus();
@@ -158,6 +165,54 @@ export function painted(maps: PbrMaps, tint: number, grime: THREE.Texture): Stan
   return material;
 }
 
+/**
+ * Louvred shutter in old paint. The slats are shading only: each one catches
+ * light on its upper edge and throws a line of shadow under it, and the
+ * surface normal rocks with them so the sun rakes across the leaf.
+ */
+export function louvred(maps: PbrMaps, tint: number, grime: THREE.Texture): Standard {
+  const material = pbrMaterial(maps, { roughness: 0.9 });
+  const g = grimeSampler(grime);
+  const wear = g(surfaceCoord, 0.83).b;
+  const flake = smoothstep(0.78, 0.84, g(surfaceCoord, 1.3, 0.3).a.add(wear.sub(0.5).mul(0.25)));
+  const slat = fract(positionWorld.y.div(0.052));
+  const shade = mix(float(0.42), float(1.08), smoothstep(0.0, 0.3, slat)).mul(mix(float(1), float(0.86), smoothstep(0.8, 1, slat)));
+  const coat = color(tint).mul(mix(float(0.74), float(1.06), wear));
+  material.colorNode = mix(coat, color(0x8c8272).mul(mix(float(0.7), float(1.05), wear)), flake.mul(0.55)).mul(shade);
+  material.normalNode = normalView.add(vec3(0, slat.sub(0.5).mul(0.9), 0)).normalize();
+  return material;
+}
+
+/**
+ * Lit room seen through a window: lamp glow that is brightest low down and
+ * uneven from pane to pane, with the soft dark shapes of curtains and
+ * furniture, rather than one flat orange card.
+ */
+export function litRoom(grime: THREE.Texture): Standard {
+  const material = flatMaterial(0x1a120b, 0.25);
+  const g = grimeSampler(grime);
+  const folds = g(vec2(wallCoord.x, wallCoord.y.mul(0.12)), 0.9).g;
+  const shapes = g(wallCoord, 2.7, 0.13).a;
+  const room = g(wallCoord, 7.5, 0.6).r;
+  const curtain = smoothstep(0.35, 0.75, folds).mul(0.55);
+  const furniture = smoothstep(0.5, 0.75, shapes).mul(0.4);
+  const glow = mix(float(0.55), float(1.5), room).mul(float(1).sub(curtain)).mul(float(1).sub(furniture));
+  material.emissiveNode = mix(color(0xff8a3a), color(0xffc26e), room).mul(glow).mul(2.6);
+  return material;
+}
+
+/**
+ * Lantern glass with a flame behind it: hot where the pane is seen square on,
+ * falling away to a dull amber at glancing angles, so a lantern reads as panes
+ * around a light instead of one burnt-out white block.
+ */
+export function lampGlass(tint: number, peak: number): Standard {
+  const material = flatMaterial(0x2a2015, 0.5);
+  const square = dot(normalView, positionViewDirection).abs();
+  material.emissiveNode = color(tint).mul(mix(float(peak * 0.16), float(peak), square.pow(2.5)));
+  return material;
+}
+
 /** Striped awning canvas, sun-faded and grubby. */
 export function striped(stripe: number, repeat: number, grime: THREE.Texture): Standard {
   const material = flatMaterial(0xffffff, 0.92);
@@ -179,6 +234,19 @@ export function scuffed(tint: number, roughness: number, grime: THREE.Texture): 
   return material;
 }
 
+const HAZE_TINT = 0xa9adb2;
+
+/**
+ * Aerial perspective for the mountain and what grows on it. The scene fog is
+ * tuned for the streets and barely touches the hill, which left it as crisp
+ * as the houses in front of it; this lays pale air over it, thicker with
+ * distance north of the top terrace.
+ */
+export function distantHaze(surface: TslNode): TslNode {
+  const far = smoothstep(62, 230, positionWorld.z.negate()).mul(0.3).add(smoothstep(55, 75, positionWorld.z.negate()).mul(0.08));
+  return mix(surface, color(HAZE_TINT), far);
+}
+
 /**
  * Mountainside: pale limestone on the steep faces, dry grass on the slopes
  * and dark macchia scrub in drifts. Colour comes from noise at four scales so
@@ -192,12 +260,21 @@ export function hillside(maps: PbrMaps, grime: THREE.Texture): Standard {
   const fine = g(groundCoord, 13).b;
   const tiny = g(groundCoord, 3.1, 0.7).b;
   const rockDetail = relief(maps, 0.15, 0.6, 1.5);
-  const steep = smoothstep(0.3, 0.5, normalWorld.y.add(drift.sub(0.5).mul(0.3))).oneMinus();
-  const scrub = smoothstep(0.34, 0.5, broad.mul(0.45).add(drift.mul(0.55)).add(fine.sub(0.5).mul(0.25)));
-  const grass = color(0x6e6839).mul(mix(float(0.7), float(1.15), fine)).mul(mix(float(0.8), float(1.1), rockDetail));
-  const macchia = color(0x2a3820).mul(mix(float(0.55), float(1.15), tiny));
+  // The whole face is steep, so only the cliffs proper (past about 65 degrees) are bare rock.
+  const steep = smoothstep(0.26, 0.42, normalWorld.y.add(drift.sub(0.5).mul(0.3))).oneMinus();
+  // Macchia covers most of the slope, in the same greens as the trees standing on it, so they read as one wood.
+  // The low orange sun takes most of the green out of anything it lights, so these are greener than they will look.
+  const scrub = smoothstep(0.2, 0.36, broad.mul(0.45).add(drift.mul(0.55)).add(fine.sub(0.5).mul(0.3)));
+  const grass = color(0x5d5a33).mul(mix(float(0.7), float(1.15), fine)).mul(mix(float(0.8), float(1.1), rockDetail));
+  const macchia = mix(color(0x14301a), color(0x42702c), tiny.mul(0.6).add(fine.mul(0.4))).mul(mix(float(0.7), float(1.1), drift));
   const rock = color(0x8d8270).mul(rockDetail).mul(mix(float(0.8), float(1.08), fine));
-  material.colorNode = mix(mix(grass, macchia, scrub), rock, steep);
+  // Dry-stone terraces on the lower slopes: a pale wall every few metres of height, in patches.
+  const step4 = fract(positionWorld.y.div(4.4).add(fine.mul(0.16)));
+  const farmed = smoothstep(0.5, 0.62, g(groundCoord, 97, 0.55).a).mul(smoothstep(60, 95, positionWorld.y).oneMinus()).mul(steep.oneMinus());
+  const wallLine = smoothstep(0.86, 0.9, step4).mul(farmed);
+  const plot = mix(color(0x77703f), color(0x55633a), tiny).mul(mix(float(0.8), float(1.1), fine));
+  const ground = mix(mix(mix(grass, macchia, scrub), plot, farmed.mul(0.85)), color(0xa59a84).mul(rockDetail), wallLine);
+  material.colorNode = distantHaze(mix(ground, rock, steep));
   material.roughnessNode = float(1);
   return material;
 }
@@ -209,7 +286,7 @@ export function leafy(dark: number, light: number, grime: THREE.Texture, grain =
   const coord = positionWorld.xz.add(positionWorld.y.mul(0.61));
   const a = g(coord, grain).b;
   const b = g(coord.add(positionWorld.y), grain * 1.7, 0.4).r;
-  material.colorNode = mix(color(dark), color(light), a.mul(0.65).add(b.mul(0.35))).mul(mix(float(0.55), float(1.1), b));
+  material.colorNode = distantHaze(mix(color(dark), color(light), a.mul(0.65).add(b.mul(0.35))).mul(mix(float(0.55), float(1.1), b)));
   material.normalNode = normalView.add(vec3(a.sub(0.5), b.sub(0.5), a.mul(b).sub(0.25)).mul(1.1)).normalize();
   return material;
 }

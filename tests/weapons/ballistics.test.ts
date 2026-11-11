@@ -17,6 +17,8 @@ import type { RayHit } from '../../src/world/types';
 
 const DEG = Math.PI / 180;
 const FORWARD = new Vector3(0, 0, -1);
+/** No gun in the loadout fires more than one projectile, so pellets are tested on a made-up shell. */
+const BUCKSHOT = { ...WEAPON_DEFS.mp5, pellets: 9, damage: 15, falloffStart: 8, falloffEnd: 32, range: 70 };
 
 class Dummy implements Combatant {
   readonly team = 'bravo' as const;
@@ -148,9 +150,9 @@ describe('ballistics events', () => {
     expect(casts[0]!.ignore).toBe(1);
   });
 
-  it('fires every pellet of a shotgun shell with one shot event', () => {
+  it('fires every pellet of a multi-pellet round with one shot event', () => {
     const { ballistics, player, log, casts } = setup();
-    ballistics.fire(player, WEAPON_DEFS.r870, new Vector3(), FORWARD, 3);
+    ballistics.fire(player, BUCKSHOT, new Vector3(), FORWARD, 3);
     expect(log.shotFired.length).toBe(1);
     expect(log.bulletTrace.length).toBe(9);
     expect(casts.length).toBe(9);
@@ -218,7 +220,7 @@ describe('ballistics damage', () => {
   });
 
   it('sums the pellets that connect', () => {
-    const def = WEAPON_DEFS.r870;
+    const def = BUCKSHOT;
     const target = new Dummy(7, 'bot');
     const { ballistics, player } = setup(bodyHit(target, 5, 'torso'));
     ballistics.fire(player, def, new Vector3(), FORWARD, 1);
@@ -318,7 +320,7 @@ describe('near misses', () => {
     own.ballistics.fire(own.player, WEAPON_DEFS.m4a1, new Vector3(0, 1.6, -1), FORWARD, 0);
     expect(own.log.nearMiss.length).toBe(0);
     const shell = setup((_o, _d, max) => ({ distance: Math.min(max, 60) }));
-    shell.ballistics.fire(shell.bot, WEAPON_DEFS.r870, botMuzzle, towardPlayer, 0.5);
+    shell.ballistics.fire(shell.bot, BUCKSHOT, botMuzzle, towardPlayer, 0.5);
     expect(shell.log.nearMiss.length).toBe(1);
   });
 });
@@ -331,14 +333,12 @@ describe('casings from other shooters', () => {
     expect(log.casingEjected[0]!.kind).toBe('rifle');
   });
 
-  it('waits for the action on bolt and pump guns', () => {
-    for (const id of ['m24', 'r870'] as const) {
-      const { ballistics, bot, log, advance } = setup();
-      ballistics.fire(bot, WEAPON_DEFS[id], new Vector3(0, 1.5, -30), FORWARD, 0);
-      expect(log.casingEjected.length).toBe(0);
-      advance(1);
-      expect(log.casingEjected.length).toBe(1);
-    }
+  it('waits for the bolt on a bolt-action gun', () => {
+    const { ballistics, bot, log, advance } = setup();
+    ballistics.fire(bot, WEAPON_DEFS.m24, new Vector3(0, 1.5, -30), FORWARD, 0);
+    expect(log.casingEjected.length).toBe(0);
+    advance(1);
+    expect(log.casingEjected.length).toBe(1);
   });
 
   it('leaves the player casings to the view model', () => {

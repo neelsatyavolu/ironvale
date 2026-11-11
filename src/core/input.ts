@@ -19,9 +19,6 @@ export type Action =
   | 'slot2'
   | 'slot3'
   | 'slot4'
-  | 'slot5'
-  | 'slot6'
-  | 'slot7'
   | 'scores'
   | 'pause';
 
@@ -46,9 +43,6 @@ const SHARED: Pick<
   | 'slot2'
   | 'slot3'
   | 'slot4'
-  | 'slot5'
-  | 'slot6'
-  | 'slot7'
   | 'scores'
   | 'pause'
 > = {
@@ -64,9 +58,6 @@ const SHARED: Pick<
   slot2: ['Digit2'],
   slot3: ['Digit3'],
   slot4: ['Digit4'],
-  slot5: ['Digit5'],
-  slot6: ['Digit6'],
-  slot7: ['Digit7'],
   scores: ['KeyE', 'Tab'],
   pause: ['Escape', 'KeyP'],
 };

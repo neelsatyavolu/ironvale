@@ -1,4 +1,4 @@
-// Shared steps for scripts/process-gun-{m1911,mp5,r870}.mjs.
+// Shared steps for scripts/process-gun-mp5.mjs.
 //
 // Each source GLB is rebuilt into one node per moving part: triangles are
 // grouped into connected islands, a per-gun `assign` callback names the part
@@ -102,71 +102,6 @@ function applyDirection(m, x, y, z) {
   const dz = m[2] * x + m[6] * y + m[10] * z;
   const length = Math.hypot(dx, dy, dz) || 1;
   return [dx / length, dy / length, dz / length];
-}
-
-// ---------------------------------------------------------------- textures
-
-/** Pixels sampled just outside a region on each side when filling it in. */
-const FILL_SAMPLE = 3;
-/** Lines either side averaged into each filled line. */
-const FILL_SOFTEN = 3;
-
-/**
- * Paint out maker rollmarks. `regions` are [left, top, width, height] in
- * source texture pixels, each covering lettering on an otherwise plain
- * surface. In the material's colour, normal, roughness and occlusion maps the
- * region is refilled by blending, across its narrow side, between the clean
- * pixels on either edge.
- */
-export async function removeMarks(doc, materialName, regions) {
-  const material = doc.getRoot().listMaterials().find((candidate) => candidate.getName() === materialName);
-  if (!material) throw new Error(`material "${materialName}" is missing from the source file`);
-  const textures = new Set([
-    material.getBaseColorTexture(),
-    material.getNormalTexture(),
-    material.getMetallicRoughnessTexture(),
-    material.getOcclusionTexture(),
-  ]);
-  for (const texture of textures) {
-    if (!texture) continue;
-    const { data, info } = await sharp(Buffer.from(texture.getImage())).raw().toBuffer({ resolveWithObject: true });
-    const { width: imageWidth, channels } = info;
-    const at = (x, y) => (y * imageWidth + x) * channels;
-    for (const [left, top, width, height] of regions) {
-      const acrossX = width <= height;
-      const span = acrossX ? width : height;
-      const lines = acrossX ? height : width;
-      // Mean of a few clean pixels just before (`start` below the region) or after it, per line.
-      const edges = (start) =>
-        Array.from({ length: lines }, (_, line) => {
-          const mean = new Array(channels).fill(0);
-          for (let k = 0; k < FILL_SAMPLE; k++) {
-            const offset = acrossX ? at(start + k, top + line) : at(left + line, start + k);
-            for (let c = 0; c < channels; c++) mean[c] += data[offset + c] / FILL_SAMPLE;
-          }
-          return mean;
-        });
-      // Average neighbouring lines so the fill does not come out streaked.
-      const soften = (values) =>
-        values.map((_, line) => {
-          const from = Math.max(0, line - FILL_SOFTEN);
-          const to = Math.min(lines - 1, line + FILL_SOFTEN);
-          const mean = new Array(channels).fill(0);
-          for (let k = from; k <= to; k++) for (let c = 0; c < channels; c++) mean[c] += values[k][c] / (to - from + 1);
-          return mean;
-        });
-      const before = soften(edges((acrossX ? left : top) - FILL_SAMPLE));
-      const after = soften(edges((acrossX ? left : top) + span));
-      for (let line = 0; line < lines; line++) {
-        for (let step = 0; step < span; step++) {
-          const t = (step + 0.5) / span;
-          const offset = acrossX ? at(left + step, top + line) : at(left + line, top + step);
-          for (let c = 0; c < channels; c++) data[offset + c] = Math.round(before[line][c] * (1 - t) + after[line][c] * t);
-        }
-      }
-    }
-    texture.setImage(await sharp(data, { raw: info }).png().toBuffer());
-  }
 }
 
 // ---------------------------------------------------------------- islands
@@ -407,15 +342,6 @@ export function rebuild(doc, islands, parts, assign) {
     summary.push({ part: bucket.part, material: bucket.material?.getName() ?? '', triangles: bucket.index.length / 3 });
   }
   return { scene, summary };
-}
-
-/** Add an empty node (an anchor the game reads by name). `pitchDeg` tilts its -Z axis up. */
-export function addAnchor(doc, scene, name, position, pitchDeg = 0) {
-  const half = (pitchDeg * Math.PI) / 360;
-  const node = doc.createNode(name).setTranslation(position).setRotation([Math.sin(half), 0, 0, Math.cos(half)]);
-  scene.addChild(node);
-  process.stdout.write(`${name.padEnd(18)} ${position.map((value) => value.toFixed(4)).join(', ')}${pitchDeg ? `  pitch ${pitchDeg.toFixed(3)} deg` : ''}\n`);
-  return node;
 }
 
 /** Prune, compress textures to WebP at `textureSize`, write the GLB and print what it holds. */

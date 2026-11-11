@@ -17,9 +17,9 @@ describe('weaponStats', () => {
   });
   it('ranks the guns the way they play', () => {
     expect(stat('m24', 'Range')).toBeGreaterThan(stat('m4a1', 'Range'));
-    expect(stat('m4a1', 'Range')).toBeGreaterThan(stat('r870', 'Range'));
-    expect(stat('r870', 'Damage')).toBeGreaterThan(stat('m4a1', 'Damage'));
-    expect(stat('m1911', 'Handling')).toBeGreaterThan(stat('m249', 'Handling'));
+    expect(stat('m4a1', 'Range')).toBeGreaterThan(stat('mp5', 'Range'));
+    expect(stat('m24', 'Damage')).toBeGreaterThan(stat('m4a1', 'Damage'));
+    expect(stat('mp5', 'Handling')).toBeGreaterThan(stat('m249', 'Handling'));
     expect(stat('mp5', 'Rate of fire')).toBeGreaterThan(stat('m24', 'Rate of fire'));
   });
 });

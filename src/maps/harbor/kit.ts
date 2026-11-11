@@ -182,6 +182,16 @@ export class Colliders {
     this.world.addCollider(UNIT_BOX, matrix, surface);
   }
 
+  /** Invisible limit of the playable area: stops bodies, lets bullets and sight lines through. */
+  boundary(x0: number, x1: number, y0: number, y1: number, z0: number, z1: number): void {
+    const matrix = new THREE.Matrix4().compose(
+      new THREE.Vector3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2),
+      new THREE.Quaternion(),
+      new THREE.Vector3(x1 - x0, y1 - y0, z1 - z0),
+    );
+    this.world.addBoundary(UNIT_BOX, matrix);
+  }
+
   /** Any geometry authored around the origin (cylinders for round props), moved to a position. */
   shape(geometry: THREE.BufferGeometry, x: number, y: number, z: number, surface: Surface): void {
     this.world.addCollider(geometry, new THREE.Matrix4().makeTranslation(x, y, z), surface);

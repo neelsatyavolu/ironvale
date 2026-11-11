@@ -1,5 +1,4 @@
-// Downloads the raw source models for the guns-b weapons (m1garand, m24) into .cache/guns-b/.
-// m1garand: "M1 Garand ( US Rifle, Caliber .30, M1)" by Sky_Hunter, CC BY 4.0, from the Objaverse mirror.
+// Downloads the raw source model for the guns-b weapon (m24) into .cache/guns-b/.
 // m24: "R700V2" by Domevans, CC BY 4.0, from the Objaverse mirror
 // (https://sketchfab.com/3d-models/r700v2-d748f463852144c7a982b3e170e7d000).
 // Usage: node scripts/fetch-guns-b.mjs
@@ -12,7 +11,6 @@ const cache = join(root, '.cache', 'guns-b');
 const OBJ = 'https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs';
 
 const files = [
-  [`${OBJ}/000-067/1be4bb0f8c05423abdccb50b779de6e6.glb`, 'garand-skyhunter/source.glb'],
   [`${OBJ}/000-048/d748f463852144c7a982b3e170e7d000.glb`, 'r700-domevans/source.glb'],
 ];
 

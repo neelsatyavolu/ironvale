@@ -92,13 +92,13 @@ export function buildPerimeter(kit: Kit, m: Materials): void {
   buildGate(kit, m);
   buildFence(kit, m);
 
-  // Limits: nothing gets past these, whatever it climbs on.
+  // Limits: nobody gets past these, whatever they climb on. Shots pass through and fly on.
   const span = YARD.south - YARD.quay;
   const mid = (YARD.south + YARD.quay) / 2;
-  kit.collide(0.5, LIMIT_HEIGHT, span + 2, YARD.west - 0.55, 0, mid, 'concrete');
-  kit.collide(0.5, LIMIT_HEIGHT, span + 2, YARD.east + 0.45, 0, mid, 'metal');
-  kit.collide(90, LIMIT_HEIGHT, 0.5, 0, 0, YARD.south + 0.55, 'concrete');
-  kit.collide(90, LIMIT_HEIGHT, 0.5, 0, 0, YARD.quay - 0.4, 'metal');
+  kit.limit(0.5, LIMIT_HEIGHT, span + 2, YARD.west - 0.55, 0, mid);
+  kit.limit(0.5, LIMIT_HEIGHT, span + 2, YARD.east + 0.45, 0, mid);
+  kit.limit(90, LIMIT_HEIGHT, 0.5, 0, 0, YARD.south + 0.55);
+  kit.limit(90, LIMIT_HEIGHT, 0.5, 0, 0, YARD.quay - 0.4);
 }
 
 /** Closed sliding gate of sheet steel on a tube frame, with a track and a warning lamp. */

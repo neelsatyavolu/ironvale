@@ -2,7 +2,7 @@
 // Usage: node scripts/dev/review-perf-restart.mjs [map]
 import { chromium } from 'playwright';
 
-const map = process.argv[2] ?? 'pinewood';
+const map = process.argv[2] ?? 'headworks';
 const browser = await chromium.launch({
   channel: 'chrome',
   headless: true,

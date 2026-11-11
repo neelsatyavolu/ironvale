@@ -4,7 +4,7 @@ import { seededRandom } from '../../core/random';
 import { flatMaterial, pbrMaterial } from '../../render/materials';
 import { createGrimeMap } from './grime';
 import { createSprayMap } from './sprays';
-import { cobbles, hillside, leafy, masonry, painted, plaster, roofTiles, scuffed, stained, striped } from './surfaces';
+import { cobbles, hillside, lampGlass, leafy, litRoom, louvred, masonry, painted, plaster, roofTiles, scuffed, stained, striped } from './surfaces';
 
 type Standard = THREE.MeshStandardNodeMaterial;
 
@@ -28,6 +28,8 @@ export interface HarborMaterials {
   readonly planksPale: Standard;
   /** Painted woodwork for shutters and doors, in a fixed order. */
   readonly paint: readonly Standard[];
+  /** The same colours as `paint`, in the same order, as louvred shutter leaves. */
+  readonly louvre: readonly Standard[];
   readonly glass: Standard;
   readonly glassLit: Standard;
   readonly iron: Standard;
@@ -125,15 +127,11 @@ export function createMaterials(assets: Assets): HarborMaterials {
     roughness: 0.8,
   });
 
-  const glassLit = flatMaterial(0x21180f, 0.4);
-  glassLit.emissive = new THREE.Color(0xffa850);
-  glassLit.emissiveIntensity = 2.4;
+  const glassLit = litRoom(grime);
   const lampGreen = flatMaterial(0x0f2a1c, 0.4);
   lampGreen.emissive = new THREE.Color(0x4dff9a);
   lampGreen.emissiveIntensity = 6;
-  const lamp = flatMaterial(0x2a2015, 0.5);
-  lamp.emissive = new THREE.Color(0xffb463);
-  lamp.emissiveIntensity = 9;
+  const lamp = lampGlass(0xffb463, 7.5);
 
   return {
     grime,
@@ -141,7 +139,7 @@ export function createMaterials(assets: Assets): HarborMaterials {
     // Rubble masonry, lifted from the scan's dark brown to a sun-bleached harbour stone.
     stone: masonry(stoneMaps, 0xa3957e, 0.15, grime),
     // Dressed limestone: the rough plaster scan reads as worn ashlar once it is tinted and jointed.
-    stoneLight: masonry(white, 0xb9ad96, 0.2, grime, { roughness: 0.9, slab: [1.1, 0.62] }),
+    stoneLight: masonry(white, 0xa99e88, 0.2, grime, { roughness: 0.9, slab: [1.1, 0.62] }),
     plaster: [
       plaster(yellow, 0xd9a655, 0.24, grime), // ochre
       plaster(yellow, 0xd98f6c, 0.24, grime), // salmon
@@ -165,6 +163,7 @@ export function createMaterials(assets: Assets): HarborMaterials {
       painted(blueMaps, 0x8a8f86, grime), // grey
       painted(blueMaps, 0x2f5f86, grime), // strong blue
     ],
+    louvre: [louvred(blueMaps, 0x5d7f9c, grime), louvred(blueMaps, 0x3d6b4a, grime), louvred(blueMaps, 0x7c3a2b, grime), louvred(blueMaps, 0x8a8f86, grime), louvred(blueMaps, 0x2f5f86, grime)],
     glass: flatMaterial(0x56626d, 0.06, 0.9),
     glassLit,
     iron: flatMaterial(0x1a1b1d, 0.55, 0.75),
@@ -185,8 +184,8 @@ export function createMaterials(assets: Assets): HarborMaterials {
     lampGreen,
     castIron: scuffed(0x34302c, 0.82, grime),
     hill: hillside(stoneMaps, grime),
-    cypress: leafy(0x121c10, 0x2f4226, grime, 1.9),
-    pine: leafy(0x1b2a14, 0x556b33, grime, 2.6),
+    cypress: leafy(0x0e2412, 0x2a5226, grime, 1.9),
+    pine: leafy(0x14301a, 0x3f6a2c, grime, 2.6),
     fishBox: [scuffed(0x2c5d8a, 0.55, grime), scuffed(0xc9cdc8, 0.55, grime), scuffed(0xa8402f, 0.55, grime), scuffed(0xd0a030, 0.55, grime)],
   };
 }

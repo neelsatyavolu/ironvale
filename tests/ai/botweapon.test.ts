@@ -108,18 +108,6 @@ describe('BotWeapon magazine and reload', () => {
     expect(finished).toBe(1);
   });
 
-  it('loads a shotgun one shell at a time', () => {
-    const weapon = new BotWeapon(WEAPON_DEFS.r870, { burstMin: 1, burstMax: 1, pauseMin: 0, pauseMax: 0 }, () => 0.5);
-    const shots = hold(weapon, 6);
-    expect(shots).toHaveLength(6);
-    expect(weapon.reloading).toBe(true);
-    expect(weapon.reloadDuration).toBeCloseTo(6 * 0.55, 5);
-    weapon.startReload();
-    for (let t = 0; t < 6 * 0.55 + 0.1; t += FRAME) weapon.update(FRAME, false);
-    expect(weapon.reloading).toBe(false);
-    expect(weapon.magazine).toBe(6);
-  });
-
   it('can top up early, and does nothing when already full', () => {
     const weapon = new BotWeapon(WEAPON_DEFS.m4a1, spray, () => 0.5);
     weapon.startReload();

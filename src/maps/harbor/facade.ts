@@ -13,6 +13,8 @@ export interface Kit {
   readonly mats: HarborMaterials;
   readonly random: () => number;
   readonly density: number;
+  /** Every lantern placed so far, [x, y, z, wall normal x, wall normal z] (normal 0, 0 on a post), for the light pools under them. */
+  readonly lanterns: [number, number, number, number, number][];
 }
 
 export const WALL_THICKNESS = 0.36;
@@ -133,7 +135,9 @@ export function addWindow(kit: Kit, frame: Frame, r: Rect, options: WindowOption
       addSpray(kit, x, frame.base + r.v0 + 0.3, z, 0.46, 2, random() < 0.75);
     }
   }
-  addShutters(frame, r, options.shutters, options.paint, random);
+  // Shutters are louvred; the same colour without slats is kept for doors.
+  const index = mats.paint.indexOf(options.paint as (typeof mats.paint)[number]);
+  addShutters(frame, r, options.shutters, mats.louvre[index] ?? options.paint, random);
 }
 
 function addShutters(frame: Frame, r: Rect, state: ShutterState, paint: THREE.Material, random: () => number): void {
@@ -149,15 +153,48 @@ function addShutters(frame: Frame, r: Rect, state: ShutterState, paint: THREE.Ma
   frame.leaf(paint, r.u1, -1, half, r.v0, r.v1, swing());
 }
 
-/** Plank door closed in its opening, with a stone surround and a knob. */
+/**
+ * Panelled door closed in its opening: stiles and rails standing proud of the
+ * planks, a kick board, strap hinges, a letter plate and a knob on its rose,
+ * inside a stone surround with a worn threshold.
+ */
 export function addDoor(kit: Kit, frame: Frame, r: Rect, paint: THREE.Material): void {
   const { mats } = kit;
+  const w = r.u1 - r.u0;
+  const h = r.v1 - r.v0;
   frame.box(paint, r.u0, r.u1, r.v0, r.v1, -0.2, -0.14, { tile: 1, swap: true });
+  // Framing on the face of the door. A wide opening is hung as a pair of leaves.
+  const leaves = w > 1.25 ? 2 : 1;
+  const leafW = w / leaves;
+  const stile = 0.1;
+  const proud = -0.115;
+  for (let leaf = 0; leaf < leaves; leaf++) {
+    const u0 = r.u0 + leaf * leafW + 0.012;
+    const u1 = u0 + leafW - 0.024;
+    frame.box(paint, u0, u0 + stile, r.v0 + 0.02, r.v1 - 0.01, -0.14, proud, { tile: 1, swap: true });
+    frame.box(paint, u1 - stile, u1, r.v0 + 0.02, r.v1 - 0.01, -0.14, proud, { tile: 1, swap: true });
+    for (const [v, tall] of [
+      [0.02, 0.24],
+      [h * 0.46, 0.11],
+      [h - 0.12, 0.11],
+    ] as const) {
+      frame.box(paint, u0 + stile, u1 - stile, r.v0 + v, r.v0 + v + tall, -0.14, proud, { tile: 1 });
+    }
+    // Strap hinges on the outer edge of each leaf.
+    const hingeU = leaf === 0 ? u0 : u1 - 0.22;
+    for (const v of [0.32, h - 0.38]) frame.box(mats.castIron, hingeU, hingeU + 0.22, r.v0 + v, r.v0 + v + 0.035, proud, proud + 0.012);
+  }
   const band = 0.15;
   frame.box(mats.stoneLight, r.u0 - band, r.u0, r.v0, r.v1 + band, -0.02, 0.045, { tile: 1.5 });
   frame.box(mats.stoneLight, r.u1, r.u1 + band, r.v0, r.v1 + band, -0.02, 0.045, { tile: 1.5 });
   frame.box(mats.stoneLight, r.u0, r.u1, r.v1, r.v1 + band, -0.02, 0.045, { tile: 1.5 });
-  frame.box(mats.brass, r.u1 - 0.16, r.u1 - 0.11, r.v0 + 1.0, r.v0 + 1.06, -0.14, -0.09);
+  // Keystone and a threshold slab too low to trip on.
+  frame.box(mats.stoneLight, r.u0 + w / 2 - 0.09, r.u0 + w / 2 + 0.09, r.v1 - 0.01, r.v1 + band + 0.04, -0.02, 0.065, { tile: 1.5 });
+  frame.box(mats.stoneLight, r.u0 - 0.06, r.u1 + 0.06, r.v0, r.v0 + 0.035, -0.2, 0.12, { tile: 1.5 });
+  const knobU = leaves === 2 ? r.u0 + leafW + 0.06 : r.u1 - 0.17;
+  frame.box(mats.brass, knobU - 0.035, knobU + 0.035, r.v0 + 0.98, r.v0 + 1.12, proud, proud + 0.008);
+  frame.box(mats.brass, knobU - 0.022, knobU + 0.022, r.v0 + 1.02, r.v0 + 1.065, proud, proud + 0.05);
+  frame.box(mats.brass, r.u0 + leafW / 2 - 0.11, r.u0 + leafW / 2 + 0.11, r.v0 + h * 0.46 + 0.03, r.v0 + h * 0.46 + 0.08, proud, proud + 0.008);
 }
 
 /** Small stone balcony with an iron railing in front of a door-window. */

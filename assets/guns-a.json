@@ -1,19 +1,6 @@
 {
   "assets": [
     {
-      "id": "mdl-gun-m1911",
-      "kind": "model",
-      "license": "CC-BY 4.0",
-      "source": "https://sketchfab.com/3d-models/m1911-pistol-80a0b8a6c4314da4a7b3a7cfe6cec1d4",
-      "credit": "\"M1911 pistol\" by e.belous (https://sketchfab.com/egorbelous), CC BY 4.0, https://sketchfab.com/3d-models/m1911-pistol-80a0b8a6c4314da4a7b3a7cfe6cec1d4. Rescaled, re-posed, split into moving parts and maker marks removed.",
-      "files": {
-        "gltf": {
-          "path": "guns/m1911.glb",
-          "local": true
-        }
-      }
-    },
-    {
       "id": "mdl-gun-mp5",
       "kind": "model",
       "license": "CC-BY 4.0",
@@ -22,19 +9,6 @@
       "files": {
         "gltf": {
           "path": "guns/mp5.glb",
-          "local": true
-        }
-      }
-    },
-    {
-      "id": "mdl-gun-r870",
-      "kind": "model",
-      "license": "CC-BY 4.0",
-      "source": "https://sketchfab.com/3d-models/remington-870-police-magnum-12-gauge-shotgun-eea11de7e9d24b6683962b8388c319eb",
-      "credit": "\"Remington 870 Police Magnum 12 Gauge Shotgun\" by 8sianDude (https://sketchfab.com/haoliu95), CC BY 4.0, https://sketchfab.com/3d-models/remington-870-police-magnum-12-gauge-shotgun-eea11de7e9d24b6683962b8388c319eb. Rescaled, loose shells removed and split into moving parts.",
-      "files": {
-        "gltf": {
-          "path": "guns/r870.glb",
           "local": true
         }
       }

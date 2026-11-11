@@ -3,23 +3,19 @@ import { shotInterval } from './math';
 
 /**
  * Timelines for everything the hands do to a gun besides pulling the trigger:
- * working a bolt or pump, and each kind of reload. A plan is a duration and a
+ * working a bolt, and each kind of reload. A plan is a duration and a
  * list of marks; each mark can announce a stage (sound and animation key off
  * it) and change the gun's state.
  */
-export type PlanKind = 'cycle' | 'charge' | 'reload' | 'shellStart' | 'shell' | 'shellEnd';
+export type PlanKind = 'cycle' | 'charge' | 'reload';
 
 export type MarkEffect =
   /** The spent case leaves the gun. */
   | 'eject'
   /** A live round is in the chamber; the gun can fire. */
   | 'chamber'
-  /** The fresh magazine, clip or belt is in. */
-  | 'fill'
-  /** A partly used clip comes out; its rounds go back to the reserve. */
-  | 'unload'
-  /** One shell goes into the tube. */
-  | 'shell';
+  /** The fresh magazine or belt is in. */
+  | 'fill';
 
 export interface Mark {
   /** Seconds from the start of the plan. */
@@ -42,13 +38,9 @@ type MarkSpec = readonly [fraction: number, stage: WeaponActionStage, effect?: M
 const HANDS_LEAD = 0.1;
 const HANDS_TAIL = 0.08;
 const CHARGE_SECONDS = 0.45;
-const SHELL_START_SECONDS = 0.32;
-const SHELL_END_SECONDS = 0.22;
-const SHELL_INSERT_AT = 0.55;
 /** A magazine swap with a round still chambered skips the bolt work, so it is quicker. */
 const TACTICAL_FACTOR = 0.78;
 const BOLT_TOP_UP_FACTOR = 0.62;
-const PARTIAL_CLIP_FACTOR = 1.2;
 
 function plan(kind: PlanKind, duration: number, specs: readonly MarkSpec[]): ActionPlan {
   const marks = specs.map(([fraction, stage, effect]): Mark => ({ time: fraction * duration, stage, effect }));
@@ -70,18 +62,12 @@ const BOLT_CYCLE: readonly MarkSpec[] = [
   [0.8, 'boltClose', 'chamber'],
 ];
 
-const PUMP_CYCLE: readonly MarkSpec[] = [
-  [0.3, 'pumpBack', 'eject'],
-  [0.6, 'pumpForward', 'chamber'],
-];
-
 function isManual(def: WeaponDef): boolean {
-  return def.fireMode === 'bolt' || def.fireMode === 'pump';
+  return def.fireMode === 'bolt';
 }
 
 /** Stage that puts a round in the chamber of a self-loading gun. */
 function chargeStage(def: WeaponDef): WeaponActionStage {
-  if (def.weaponClass === 'pistol') return 'slideRelease';
   // The M249 fires from an open bolt: charging it means pulling the bolt back.
   if (def.reloadStyle === 'belt') return 'boltBack';
   return 'boltForward';
@@ -89,11 +75,10 @@ function chargeStage(def: WeaponDef): WeaponActionStage {
 
 function buildChamberPlan(def: WeaponDef): ActionPlan {
   if (def.fireMode === 'bolt') return plan('cycle', shotInterval(def), BOLT_CYCLE);
-  if (def.fireMode === 'pump') return plan('cycle', shotInterval(def), PUMP_CYCLE);
   return plan('charge', CHARGE_SECONDS, [[0.5, chargeStage(def), 'chamber']]);
 }
 
-function buildReload(def: WeaponDef, chambered: boolean, rounds: number): ActionPlan {
+function buildReload(def: WeaponDef, chambered: boolean): ActionPlan {
   const full = def.reloadTime;
   switch (def.reloadStyle) {
     case 'magazine':
@@ -122,18 +107,6 @@ function buildReload(def: WeaponDef, chambered: boolean, rounds: number): Action
             [0.56, 'magIn', 'fill'],
             [0.82, chargeStage(def), 'chamber'],
           ]);
-    case 'enbloc':
-      return rounds > 0
-        ? plan('reload', full * PARTIAL_CLIP_FACTOR, [
-            [0.1, 'boltBack'],
-            [0.26, 'magOut', 'unload'],
-            [0.62, 'clipInsert', 'fill'],
-            [0.84, 'boltForward', 'chamber'],
-          ])
-        : plan('reload', full, [
-            [0.55, 'clipInsert', 'fill'],
-            [0.8, 'boltForward', 'chamber'],
-          ]);
     case 'belt': {
       const marks: MarkSpec[] = [
         [0.1, 'beltOpen'],
@@ -144,8 +117,6 @@ function buildReload(def: WeaponDef, chambered: boolean, rounds: number): Action
       if (!chambered) marks.push([0.9, 'boltBack', 'chamber']);
       return plan('reload', full, marks);
     }
-    case 'single-shell':
-      return plan('shell', full, [[SHELL_INSERT_AT, 'shellInsert', 'shell']]);
   }
 }
 
@@ -153,8 +124,6 @@ interface PlanSet {
   readonly chamber: ActionPlan;
   readonly reloadChambered: ActionPlan;
   readonly reloadEmpty: ActionPlan;
-  readonly shellStart: ActionPlan;
-  readonly shellEnd: ActionPlan;
 }
 
 const cache = new Map<WeaponDef, PlanSet>();
@@ -164,33 +133,22 @@ function plansFor(def: WeaponDef): PlanSet {
   if (existing) return existing;
   const built: PlanSet = {
     chamber: buildChamberPlan(def),
-    reloadChambered: buildReload(def, true, 1),
-    reloadEmpty: buildReload(def, false, 0),
-    shellStart: plan('shellStart', SHELL_START_SECONDS, []),
-    shellEnd: plan('shellEnd', SHELL_END_SECONDS, []),
+    reloadChambered: buildReload(def, true),
+    reloadEmpty: buildReload(def, false),
   };
   cache.set(def, built);
   return built;
 }
 
-/** Work the action (bolt or pump), or charge a self-loader whose chamber is empty. */
+/** Work the bolt, or charge a self-loader whose chamber is empty. */
 export function chamberPlan(def: WeaponDef): ActionPlan {
   return plansFor(def).chamber;
 }
 
-/** Reload for the gun as it stands. For `single-shell` this is one shell; the machine repeats it. */
-export function reloadPlan(def: WeaponDef, chambered: boolean, rounds: number): ActionPlan {
+/** Reload for the gun as it stands. */
+export function reloadPlan(def: WeaponDef, chambered: boolean): ActionPlan {
   const plans = plansFor(def);
-  if (def.reloadStyle === 'enbloc') return rounds > 0 ? plans.reloadChambered : plans.reloadEmpty;
   return chambered ? plans.reloadChambered : plans.reloadEmpty;
-}
-
-export function shellStartPlan(def: WeaponDef): ActionPlan {
-  return plansFor(def).shellStart;
-}
-
-export function shellEndPlan(def: WeaponDef): ActionPlan {
-  return plansFor(def).shellEnd;
 }
 
 /** Time of the first mark announcing `stage`, or -1 when the plan has none. */

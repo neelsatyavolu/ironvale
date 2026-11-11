@@ -18,7 +18,7 @@ type Loader = () => Promise<{ default: MapModule }>;
 const LOADERS: Readonly<Record<string, Loader>> = {
   range: () => import('./range/index'),
   harbor: () => import('./harbor/index'),
-  pinewood: () => import('./pinewood/index'),
+  headworks: () => import('./headworks/index'),
   railyard: () => import('./railyard/index'),
 };
 
@@ -26,7 +26,7 @@ const LOADERS: Readonly<Record<string, Loader>> = {
 export const PLAYABLE_MAPS: readonly { id: string; name: string; tagline: string }[] = [
   { id: 'railyard', name: 'Railyard', tagline: 'Container yard in the rain at dusk' },
   { id: 'harbor', name: 'Harbor', tagline: 'Fishing town at golden hour' },
-  { id: 'pinewood', name: 'Pinewood', tagline: 'Misty pine forest at dawn' },
+  { id: 'headworks', name: 'Headworks', tagline: 'Mountain water works at winter noon' },
 ];
 
 export async function loadMapModule(id: string): Promise<MapModule> {
