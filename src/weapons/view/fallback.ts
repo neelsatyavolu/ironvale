@@ -237,7 +237,15 @@ function m249(b: Builder): void {
   b.cycleTravel = 0.06;
 }
 
-const SHAPES: Readonly<Record<WeaponId, (b: Builder) => void>> = { m4a1, mp5, m24, m249 };
+/** The M7 stand-in: the carbine's shape with a suppressor on the end. */
+function m7(b: Builder): void {
+  m4a1(b);
+  b.tube(gunMaterials.parkerized(), 0.02, -1, -0.82, 0.068);
+  b.body();
+  b.muzzle.position.z = -1;
+}
+
+const SHAPES: Readonly<Record<WeaponId, (b: Builder) => void>> = { m4a1, mp5, m24, m249, m7 };
 
 /** Build the stand-in model for a weapon. */
 export function buildFallbackGun(id: WeaponId): GunModel {

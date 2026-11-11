@@ -1,5 +1,5 @@
 /**
- * Measured points of the guns-c models (M4A1, M249) and the pure maths that
+ * Measured points of the guns-c models (M4A1, M249, M7) and the pure maths that
  * turns them into anchor poses. Kept free of meshes so it can be unit tested.
  * All coordinates are gun space: metres, barrel along -Z, up +Y, origin at the
  * centre of the pistol grip.
@@ -131,5 +131,41 @@ export const M249_LAYOUT: GunLayout = {
     trigger: { position: [0.016, 0.02, 0.012], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
     // Left palm under the handguard, ahead of the belt box.
     support: { position: [-0.008, 0.018, -0.3], fingers: [0.42, 0.18, -0.89], thumb: [-0.8, 0.3, -0.5] },
+  },
+};
+
+/**
+ * Where the holographic sight sits on the M7's top rail, which runs unbroken
+ * from the rear of the receiver (z 0.007) to the front of the handguard. The
+ * rifle has no iron sights, so nothing stands in the window.
+ */
+export const M7_OPTIC = {
+  /** Top of the rail. */
+  railTop: 0.1385,
+  axis: 0.1803,
+  /** Rear face of the sight's hood: the plane of the window the eye looks through. */
+  window: -0.09,
+  /** Rear face of the sight body. */
+  rear: -0.076,
+} as const;
+
+export const M7_LAYOUT: GunLayout = {
+  asset: 'mdl-gun-m7',
+  // With the suppressor fitted, stock out.
+  realLength: 0.99,
+  // Front face of the suppressor, on the bore axis.
+  muzzle: [0, 0.0973, -0.751],
+  ejection: [0.0175, 0.1025, -0.13],
+  ejectionTiltDeg: 10,
+  sightRear: [0, M7_OPTIC.axis, M7_OPTIC.window],
+  sightFront: [0, M7_OPTIC.axis, -0.6],
+  eyeRelief: 0.15,
+  parts: { bolt: 'bolt', magazine: 'magazine', trigger: 'trigger', chargingHandle: 'chargingHandle' },
+  cycleTravel: 0.07,
+  grips: {
+    // Right palm on the right side of the pistol grip.
+    trigger: { position: [0.012, 0.03, 0.014], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
+    // Left palm cupping the slim handguard from below, ahead of the magazine.
+    support: { position: [0.004, 0.067, -0.31], fingers: [0.42, 0.18, -0.89], thumb: [-0.72, 0.16, -0.67] },
   },
 };

@@ -181,6 +181,18 @@
       "notes": "Attribution: 'M249 Machine Gun' by Kendrick Russell (https://sketchfab.com/Buce), CC BY 4.0. 13,339 tris, single mesh and material, full PBR."
     },
     {
+      "id": "gun-m7-tastytony-mcx",
+      "kind": "model",
+      "purpose": "M7 rifle (SIG MCX-SPEAR): base model only, a 5.56 mm SIG MCX reshaped into the M7 by scripts/process-gun-m7.mjs",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-114/9a6f000c43644afe900669b6e7202378.glb",
+      "license": "CC-BY 4.0",
+      "format": "GLB (no textures: 18 flat-colour materials, rigidly skinned to 10 bones)",
+      "size_bytes": 1723508,
+      "source_page": "https://sketchfab.com/3d-models/low-poly-sig-mcx-9a6f000c43644afe900669b6e7202378",
+      "verified": true,
+      "notes": "Attribution: 'Low-Poly Sig MCX' by TastyTony (https://sketchfab.com/TastyTony), CC BY 4.0. Downloaded in full on 2026-11-11; licence confirmed the same day against the live Sketchfab API (label 'CC Attribution', url creativecommons.org/licenses/by/4.0, downloadable). The author's description presents it as their own model, not a game rip. 12,824 tris. It is an MCX Virtus with a 16 in barrel, not a Spear: no CC0 or CC BY MCX-SPEAR could be fetched without a Sketchfab login. Real Spear models do exist on Sketchfab under CC BY 4.0 but are not in Objaverse (published after its 2022 snapshot): 'low-poly SIG MCX Spear' by DU1701 (36ac159795ae465e8a4d44068bbaf434, 25,668 faces), 'SIG XM7' by Merukitty (9fcfa9ea071b48368ae08984637904aa, 11,496 faces), 'MCX Spear' by DokuDome (4157046e04a74856ab67aafee5043522, 13,328 faces); one manual download with an account would allow a true model. The other MCX in Objaverse, 'Sig Sauer MCX Carbine' by BRFrags (b6bf63cde51b40c5a506ace956df13cf, CC BY 4.0), has a slab for a receiver and was rejected. The source's bones (body, bolt, charging handle, magazine, two cartridge groups, dust cover, magazine release, bolt release, selector) become part nodes; its red dot and vertical foregrip are separate unskinned meshes and are dropped. One source unit is 0.204 m: the top rail then has the real 10 mm pitch and the rifle is 0.90 m long. No textures, so no maker marks or logos anywhere; the shapes of the receiver follow the real MCX. The M7's coyote finish is set in code (src/weapons/models/lib/m7-materials.ts)."
+    },
+    {
       "id": "arms-fp-bumstrum",
       "kind": "character",
       "purpose": "First-person arms and hands, rigged (primary pick for the viewmodel)",

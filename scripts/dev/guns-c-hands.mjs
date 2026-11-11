@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const gun = process.argv[2] ?? 'm4a1';
 const extra = process.argv[3] ? `&${process.argv[3]}` : '';
 // Grip positions in the view: hip pose plus each gun's grip offsets.
-const targets = { m4a1: ['0.2,-0.13,-0.75', '0.21,-0.17,-0.46'], m249: ['0.2,-0.18,-0.75', '0.21,-0.18,-0.46'] }[gun];
+const targets = { m4a1: ['0.2,-0.13,-0.75', '0.21,-0.17,-0.46'], m249: ['0.2,-0.18,-0.75', '0.21,-0.18,-0.46'], m7: ['0.2,-0.13,-0.76', '0.21,-0.17,-0.44'] }[gun];
 const base = `view=weapons/models/arms&floor=-1.2&gun=${gun}&fov=45${extra}`;
 const sheet = (name, at, angles) =>
   execFileSync(

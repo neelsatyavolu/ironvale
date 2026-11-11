@@ -42,7 +42,7 @@ describe('bindingRows', () => {
   });
 
   it('folds the weapon slots into one range', () => {
-    expect(find('mouse', 'Choose weapon')?.keys).toEqual(['1 to 4']);
+    expect(find('mouse', 'Choose weapon')?.keys).toEqual(['1 to 5']);
   });
 
   it('lists every key bound to an action, in binding order', () => {

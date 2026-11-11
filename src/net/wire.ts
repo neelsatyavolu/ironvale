@@ -1,6 +1,6 @@
 /** Constants and small types shared by the binary messages (`protocol.ts`) and the JSON events (`events.ts`). */
 
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 /** Ids on the wire: the two players, then the host's bots. */
 export const WIRE_HOST = 0;
 export const WIRE_GUEST = 1;

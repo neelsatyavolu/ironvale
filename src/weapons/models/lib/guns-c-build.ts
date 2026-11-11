@@ -1,5 +1,5 @@
 /**
- * Turns a processed gun glTF (scripts/process-gun-m4a1.mjs, -m249.mjs) and its
+ * Turns a processed gun glTF (scripts/process-gun-m4a1.mjs, -m249.mjs, -m7.mjs) and its
  * layout into a `GunModel`. Geometry and materials stay shared between builds.
  */
 import * as THREE from 'three/webgpu';

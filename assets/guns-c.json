@@ -27,6 +27,19 @@
       }
     },
     {
+      "id": "mdl-gun-m7",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-mcx-9a6f000c43644afe900669b6e7202378",
+      "credit": "\"Low-Poly Sig MCX\" by TastyTony (https://sketchfab.com/TastyTony), CC BY 4.0, https://sketchfab.com/3d-models/low-poly-sig-mcx-9a6f000c43644afe900669b6e7202378. Used as the base of the M7 rifle: red dot, foregrip, bottom rail and flash hider removed, front end shortened, suppressor and left-side charging handle added, magazine straightened and shortened, skinned rig repacked into separate moving parts, recoloured.",
+      "files": {
+        "gltf": {
+          "path": "guns/m7.glb",
+          "local": true
+        }
+      }
+    },
+    {
       "id": "mdl-fp-arms",
       "kind": "model",
       "license": "CC-BY 4.0",

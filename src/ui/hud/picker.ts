@@ -1,22 +1,24 @@
 /**
  * Weapon picker: hold E (or Tab) for a panel in the middle of the screen with a side
- * view of each gun and what it is good at. 1 to 4, A and D, the arrow keys or a
+ * view of each gun and what it is good at. The number keys, A and D, the arrow keys or a
  * scroll move the choice; letting go equips it. Playing alone, the game
  * stands still while it is open.
  */
 import type { Action } from '../../core/input';
 import type { GameContext, WeaponDef } from '../../game/contracts';
 import { WEAPON_DEFS } from '../../weapons/defs';
+import { RESERVED_NOTE } from '../../weapons/loadout';
 import { h } from '../dom';
 import '../styles/picker.css';
 
-const SLOT_ACTIONS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4'];
+const SLOT_ACTIONS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5'];
 
 const GOOD_AT: Readonly<Record<string, string>> = {
   m4a1: 'The all-rounder. Steady automatic fire that works from across a room to the far end of a lane.',
   mp5: 'Close quarters. Light, quick to raise and easy to control while moving; weak past 40 m.',
   m24: 'Long sight lines. One shot to the head or chest drops anyone; slow bolt, and helpless up close.',
   m249: 'Holding a lane. A hundred rounds without reloading, but heavy, slow to aim and slow to reload.',
+  m7: 'Hitting hard at range. Three rounds do what the M4A1 needs four for, but it kicks and holds only twenty.',
 };
 
 export interface Stat {
@@ -69,7 +71,7 @@ export function createPicker(ctx: GameContext): Picker {
     'iv-pick__panel',
     h('ol', 'iv-pick__tabs', ...tabs),
     h('div', 'iv-pick__body', h('div', 'iv-pick__art', picture), h('div', 'iv-pick__text', name, kind, blurb, stats, ammo)),
-    h('p', 'iv-pick__hint', '1 to 4, A and D or scroll to choose. Let go of E to equip.'),
+    h('p', 'iv-pick__hint', `1 to ${defs.length}, A and D or scroll to choose. Let go of E to equip.`),
   );
   const element = h('div', 'iv-pick', panel);
 
@@ -91,7 +93,8 @@ export function createPicker(ctx: GameContext): Picker {
       fills[i]!.style.transform = `scaleX(${stat.value.toFixed(2)})`;
     });
     const state = ctx.weapons.loadout.find((weapon) => weapon.def.id === def.id);
-    ammo.textContent = state ? `${state.magazine} in the gun, ${state.reserve} spare` : '';
+    if (!ctx.weapons.carries(def.id)) ammo.textContent = `Locked. ${RESERVED_NOTE}`;
+    else ammo.textContent = state ? `${state.magazine} in the gun, ${state.reserve} spare` : '';
   }
 
   return {
@@ -101,6 +104,7 @@ export function createPicker(ctx: GameContext): Picker {
       if (held && !open) {
         open = true;
         chosen = -1;
+        defs.forEach((def, index) => tabs[index]!.classList.toggle('is-locked', !ctx.weapons.carries(def.id)));
         show(Math.max(0, defs.findIndex((def) => def.id === ctx.weapons.current.def.id)));
         element.classList.add('is-on');
       } else if (!held && open) {

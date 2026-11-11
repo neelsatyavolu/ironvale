@@ -233,6 +233,10 @@ export interface PlayerWeapons {
   readonly zoom: number;
   readonly scopedIn: boolean;
   equip(slot: number): void;
+  /** A new match: which weapons (by id) the player carries. The rest stay locked until the next match. */
+  issue(ids: readonly string[]): void;
+  /** true when the weapon with this id was issued for the match. */
+  carries(id: string): boolean;
   /** Cone half-angle in degrees for a shot fired right now. Drives a spreading crosshair. */
   readonly spread: number;
   /** Scoped rifles: 1 with full lungs, 0 out of breath. */

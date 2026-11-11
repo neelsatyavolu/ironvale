@@ -1,5 +1,5 @@
 // Takes the review screenshots for the guns-c guns and the arms: shots/guns-<id>-<angle>.png.
-// Usage: node scripts/dev/guns-c-final.mjs [m4a1|m249|arms ...]
+// Usage: node scripts/dev/guns-c-final.mjs [m4a1|m249|m7|arms ...]
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,12 +28,15 @@ const arms = 'view=weapons/models/arms&floor=-1.4&bg=sky';
 const sets = {
   m4a1: gun('m4a1'),
   m249: gun('m249'),
+  m7: gun('m7'),
   arms: {
     fp: `${arms}&cam=0,0,0&look=0,0,-1&fov=78`,
     aim: `${arms}&aim=1&cam=0,0,0&look=0,0,-1&fov=56`,
     outside: `${arms}&yaw=70&pitch=12&dist=1.0&at=0.1,-0.25,-0.4`,
     'outside-left': `${arms}&yaw=-70&pitch=12&dist=1.0&at=0.1,-0.25,-0.4`,
     m249: `${arms}&gun=m249&cam=0,0,0&look=0,0,-1&fov=78`,
+    m7: `${arms}&gun=m7&cam=0,0,0&look=0,0,-1&fov=78`,
+    'm7-aim': `${arms}&gun=m7&aim=1&cam=0,0,0&look=0,0,-1&fov=56`,
   },
 };
 for (const [id, views] of Object.entries(sets)) {

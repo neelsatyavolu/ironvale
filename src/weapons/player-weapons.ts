@@ -46,6 +46,7 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
 
   private readonly machines: WeaponMachine[];
   private readonly swap: WeaponSwitch;
+  private issued: ReadonlySet<string> = new Set(WEAPON_IDS);
   readonly grenade: GrenadeThrow;
   private sprintBlend = 0;
   private sprintHoldOff = 0;
@@ -154,7 +155,34 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
     this.requestIndex(this.machines.findIndex((machine) => machine.def.slot === slot));
   }
 
+  issue(ids: readonly string[]): void {
+    this.issued = new Set(ids);
+    if (this.carries(this.machine.def.id)) return;
+    // The gun in hand is not carried this match: start with the first one that is.
+    this.machine.cancel();
+    this.aim.reset();
+    this.swap.hold(Math.max(0, this.machines.findIndex((machine) => this.carries(machine.def.id))));
+    this.showCurrent();
+  }
+
+  carries(id: string): boolean {
+    return this.issued.has(id);
+  }
+
+  /** The next carried weapon from `from` in direction `step`, skipping the ones not issued. */
+  private cycled(from: number, step: number): number {
+    const count = this.machines.length;
+    let index = from;
+    for (let tries = 0; tries < count; tries++) {
+      index = (index + step + count) % count;
+      if (this.carries(this.machines[index]!.def.id)) return index;
+    }
+    return from;
+  }
+
   private requestIndex(index: number): void {
+    const wanted = this.machines[index];
+    if (!wanted || !this.carries(wanted.def.id)) return;
     if (!this.swap.request(index)) return;
     // The gun in hand is going down: whatever the hands were doing stops.
     this.machine.cancel();
@@ -195,10 +223,7 @@ class PlayerWeaponsImpl implements PlayerWeaponSystem, MachineSink {
 
     const switchAsked = intent.slot > 0 || intent.cycle !== 0;
     if (intent.slot > 0) this.equip(intent.slot);
-    else if (intent.cycle !== 0) {
-      const count = this.machines.length;
-      this.requestIndex((this.swap.pending + intent.cycle + count) % count);
-    }
+    else if (intent.cycle !== 0) this.requestIndex(this.cycled(this.swap.pending, intent.cycle));
     if (this.swap.update(dt)) {
       this.recoil.reset();
       this.showCurrent();

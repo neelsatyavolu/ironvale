@@ -26,6 +26,13 @@ const CLASS_WEAPON: Readonly<Record<WeaponClass, string>> = {
   pistol: 'mp5',
 };
 
+/**
+ * Classes whose handling sounds (magazine, bolt, mechanism, dry fire) come from
+ * a different weapon than their shots: a magazine-fed rifle borrows the bolt
+ * rifle's report but not its bolt.
+ */
+const CLASS_HANDLING_WEAPON: Readonly<Partial<Record<WeaponClass, string>>> = { rifle: 'm4a1' };
+
 /** Other stages of the same weapon that can stand in for a stage it has no recording of. */
 const STAGE_ALIASES: Readonly<Record<WeaponActionStage, readonly WeaponActionStage[]>> = {
   magOut: ['beltOpen'],
@@ -102,13 +109,20 @@ export class Catalog {
     return this.groups.has(`snd-${weapon.id}-shot`) ? weapon.id : CLASS_WEAPON[weapon.weaponClass];
   }
 
+  /** Weapon key for everything but the report: the weapon's own, or its class's handling stand-in. */
+  private handlingKey(weapon: WeaponDef): string {
+    const key = this.weaponKey(weapon);
+    return key === weapon.id ? key : (CLASS_HANDLING_WEAPON[weapon.weaponClass] ?? key);
+  }
+
   weaponGroup(weapon: WeaponDef, layer: 'shot' | 'tail' | 'dist' | 'dry' | 'mech'): string {
-    return `snd-${this.weaponKey(weapon)}-${layer}`;
+    const key = layer === 'dry' || layer === 'mech' ? this.handlingKey(weapon) : this.weaponKey(weapon);
+    return `snd-${key}-${layer}`;
   }
 
   /** Group for a reload or cycling stage, falling back to a related stage, then another weapon. */
   actionGroup(weapon: WeaponDef, stage: WeaponActionStage): string | null {
-    const key = this.weaponKey(weapon);
+    const key = this.handlingKey(weapon);
     const own = `snd-${key}-${stage}`;
     if (this.groups.has(own)) return own;
     for (const alias of STAGE_ALIASES[stage]) {

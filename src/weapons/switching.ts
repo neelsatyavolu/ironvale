@@ -70,6 +70,13 @@ export class WeaponSwitch {
     return changed;
   }
 
+  /** Put a weapon straight into the hands, with no lowering or raising. */
+  hold(index: number): void {
+    if (!Number.isInteger(index) || index < 0 || index >= this.count) return;
+    this.index = index;
+    this.reset();
+  }
+
   /** Gun up and ready, with whatever is in hand. */
   reset(): void {
     this.phase = 'none';

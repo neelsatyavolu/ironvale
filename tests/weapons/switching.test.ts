@@ -93,4 +93,16 @@ describe('WeaponSwitch', () => {
     expect(swap.index).toBe(0);
     expect(swap.pending).toBe(0);
   });
+
+  it('puts a weapon straight into the hands with hold, even part-way through a switch', () => {
+    const { swap, run } = setup();
+    swap.request(1);
+    run(0.1);
+    swap.hold(2);
+    expect(swap.index).toBe(2);
+    expect(swap.pending).toBe(2);
+    expect(swap.switching).toBe(false);
+    swap.hold(9);
+    expect(swap.index).toBe(2);
+  });
 });

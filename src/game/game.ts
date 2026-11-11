@@ -15,6 +15,7 @@ import { PlayerController } from '../player/controller';
 import { Engine } from '../render/engine';
 import { createInterface, type Interface } from '../ui/index';
 import { WEAPON_DEFS } from '../weapons/defs';
+import { issuedWeapons } from '../weapons/loadout';
 import { createBallistics, createGrenades, createPlayerWeapons, GRENADE_DEF, weaponAssets } from '../weapons/index';
 import { CollisionWorld } from '../world/collision';
 import type { MapInstance, World } from '../world/types';
@@ -243,6 +244,7 @@ export class Game implements GameContext, GameCommands {
       this.combat.add(this.player);
       this.net.enterMap(map);
       this.spawnPlayer(true);
+      this.weapons.issue(issuedWeapons(config));
       this.weapons.resupply();
       // One grenade for the whole match: this is the only place it is handed out.
       this.weapons.restockGrenades();

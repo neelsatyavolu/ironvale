@@ -52,6 +52,11 @@
   color: #f2f0ea;
 }
 
+.iv-pick__tab.is-locked .iv-pick__tabname {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
 .iv-pick__key {
   font: 400 12px/1.4 'Geist Mono', ui-monospace, Menlo, monospace;
 }
