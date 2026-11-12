@@ -49,15 +49,28 @@ const HOUSE_SKY = 0.2;
  * be as bright inside as the yard. Daylight falls off inward from the walls
  * that have doors.
  */
+/** 1 inside a pump house (and the strip just out of its door), 0 elsewhere. */
+function insideHouse(house: (typeof HOUSES)[number]): TslNode {
+  const p: TslNode = positionWorld;
+  return step(house.x0 + 0.05, p.x)
+    .mul(step(p.x, house.x1 - 0.05))
+    .mul(step(house.z0 + 0.05, p.z))
+    .mul(step(p.z, house.z1 + 0.3))
+    .mul(step(p.y, house.height + 0.05));
+}
+
+/** 1 under a pump-house roof, where no snow, slush or rain can lie. */
+export function underRoof(): TslNode {
+  let roofed: TslNode = float(0);
+  for (const house of HOUSES) roofed = max(roofed, insideHouse(house));
+  return roofed;
+}
+
 export function skyVisibility(): TslNode {
   const p: TslNode = positionWorld;
   let visibility: TslNode = float(1);
   for (const house of HOUSES) {
-    const inside: TslNode = step(house.x0 + 0.05, p.x)
-      .mul(step(p.x, house.x1 - 0.05))
-      .mul(step(house.z0 + 0.05, p.z))
-      .mul(step(p.z, house.z1 + 0.3))
-      .mul(step(p.y, house.height + 0.05));
+    const inside: TslNode = insideHouse(house);
     const fromWall: TslNode = min(min(p.x.sub(house.x0), float(house.x1).sub(p.x)), min(p.z.sub(house.z0), float(house.z1).sub(p.z)));
     const depth: TslNode = smoothstep(0.2, 4.5, fromWall);
     visibility = visibility.mul(mix(float(1), mix(float(0.55), float(HOUSE_SKY), depth), inside));
@@ -133,9 +146,11 @@ export function formedConcrete(maps: PbrMaps, roundTile = 0): THREE.MeshStandard
   const crack: TslNode = smoothstep(0.0008, 0.003, abs(wander)).oneMinus().mul(smoothstep(0.6, 0.7, worldNoise(0.09))).mul(upright);
   const px: TslNode = fract(along.div(2.4).add(0.5));
   const py: TslNode = fract(p.y.div(1.2).add(0.5));
+  // Ragged edges, low to high smoothsteps only (a reversed one is undefined in WGSL).
+  const ragged: TslNode = worldNoise(7.5).sub(0.5).mul(0.05);
   const repair: TslNode = step(0.9, hash(panel.add(17)))
-    .mul(smoothstep(0.18, 0.2, px).mul(smoothstep(0.66, 0.64, px)))
-    .mul(smoothstep(0.2, 0.23, py).mul(smoothstep(0.8, 0.77, py)))
+    .mul(smoothstep(0.17, 0.21, px.add(ragged)).mul(smoothstep(0.63, 0.67, px.sub(ragged)).oneMinus()))
+    .mul(smoothstep(0.19, 0.24, py.sub(ragged)).mul(smoothstep(0.76, 0.81, py.add(ragged)).oneMinus()))
     .mul(upright);
   // Old snow lying on copings and roofs, eaten back from the edges.
   const snow: TslNode = smoothstep(0.42, 0.52, worldNoise(0.5).mul(0.55).add(worldNoise(2.9).mul(0.3)).add(worldNoise(13).mul(0.15))).mul(smoothstep(0.9, 0.97, normalWorld.y)).mul(smoothstep(2.9, 3.1, p.y));
@@ -150,7 +165,8 @@ export function formedConcrete(maps: PbrMaps, roundTile = 0): THREE.MeshStandard
   color = mix(color, vec3(0.82, 0.83, 0.82), salt.mul(0.55));
   color = mix(color, color.mul(0.74), top.mul(0.6));
   color = mix(color, color.mul(vec3(0.6, 0.64, 0.6)), lichen.mul(0.6));
-  color = mix(color, vec3(0.47, 0.47, 0.46).mul(grain.mul(0.2).add(0.8)), repair.mul(0.85));
+  // Fresher, greyer mortar over the same concrete, so the patch keeps the wall's grain and staining.
+  color = mix(color, color.mul(vec3(1.12, 1.13, 1.15)), repair.mul(0.8));
   color = mix(color, vec3(0.3, 0.17, 0.09), drip.mul(0.55));
   color = mix(color, color.mul(0.38), seam.mul(0.85));
   color = mix(color, color.mul(0.4), crack.mul(0.8));
@@ -195,13 +211,15 @@ export function paving(maps: PbrMaps, base: readonly [number, number, number], b
   color = mix(color, color.mul(1.5).add(0.06), salt.mul(0.4));
   color = mix(color, color.mul(0.3), joint.mul(0.9));
   // Last night's frost has melted where the slab dips: damp patches with standing water at their middle.
+  // None of the weather reaches the floors under the pump-house roofs.
+  const open: TslNode = underRoof().oneMinus();
   const low: TslNode = worldNoise(0.085).mul(0.62).add(worldNoise(0.37).mul(0.3)).add(worldNoise(2.3).mul(0.08));
-  const damp: TslNode = smoothstep(0.44, 0.53, low);
-  const puddle: TslNode = smoothstep(0.56, 0.58, low).mul(joint.oneMinus());
+  const damp: TslNode = smoothstep(0.44, 0.53, low).mul(open);
+  const puddle: TslNode = smoothstep(0.56, 0.58, low).mul(joint.oneMinus()).mul(open);
   // Ploughed snow that has not gone yet: grey-white crusts with a wet margin of slush round each.
   const lie: TslNode = mx_noise_float(positionWorld.xz.mul(0.12).add(vec2(41, 7))).mul(0.5).add(0.5).mul(0.7).add(worldNoise(1.9).mul(0.22)).add(worldNoise(4.3).mul(0.08));
-  const snow: TslNode = smoothstep(0.66, 0.72, lie);
-  const slush: TslNode = smoothstep(0.58, 0.67, lie);
+  const snow: TslNode = smoothstep(0.66, 0.72, lie).mul(open);
+  const slush: TslNode = smoothstep(0.58, 0.67, lie).mul(open);
   const wetness: TslNode = max(damp, slush);
   color = mix(color, color.mul(vec3(0.5, 0.52, 0.55)), wetness.mul(0.9));
   color = mix(color, color.mul(0.45), puddle);

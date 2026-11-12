@@ -81,9 +81,12 @@ export function containerPaint(maps: PbrMaps, gain: number, normalScale: number,
   const patch: TslNode = smoothstep(0.68, 0.86, bloom).mul(pitting);
 
   // Roof: water lies in the shallow panels and rust rings the edges of the pools.
+  // (Thresholded at the noise median, roof rust used to cover half of every roof in hard camouflage blots.)
   const fadeNoise: TslNode = worldNoise(0.45);
-  const pool: TslNode = smoothstep(0.5, 0.62, fadeNoise.mul(0.7).add(fine.mul(0.3))).mul(roof);
-  const roofRust: TslNode = smoothstep(0.5, 0.66, bloom).mul(roof);
+  const wetness: TslNode = fadeNoise.mul(0.7).add(fine.mul(0.3));
+  const pool: TslNode = smoothstep(0.5, 0.62, wetness).mul(roof);
+  const rim: TslNode = smoothstep(0.42, 0.5, wetness).mul(smoothstep(0.5, 0.58, wetness).oneMinus());
+  const roofRust: TslNode = max(smoothstep(0.66, 0.82, bloom), rim.mul(0.75)).mul(pitting).mul(roof);
 
   const rust: TslNode = max(max(run, patch.mul(0.72)), max(footRust, roofRust.mul(0.8)));
   const core: TslNode = smoothstep(0.78, 0.9, bloom).mul(patch);

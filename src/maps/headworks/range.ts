@@ -127,7 +127,7 @@ export function buildRange(kit: Kit): void {
   const rock: TslNode = mix(vec3(0.045, 0.047, 0.055), vec3(0.17, 0.155, 0.14), strata.mul(smoothstep(-0.6, 0.8, crags)));
   // Dark conifers on the lower slopes give the range its size.
   const stand: TslNode = mx_noise_float(p.mul(0.3)).mul(0.5).add(0.5);
-  const forest: TslNode = smoothstep(96, 40, p.y.add(coarse.mul(30))).mul(smoothstep(0.4, 0.55, mx_noise_float(p.mul(0.035)).mul(0.5).add(0.5).mul(0.6).add(stand.mul(0.4)))).mul(smoothstep(0.35, 0.6, slope));
+  const forest: TslNode = smoothstep(40, 96, p.y.add(coarse.mul(30))).oneMinus().mul(smoothstep(0.4, 0.55, mx_noise_float(p.mul(0.035)).mul(0.5).add(0.5).mul(0.6).add(stand.mul(0.4)))).mul(smoothstep(0.35, 0.6, slope));
   const ground: TslNode = mix(rock, vec3(0.9, 0.92, 0.96), snow);
   const surface: TslNode = mix(ground, mix(vec3(0.02, 0.035, 0.03), vec3(0.06, 0.08, 0.07), stand), forest.mul(0.9));
   // Low sun is straw-coloured and the shade is lit by blue sky, which is what makes snow read as snow.
@@ -138,7 +138,7 @@ export function buildRange(kit: Kit): void {
   const fogTone = new THREE.Color(FOG_COLOR);
   const towardSun: TslNode = max(dot(normalize(vec3(p.x, 0, p.z)), normalize(vec3(sun.x, 0, sun.z))), 0);
   const hazeColour: TslNode = mix(vec3(fogTone.r, fogTone.g, fogTone.b).mul(1.35), vec3(sunLight.r, sunLight.g, sunLight.b).mul(1.7), pow(towardSun, 5).mul(0.8));
-  const haze: TslNode = smoothstep(INNER - 80, OUTER, distance).mul(0.34).add(0.3).add(smoothstep(120, 0, p.y).mul(0.4)).add(pow(towardSun, 5).mul(0.2));
+  const haze: TslNode = smoothstep(INNER - 80, OUTER, distance).mul(0.34).add(0.3).add(smoothstep(0, 120, p.y).oneMinus().mul(0.4)).add(pow(towardSun, 5).mul(0.2));
   const material = kit.own(new THREE.MeshBasicNodeMaterial({ fog: false }));
   material.colorNode = mix(surface.mul(light).mul(GAIN), hazeColour.mul(0.62), haze.clamp(0, 0.94));
 

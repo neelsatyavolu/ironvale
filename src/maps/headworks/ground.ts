@@ -120,7 +120,8 @@ export function dressGround(kit: Kit, m: Materials): void {
       [-40, -29, 2.6, 3.8, 0],
     ] as const) {
       patch(kit, m.matte, s * x, s * z, w + 0.06, d + 0.06, 0.004, 0x3f4042, yaw);
-      patch(kit, m.paving, s * x, s * z, w, d, 0.007, s > 0 ? 0xa9aaa6 : 0xdcdcd6, yaw);
+      // Vertex colour ends up linear: 0xa9 came out at 40% brightness and read as a black plate, not a newer pour.
+      patch(kit, m.paving, s * x, s * z, w, d, 0.007, s > 0 ? 0xe4e5e1 : 0xf4f4ee, yaw);
     }
 
     // Tyre marks: straight runs on the road and the swing into the store's shutter.

@@ -122,7 +122,7 @@ export function createSea(random: () => number): Sea {
     texture(waves, p.div(scale).add(vec2(vx, vz).mul(time))).xy.mul(2).sub(1);
   // Swell, chop and a fine ripple; the ripple fades first with distance so the far sea does not sparkle.
   const distance = positionWorld.sub(cameraPosition).length();
-  const near = smoothstep(70, 8, distance);
+  const near = smoothstep(8, 70, distance).oneMinus();
   const slope = layer(6.1, 0.021, 0.013)
     .mul(0.55)
     .add(layer(15.7, -0.009, 0.012).mul(0.7))
@@ -144,12 +144,12 @@ export function createSea(random: () => number): Sea {
     tiltX = tiltX.add(cos(phase).mul(height * k * dx));
     tiltZ = tiltZ.add(cos(phase).mul(height * k * dz));
   }
-  const reach = smoothstep(260, 70, wz.sub(QUAY_EDGE).abs().add(wx.abs().mul(0.5)));
+  const reach = smoothstep(70, 260, wz.sub(QUAY_EDGE).abs().add(wx.abs().mul(0.5))).oneMinus();
   material.positionNode = positionLocal.add(vec3(0, heave.mul(exposure).mul(reach), 0));
 
   const calm = mix(float(1), float(0.6), smoothstep(60, 500, distance));
   const strength = float(0.4).mul(calm);
-  const swellTilt = exposure.mul(smoothstep(420, 60, distance)).mul(1.6);
+  const swellTilt = exposure.mul(smoothstep(60, 420, distance).oneMinus()).mul(1.6);
   const normal = normalize(vec3(slope.x.mul(strength).add(tiltX.mul(swellTilt)).negate(), 1, slope.y.mul(strength).add(tiltZ.mul(swellTilt)).negate()));
   material.normalNode = transformNormalToView(normal);
 
@@ -180,7 +180,7 @@ export function createSea(random: () => number): Sea {
   const edge = max(max(alongQuay, alongMole), max(onSlip, piles));
   const lace = smoothstep(0.3, 0.62, crest.add(layer(1.1, 0.03, 0.02).x.mul(0.55)));
   // Out in the open a few crests break; inside the mole none do.
-  const open = smoothstep(QUAY_EDGE + 34, QUAY_EDGE + 80, pz).mul(smoothstep(300, 90, distance));
+  const open = smoothstep(QUAY_EDGE + 34, QUAY_EDGE + 80, pz).mul(smoothstep(90, 300, distance).oneMinus());
   const whitecap = smoothstep(0.78, 0.9, crest.add(layer(31, 0.011, -0.006).x.mul(0.3)).add(heave.mul(2.5))).mul(open).mul(0.55);
   // The fountain pool borrows this material; it sits above street level and gets no foam.
   const atSea = step(positionWorld.y, float(WATER_Y + 0.5));

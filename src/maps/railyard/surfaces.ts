@@ -3,6 +3,7 @@ import {
   abs,
   float,
   fract,
+  fwidth,
   max,
   mix,
   mx_noise_float,
@@ -116,7 +117,11 @@ export function oilStain(): THREE.MeshStandardNodeMaterial {
   return material;
 }
 
-/** Diamond wire mesh. UVs are in metres. Fades to an even veil with distance so it does not shimmer. */
+/**
+ * Diamond wire mesh. UVs are in metres. Fades to an even veil where a pixel
+ * covers too much of a diamond to draw its wires cleanly: further away, and
+ * also close up at a grazing angle, where a distance fade alone left it shimmering.
+ */
 export function chainlinkMesh(): THREE.MeshStandardNodeMaterial {
   const material = new THREE.MeshStandardNodeMaterial({
     color: 0x9aa0a3,
@@ -133,8 +138,11 @@ export function chainlinkMesh(): THREE.MeshStandardNodeMaterial {
   const b: TslNode = abs(fract(p.x.sub(p.y)).sub(0.5));
   // Edges are always given low to high: a reversed smoothstep is undefined in WGSL.
   const lines: TslNode = max(smoothstep(wire, wire + 0.06, a).oneMinus(), smoothstep(wire, wire + 0.06, b).oneMinus());
+  // Diamonds crossed per pixel along the worse screen axis. Past about a third of a diamond the wires alias.
+  const footprint: TslNode = max(fwidth(p.x.add(p.y)), fwidth(p.x.sub(p.y)));
   const distance: TslNode = positionView.z.negate();
-  material.opacityNode = mix(lines, float(0.3), smoothstep(5, 16, distance));
+  const veil: TslNode = max(smoothstep(0.18, 0.4, footprint), smoothstep(5, 16, distance));
+  material.opacityNode = mix(lines, float(0.3), veil);
   return material;
 }
 

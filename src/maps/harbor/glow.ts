@@ -33,7 +33,7 @@ export function addGlow(kit: Kit, root: THREE.Object3D): { dispose(): void } {
   const geometry = new THREE.PlaneGeometry(1, 1);
   const material = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
   const fromCentre = uv().sub(0.5).length().mul(2);
-  const falloff = smoothstep(1, 0.05, fromCentre).pow(2.2);
+  const falloff = smoothstep(0.05, 1, fromCentre).oneMinus().pow(2.2);
   // Broken up by the same noise as the dirt, so the pool is not a perfect disc.
   const mottle = texture(kit.mats.grime, positionWorld.xz.add(positionWorld.y).div(3.7)).r.mul(0.5).add(0.75);
   material.colorNode = vec3(1.0, 0.56, 0.22).mul(falloff).mul(mottle).mul(float(0.42));

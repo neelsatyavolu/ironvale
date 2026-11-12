@@ -83,11 +83,11 @@ function boatMaterial(assets: Assets, grime: THREE.Texture, lettering: THREE.Tex
   const islands = g(coord, 2.6, 0.41).a;
 
   const waterline = float(DRAFT).add(blotch.sub(0.5).mul(0.05));
-  const below = smoothstep(0.025, -0.02, y.sub(waterline)).mul(isHull);
-  const slime = smoothstep(0.17, 0.0, abs(y.sub(waterline).sub(0.03))).mul(mix(float(0.45), float(1), fine)).mul(isHull);
+  const below = smoothstep(-0.02, 0.025, y.sub(waterline)).oneMinus().mul(isHull);
+  const slime = smoothstep(0.0, 0.17, abs(y.sub(waterline).sub(0.03))).oneMinus().mul(mix(float(0.45), float(1), fine)).mul(isHull);
   const weep = smoothstep(0.6, 0.92, drips).mul(smoothstep(0.0, 0.35, y.sub(waterline))).mul(isHull);
   const bare = smoothstep(0.79, 0.82, islands.add(fine.sub(0.5).mul(0.12))).mul(isHull);
-  const salt = smoothstep(0.3, 0.05, y.sub(waterline)).mul(smoothstep(0.55, 0.8, fine)).mul(isHull);
+  const salt = smoothstep(0.05, 0.3, y.sub(waterline)).oneMinus().mul(smoothstep(0.55, 0.8, fine)).mul(isHull);
 
   const coat = paint.rgb.mul(mix(float(0.78), float(1.06), fine)).mul(mix(float(0.85), float(1.06), blotch));
   const worn = mix(coat, color(0x6f5d47).mul(mix(float(0.6), float(1.1), fine)), bare.mul(0.85));
