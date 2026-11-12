@@ -154,8 +154,12 @@ export const DIFFICULTY_TREND: Readonly<Record<keyof DifficultyProfile, 'rises' 
 
 const scaled = new Map<string, WeaponDef>();
 
-/** The weapon as a bot of this difficulty carries it: a copy with scaled damage, cached. */
+/**
+ * The weapon as a bot of this difficulty carries it: a copy with scaled damage, cached.
+ * Snipers are left alone so a hit kills on every difficulty.
+ */
 export function scaledWeapon(def: WeaponDef, difficulty: Difficulty): WeaponDef {
+  if (def.weaponClass === 'sniper') return def;
   const key = `${def.id}:${difficulty}`;
   const cached = scaled.get(key);
   if (cached) return cached;

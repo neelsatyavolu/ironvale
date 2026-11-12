@@ -157,8 +157,9 @@ describe('bot system in a simulated match', () => {
     for (const shot of game.shots) {
       expect(shot.shooter.kind).toBe('bot');
       expect(shot.spread).toBeGreaterThan(0);
-      // Scaled copy, not the shared definition.
-      expect(shot.weapon.damage).toBeCloseTo(WEAPON_DEFS[shot.weapon.id as 'm4a1'].damage * DIFFICULTY.regular.damageMultiplier, 5);
+      // Scaled copy, not the shared definition; the sniper keeps full damage so it still kills in one hit.
+      const scale = shot.weapon.weaponClass === 'sniper' ? 1 : DIFFICULTY.regular.damageMultiplier;
+      expect(shot.weapon.damage).toBeCloseTo(WEAPON_DEFS[shot.weapon.id as 'm4a1'].damage * scale, 5);
       // Fired at the player, not into the sky or through a mate.
       expect(shot.aimOffset).toBeLessThan(0.2);
     }

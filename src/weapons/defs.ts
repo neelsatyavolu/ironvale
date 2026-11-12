@@ -76,7 +76,7 @@ export const WEAPON_DEFS: Readonly<Record<WeaponId, WeaponDef>> = {
     slot: 3,
     fireMode: 'bolt',
     roundsPerMinute: 42,
-    damage: 96,
+    damage: 150,
     headshotMultiplier: 3,
     limbMultiplier: 0.8,
     falloffStart: 150,

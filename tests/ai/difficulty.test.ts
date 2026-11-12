@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DIFFICULTY, DIFFICULTY_ORDER, DIFFICULTY_TREND, scaledWeapon } from '../../src/ai/difficulty';
 import { WEAPON_DEFS } from '../../src/weapons/defs';
+import { damageAt } from '../../src/weapons/math';
 
 describe('difficulty table', () => {
   it('lists the four settings from easiest to hardest', () => {
@@ -43,5 +44,14 @@ describe('difficulty table', () => {
     expect(WEAPON_DEFS.m4a1.damage).toBe(27);
     expect(scaledWeapon(WEAPON_DEFS.m4a1, 'recruit')).toBe(recruit);
     expect(scaledWeapon(WEAPON_DEFS.m4a1, 'elite').damage).toBe(27);
+  });
+
+  it('keeps the sniper a one-shot kill on every difficulty, any zone, any range', () => {
+    for (const level of DIFFICULTY_ORDER) {
+      const m24 = scaledWeapon(WEAPON_DEFS.m24, level);
+      for (const zone of ['head', 'torso', 'limb'] as const) {
+        expect(damageAt(m24, m24.range, zone), `${level} ${zone}`).toBeGreaterThanOrEqual(100);
+      }
+    }
   });
 });
