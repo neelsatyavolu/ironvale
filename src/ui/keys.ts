@@ -66,7 +66,7 @@ export interface BindingRow {
 }
 
 const MOVE: readonly Action[] = ['moveForward', 'moveLeft', 'moveBack', 'moveRight'];
-const SLOTS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5'];
+const SLOTS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
 
 /** Single actions in the order the reference shows them. `scores` (E or Tab) holds the weapon picker open. */
 const SINGLE: readonly (readonly [Action, string])[] = [

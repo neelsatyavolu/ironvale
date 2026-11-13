@@ -5,6 +5,7 @@ import { WEAPON_IDS, type WeaponId } from './models/api';
 /** Weapons handed out only on some difficulty levels. Anything not listed is always carried. */
 const RESERVED: Readonly<Partial<Record<WeaponId, readonly Difficulty[]>>> = {
   m7: ['veteran', 'elite'],
+  scarh: ['veteran', 'elite'],
 };
 
 /** Shown in the weapon picker beside a weapon the player does not carry this match. */

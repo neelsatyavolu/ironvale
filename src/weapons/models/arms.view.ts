@@ -5,7 +5,7 @@
  * `cam=0,0,0&look=0,0,-1&fov=78`, or orbit it from outside.
  *
  * URL parameters on top of the viewer's own:
- * - `gun=m4a1|m249|m7` picks the gun (default m4a1).
+ * - `gun=m4a1|m249|m7|scarh` picks the gun (default m4a1).
  * - `hip=x,y,z` moves the hip pose (default 0.2,-0.2,-0.45).
  * - `aim=1` puts the gun's sight anchor at the origin instead.
  * - `support=0` passes a null support grip, which tucks the off hand away.
@@ -22,8 +22,9 @@ import { addMarkers } from './lib/guns-c-view';
 import m249 from './m249.gun';
 import m4a1 from './m4a1.gun';
 import m7 from './m7.gun';
+import scarh from './scarh.gun';
 
-const GUNS = { m4a1, m249, m7 } as const;
+const GUNS = { m4a1, m249, m7, scarh } as const;
 const params = new URLSearchParams(location.search);
 const gunId = params.get('gun') ?? 'm4a1';
 const module = gunId in GUNS ? GUNS[gunId as keyof typeof GUNS] : null;

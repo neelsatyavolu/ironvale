@@ -40,6 +40,19 @@
       }
     },
     {
+      "id": "mdl-gun-scarh",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/fn-scar-h-ba1c338e87fa45c99be0baef5aa8ccd7",
+      "credit": "\"FN SCAR-H\" by Alex_Z (https://sketchfab.com/Alex_Z), CC BY 4.0, https://sketchfab.com/3d-models/fn-scar-h-ba1c338e87fa45c99be0baef5aa8ccd7. Holographic sight, rear sight and foregrip removed, textures converted to metal/roughness and recompressed, magazine, trigger and charging handle split into moving parts.",
+      "files": {
+        "gltf": {
+          "path": "guns/scarh.glb",
+          "local": true
+        }
+      }
+    },
+    {
       "id": "mdl-fp-arms",
       "kind": "model",
       "license": "CC-BY 4.0",

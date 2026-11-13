@@ -11,7 +11,7 @@ import { RESERVED_NOTE } from '../../weapons/loadout';
 import { h } from '../dom';
 import '../styles/picker.css';
 
-const SLOT_ACTIONS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5'];
+const SLOT_ACTIONS: readonly Action[] = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
 
 const GOOD_AT: Readonly<Record<string, string>> = {
   m4a1: 'The all-rounder. Steady automatic fire that works from across a room to the far end of a lane.',
@@ -19,6 +19,7 @@ const GOOD_AT: Readonly<Record<string, string>> = {
   m24: 'Long sight lines. One shot to the head or chest drops anyone; slow bolt, and helpless up close.',
   m249: 'Holding a lane. A hundred rounds without reloading, but heavy, slow to aim and slow to reload.',
   m7: 'Hitting hard at range. Three rounds do what the M4A1 needs four for, but it kicks and holds only twenty.',
+  scarh: 'The M7, one step on. Still three rounds to drop anyone, but they keep that punch to any range, group tighter and kick less.',
 };
 
 export interface Stat {

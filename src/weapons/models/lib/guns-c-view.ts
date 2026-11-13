@@ -1,5 +1,5 @@
 /**
- * Model-viewer page for the guns-c guns (M4A1, M249, M7).
+ * Model-viewer page for the guns-c guns (M4A1, M249, M7, SCAR-H).
  *
  * URL parameters on top of the viewer's own:
  * - `markers=0` hides the anchor markers: muzzle red, ejection yellow with a

@@ -245,7 +245,10 @@ function m7(b: Builder): void {
   b.muzzle.position.z = -1;
 }
 
-const SHAPES: Readonly<Record<WeaponId, (b: Builder) => void>> = { m4a1, mp5, m24, m249, m7 };
+/** The SCAR-H stand-in: the M7's shape. */
+const scarh = m7;
+
+const SHAPES: Readonly<Record<WeaponId, (b: Builder) => void>> = { m4a1, mp5, m24, m249, m7, scarh };
 
 /** Build the stand-in model for a weapon. */
 export function buildFallbackGun(id: WeaponId): GunModel {

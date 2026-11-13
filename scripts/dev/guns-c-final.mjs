@@ -1,5 +1,5 @@
 // Takes the review screenshots for the guns-c guns and the arms: shots/guns-<id>-<angle>.png.
-// Usage: node scripts/dev/guns-c-final.mjs [m4a1|m249|m7|arms ...]
+// Usage: node scripts/dev/guns-c-final.mjs [m4a1|m249|m7|scarh|arms ...]
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +29,7 @@ const sets = {
   m4a1: gun('m4a1'),
   m249: gun('m249'),
   m7: gun('m7'),
+  scarh: gun('scarh'),
   arms: {
     fp: `${arms}&cam=0,0,0&look=0,0,-1&fov=78`,
     aim: `${arms}&aim=1&cam=0,0,0&look=0,0,-1&fov=56`,
@@ -37,6 +38,9 @@ const sets = {
     m249: `${arms}&gun=m249&cam=0,0,0&look=0,0,-1&fov=78`,
     m7: `${arms}&gun=m7&cam=0,0,0&look=0,0,-1&fov=78`,
     'm7-aim': `${arms}&gun=m7&aim=1&cam=0,0,0&look=0,0,-1&fov=56`,
+    scarh: `${arms}&gun=scarh&cam=0,0,0&look=0,0,-1&fov=78`,
+    'scarh-aim': `${arms}&gun=scarh&aim=1&cam=0,0,0&look=0,0,-1&fov=56`,
+    'scarh-outside': `${arms}&gun=scarh&yaw=-70&pitch=12&dist=1.0&at=0.1,-0.25,-0.4`,
   },
 };
 for (const [id, views] of Object.entries(sets)) {

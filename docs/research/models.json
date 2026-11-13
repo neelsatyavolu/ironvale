@@ -193,6 +193,18 @@
       "notes": "Attribution: 'Low-Poly Sig MCX' by TastyTony (https://sketchfab.com/TastyTony), CC BY 4.0. Downloaded in full on 2026-11-11; licence confirmed the same day against the live Sketchfab API (label 'CC Attribution', url creativecommons.org/licenses/by/4.0, downloadable). The author's description presents it as their own model, not a game rip. 12,824 tris. It is an MCX Virtus with a 16 in barrel, not a Spear: no CC0 or CC BY MCX-SPEAR could be fetched without a Sketchfab login. Real Spear models do exist on Sketchfab under CC BY 4.0 but are not in Objaverse (published after its 2022 snapshot): 'low-poly SIG MCX Spear' by DU1701 (36ac159795ae465e8a4d44068bbaf434, 25,668 faces), 'SIG XM7' by Merukitty (9fcfa9ea071b48368ae08984637904aa, 11,496 faces), 'MCX Spear' by DokuDome (4157046e04a74856ab67aafee5043522, 13,328 faces); one manual download with an account would allow a true model. The other MCX in Objaverse, 'Sig Sauer MCX Carbine' by BRFrags (b6bf63cde51b40c5a506ace956df13cf, CC BY 4.0), has a slab for a receiver and was rejected. The source's bones (body, bolt, charging handle, magazine, two cartridge groups, dust cover, magazine release, bolt release, selector) become part nodes; its red dot and vertical foregrip are separate unskinned meshes and are dropped. One source unit is 0.204 m: the top rail then has the real 10 mm pitch and the rifle is 0.90 m long. No textures, so no maker marks or logos anywhere; the shapes of the receiver follow the real MCX. The M7's coyote finish is set in code (src/weapons/models/lib/m7-materials.ts)."
     },
     {
+      "id": "gun-scarh-alexz",
+      "kind": "model",
+      "purpose": "SCAR-H battle rifle, first-person and world model",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-135/ba1c338e87fa45c99be0baef5aa8ccd7.glb",
+      "license": "CC-BY 4.0",
+      "format": "GLB (1024 px PNG textures, specular/glossiness)",
+      "size_bytes": 4792668,
+      "source_page": "https://sketchfab.com/3d-models/fn-scar-h-ba1c338e87fa45c99be0baef5aa8ccd7",
+      "verified": true,
+      "notes": "Attribution: 'FN SCAR-H' by Alex_Z (https://sketchfab.com/Alex_Z), CC BY 4.0. Downloaded in full on 2026-11-12; licence confirmed the same day against the live Sketchfab API (label 'CC Attribution'). 23.9k tris in one baked low-poly gun (three meshes) plus a sling swivel; digital camouflage receivers, black furniture, suppressor, vertical foregrip and a holographic sight. Moving parts are not separate nodes, so scripts/process-gun-scarh.mjs cuts the magazine, trigger and left-side charging handle out by connected piece, drops the sight and foregrip, and converts the textures to metal/roughness. The colour texture carries a two-line maker's roll mark and a serial line, a few pixels tall; the script blurs both. One source unit is 0.023 m: the top rail is then 21.2 mm wide and the rifle 0.99 m long with the suppressor. Rejected alternatives: 'Low-Poly FN SCAR H' by Matrixxy (0eb62c0b4d584324a8a2242b7127d709, CC BY 4.0, 8.4k tris) is not in Objaverse; 'Low-Poly FN SCAR-H PR' by notcplkerry (336291d429fd40958d1e460d9f04cbc1) is the sniper variant."
+    },
+    {
       "id": "arms-fp-bumstrum",
       "kind": "character",
       "purpose": "First-person arms and hands, rigged (primary pick for the viewmodel)",

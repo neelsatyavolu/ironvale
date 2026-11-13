@@ -1,6 +1,6 @@
 # Ironvale
 
-Ironvale is a first-person shooter that runs in a browser tab. You fight bots on three maps (Railyard, Harbor, Headworks) with four guns: M4A1, MP5, M24 and M249, plus one grenade per match. On the two highest difficulty levels, Veteran and Elite, you also carry a fifth, the M7 rifle (SIG MCX-SPEAR). A minimap in the corner tracks enemies (it can be turned off in Settings). There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, two lives), and a two-player mode that connects two games directly for co-op or a duel.
+Ironvale is a first-person shooter that runs in a browser tab. You fight bots on three maps (Railyard, Harbor, Headworks) with four guns: M4A1, MP5, M24 and M249, plus one grenade per match. On the two highest difficulty levels, Veteran and Elite, you also carry a fifth and a sixth: the M7 rifle (SIG MCX-SPEAR) and the SCAR-H battle rifle. A minimap in the corner tracks enemies (it can be turned off in Settings). There are two solo modes, Skirmish (clear the map with three lives) and Survival (waves, two lives), and a two-player mode that connects two games directly for co-op or a duel.
 
 It is written in TypeScript on Three.js r187. It renders with WebGPU and falls back to WebGL 2 on its own when WebGPU is missing. The models, textures and recordings are all CC0 or CC BY 4.0; [CREDITS.md](CREDITS.md) lists them, and the same list is in the game under Credits.
 
@@ -59,7 +59,7 @@ There are two presets. The game starts on Trackpad; switch under Settings or on 
 | Chat (two-player) | T, Enter to send | T, Enter to send |
 | Grenade (one per match) | Hold G to aim, release to throw | Hold G to aim, release to throw |
 | Next or previous weapon | Two-finger scroll, or ] and [ | Wheel, or ] and [ |
-| Pick a weapon | 1 to 4 (5 for the M7 on Veteran and Elite) | 1 to 4 (5 for the M7 on Veteran and Elite) |
+| Pick a weapon | 1 to 4 (5 for the M7 and 6 for the SCAR-H on Veteran and Elite) | 1 to 4 (5 for the M7 and 6 for the SCAR-H on Veteran and Elite) |
 | Scores | Tab | Tab |
 | Pause | Esc or P | Esc or P |
 
@@ -142,7 +142,7 @@ assets/*.json    asset manifests        scripts/   asset pipeline and dev tools 
 Sound
 
 - Nobody has listened to the sounds. All 288 files were cut, layered and levelled by script and checked by measurement only (loudness, peaks, leading silence, loop seams). Expect some to be wrong in ways numbers do not show.
-- Several guns use recordings of other guns. The MP5's shots are a Carl Gustav M45 with a Walther PPQ layered in, because no live-fire MP5 recording exists under CC0, and its magazine sounds come from an airsoft replica. The M249's shots are a KAC LAMG. The M7 has no recordings of its own: it fires the M24's shots and uses the M4A1's magazine and bolt sounds. The M24's are a Blaser Tactical 2, a Tikka and a Mosin Nagant.
+- Several guns use recordings of other guns. The MP5's shots are a Carl Gustav M45 with a Walther PPQ layered in, because no live-fire MP5 recording exists under CC0, and its magazine sounds come from an airsoft replica. The M249's shots are a KAC LAMG. The M7 has no recordings of its own: it fires the M24's shots and uses the M4A1's magazine and bolt sounds, and the SCAR-H does the same. The M24's are a Blaser Tactical 2, a Tikka and a Mosin Nagant.
 - Bullet impacts are foley (metal struck on rock, rocks thrown at wood and dirt), not recorded bullet strikes, and 15 sounds are synthesised.
 - The Freesound sources are the site's public MP3 previews, not the lossless originals, so every sound has been through lossy compression twice.
 

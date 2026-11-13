@@ -1,5 +1,5 @@
 /**
- * Measured points of the guns-c models (M4A1, M249, M7) and the pure maths that
+ * Measured points of the guns-c models (M4A1, M249, M7, SCAR-H) and the pure maths that
  * turns them into anchor poses. Kept free of meshes so it can be unit tested.
  * All coordinates are gun space: metres, barrel along -Z, up +Y, origin at the
  * centre of the pistol grip.
@@ -167,5 +167,43 @@ export const M7_LAYOUT: GunLayout = {
     trigger: { position: [0.012, 0.03, 0.014], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
     // Left palm cupping the slim handguard from below, ahead of the magazine.
     support: { position: [0.004, 0.067, -0.31], fingers: [0.42, 0.18, -0.89], thumb: [-0.72, 0.16, -0.67] },
+  },
+};
+
+/**
+ * Where the holographic sight sits on the SCAR-H's top rail, in the place of
+ * the source's own sight (removed in processing). The folded front sight stays
+ * under the rail line, clear of the window.
+ */
+export const SCARH_OPTIC = {
+  /** Top of the rail. */
+  railTop: 0.1663,
+  axis: 0.2081,
+  /** Rear face of the sight's hood: the plane of the window the eye looks through. */
+  window: -0.09,
+  /** Rear face of the sight body. */
+  rear: -0.076,
+} as const;
+
+export const SCARH_LAYOUT: GunLayout = {
+  asset: 'mdl-gun-scarh',
+  // With the suppressor fitted, stock out.
+  realLength: 0.99,
+  // Front face of the suppressor, on the bore axis.
+  muzzle: [0, 0.1143, -0.719],
+  // Mid ejection port, just ahead of the brass deflector.
+  ejection: [0.0198, 0.118, -0.15],
+  ejectionTiltDeg: 10,
+  sightRear: [0, SCARH_OPTIC.axis, SCARH_OPTIC.window],
+  sightFront: [0, SCARH_OPTIC.axis, -0.6],
+  eyeRelief: 0.15,
+  // The left-side charging handle is fixed to the bolt carrier and runs back with it on every shot.
+  parts: { bolt: 'bolt', magazine: 'magazine', trigger: 'trigger' },
+  cycleTravel: 0.07,
+  grips: {
+    // Right palm on the right side of the pistol grip.
+    trigger: { position: [0.012, 0.03, 0.014], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
+    // Left palm cupping the lower handguard from below, ahead of the magazine.
+    support: { position: [0.004, 0.078, -0.32], fingers: [0.42, 0.18, -0.89], thumb: [-0.72, 0.16, -0.67] },
   },
 };
