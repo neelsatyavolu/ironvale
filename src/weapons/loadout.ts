@@ -12,12 +12,12 @@ const RESERVED: Readonly<Partial<Record<WeaponId, readonly Difficulty[]>>> = {
 export const RESERVED_NOTE = 'Issued on Veteran and Elite only.';
 
 /**
- * The weapons a player carries into a match, in slot order. A duel has no
- * difficulty level, so reserved weapons stay out of it.
+ * The weapons a player carries into a match, in slot order. A duel between
+ * friends has no difficulty level, so every weapon is issued.
  */
 export function issuedWeapons(config: Pick<MatchConfig, 'mode' | 'difficulty'>): readonly WeaponId[] {
   return WEAPON_IDS.filter((id) => {
     const levels = RESERVED[id];
-    return !levels || (config.mode !== 'duel' && levels.includes(config.difficulty));
+    return !levels || config.mode === 'duel' || levels.includes(config.difficulty);
   });
 }
