@@ -9,6 +9,7 @@ import { BODY, BotBody } from './body';
 import { BotWeapon } from './botweapon';
 import { DIFFICULTY, scaledWeapon, type DifficultyProfile } from './difficulty';
 import type { BotEnv } from './env';
+import { botShotSpread, readyToFire } from './marksman';
 import { Awareness, type NoiseKind } from './perception';
 import { ROLES, type BotRole, type RoleDef } from './roles';
 
@@ -59,6 +60,8 @@ export class Bot extends BotBody implements Combatant {
   aimAtHead = false;
   /** Seconds since this soldier last saw the target with its own eyes. */
   unseenTime = Infinity;
+  /** Seconds the target has been tracked without a break; 0 while it is out of sight. */
+  sightedTime = 0;
   readonly lastKnown = new Vector3();
   /** Game time `lastKnown` was last updated. */
   infoTime = -Infinity;
@@ -250,7 +253,9 @@ export class Bot extends BotBody implements Combatant {
     const target = this.target;
     const tracking = this.fireMode === 'target' && this.targetVisible && target !== null && target.alive;
     this.aim.update(dt, tracking);
-    const wantsFire = (tracking || this.fireMode === 'lastKnown') && this.watch === 'enemy';
+    this.sightedTime = tracking ? this.sightedTime + dt : 0;
+    const ready = !tracking || readyToFire(this.weaponDef, this.sightedTime, this.profile.reactionTime);
+    const wantsFire = (tracking || this.fireMode === 'lastKnown') && this.watch === 'enemy' && ready;
     const fired = weapon.update(dt, wantsFire && this.yawError < FIRE_ARC && !this.mateInLine());
     if (weapon.reloadStarted) {
       this.env.callout(this, 'reloading');
@@ -278,7 +283,7 @@ export class Bot extends BotBody implements Combatant {
       const across = Math.sqrt(Math.max(0, target.velocity.lengthSq() - along * along));
       crossing = (across / distance) / DEG;
     }
-    const spread = Math.max(this.aim.spread(crossing, this.speed > 1), this.weaponDef.spreadAim);
+    const spread = botShotSpread(this.weaponDef, this.aim.spread(crossing, this.speed > 1), distance, this.roleDef.minRange);
     this.env.ctx.ballistics.fire(this, this.weaponDef, muzzle, shotDirection, spread);
   }
   /** true when a squad mate stands in or near the line of fire. Checked every frame the trigger is wanted. */
