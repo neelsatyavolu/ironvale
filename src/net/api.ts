@@ -7,7 +7,7 @@ import type { BotSystem, MatchConfig, PlayerWeapons } from '../game/contracts';
 import type { MapInstance, SpawnPoint } from '../world/types';
 import type { NetMatchConfig } from './protocol';
 
-export type { NetMatchConfig, NetMode, NetRules } from './protocol';
+export type { DuelBot, NetMatchConfig, NetMode, NetRules } from './protocol';
 
 export type NetRole = 'host' | 'guest';
 /** `room`: a six-character code through the signaling service. `manual`: codes copied and pasted by hand. */
@@ -123,6 +123,8 @@ export interface NetLobby {
 
 /** The other player, as the match rules need to know them. */
 export interface NetPartner {
+  /** The other player's combat id on this machine. */
+  readonly id: number;
   readonly alive: boolean;
   readonly deaths: number;
 }
@@ -181,4 +183,5 @@ export const DEFAULT_NET_CONFIG: NetMatchConfig = {
   difficulty: 'regular',
   botCount: 8,
   killTarget: 10,
+  duelBot: 'none',
 };

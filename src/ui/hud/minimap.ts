@@ -267,9 +267,10 @@ export function createMinimap(ctx: GameContext): Minimap {
       const net = snapshot.net ?? null;
       duel = snapshot.config?.mode === 'duel';
       partner = null;
-      if (net && !duel) {
-        const team = ctx.player.team;
-        partner = ctx.combat.all().find((other) => other.kind === 'remote' && other.team === team) ?? null;
+      if (net) {
+        // The co-op partner, or a duel player's bot teammate (a bot on the host, a stand-in on the guest).
+        const { id, team } = ctx.player;
+        partner = ctx.combat.all().find((other) => other.id !== id && other.alive && other.team === team) ?? null;
       }
     },
     setVisible(next: boolean): void {

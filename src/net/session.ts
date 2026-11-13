@@ -30,7 +30,7 @@ import {
   type ByeReason,
   type NetEvent,
 } from './protocol';
-import { pickDuelSpawn } from './rules';
+import { duelBotSide, duelBotsHere, pickDuelSpawn } from './rules';
 import { ManualSignaling, RoomSignaling, signalReachable, signalUrl, type SignalHandlers, type Signaling } from './signaling';
 import { PeerLink } from './transport';
 
@@ -480,7 +480,7 @@ export class NetSession implements NetSystem {
   get partner(): NetPartner | null {
     const sync = this.sync;
     if (!sync || !this.inMatch) return null;
-    return { alive: sync.remote.alive, deaths: sync.partnerDeaths };
+    return { id: sync.remote.id, alive: sync.remote.alive, deaths: sync.partnerDeaths };
   }
 
   get partnerKills(): number {
@@ -512,13 +512,15 @@ export class NetSession implements NetSystem {
   private beginMatch(config: NetMatchConfig): void {
     const role = this.lobby.role;
     if (!role) return;
+    const duel = config.mode === 'duel';
     const matchConfig: MatchConfig = {
       mapId: config.mapId,
       mode: config.mode,
       difficulty: config.difficulty,
-      botCount: config.mode === 'duel' ? 0 : config.botCount,
+      botCount: duel ? duelBotsHere(config.duelBot, role) : config.botCount,
       rules: config.rules,
       killTarget: config.killTarget,
+      botTeam: duel && config.duelBot !== 'none' ? duelBotSide(config.duelBot, role).team : 'bravo',
     };
     // `startMatch` unloads whatever was loaded before it returns its promise; set this match up after that.
     this.beginning = true;

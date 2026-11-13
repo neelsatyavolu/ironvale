@@ -1,5 +1,5 @@
 import { createSoldier } from '../characters/index';
-import type { DamageInfo, GameContext, SoldierVisual } from '../game/contracts';
+import type { DamageInfo, GameContext, SoldierVisual, Team } from '../game/contracts';
 import type { BotState, NetEvent } from './protocol';
 import { RemoteSoldier } from './remote-soldier';
 
@@ -12,9 +12,10 @@ export const MAX_PROXIES = 96;
 const BOT_RUN_SPEED = 4.5;
 
 /**
- * A co-op guest's stand-ins for the host's bots: remote combatants on team
- * bravo that follow the host's snapshots. Hits on them are forwarded to the
- * host through `onDamage`; they fall when the host says so.
+ * A guest's stand-ins for the host's bots: remote combatants that follow the
+ * host's snapshots. In co-op they are enemies on team bravo; a duel bot is on
+ * whichever side the host put it. Hits on them are forwarded to the host
+ * through `onDamage`; they fall when the host says so.
  */
 export class BotProxies {
   private readonly byWire = new Map<number, RemoteSoldier>();
@@ -24,6 +25,8 @@ export class BotProxies {
   constructor(
     private readonly ctx: GameContext,
     private readonly onDamage: (target: RemoteSoldier, info: DamageInfo) => void,
+    private readonly team: Team = 'bravo',
+    private readonly uniform: Team = 'bravo',
   ) {}
 
   get alive(): number {
@@ -48,12 +51,12 @@ export class BotProxies {
   spawn(spawn: Extract<NetEvent, { t: 'botSpawn' }>): void {
     if (this.byWire.has(spawn.id) || this.byWire.size >= MAX_PROXIES) return;
     const { ctx } = this;
-    const visual = this.spare.pop() ?? createSoldier(ctx.assets, 'bravo');
+    const visual = this.spare.pop() ?? createSoldier(ctx.assets, this.uniform);
     visual.revive();
     const proxy = new RemoteSoldier(ctx, {
       id: ctx.combat.allocateId(),
       wireId: spawn.id,
-      team: 'bravo',
+      team: this.team,
       name: spawn.name,
       visual,
       weapon: spawn.weapon,

@@ -204,7 +204,7 @@ describe('fuzzed binary input', () => {
 });
 
 describe('events', () => {
-  const config = { mapId: 'range', mode: 'duel', rules: 'skirmish', difficulty: 'regular', botCount: 0, killTarget: 10 };
+  const config = { mapId: 'range', mode: 'duel', rules: 'skirmish', difficulty: 'regular', botCount: 0, killTarget: 10, duelBot: 'none' };
 
   it('accepts each well-formed event', () => {
     const events = [
@@ -235,6 +235,12 @@ describe('events', () => {
     expect(parsed).toEqual({ t: 'ready', ready: false });
   });
 
+  it('carries who has the duel bot, and reads a host that predates it as nobody', () => {
+    expect(parseEvent(JSON.stringify({ t: 'lobby', config: { ...config, duelBot: 'guest' } }))).toEqual({ t: 'lobby', config: { ...config, duelBot: 'guest' } });
+    const { duelBot: _omitted, ...older } = config;
+    expect(parseEvent(JSON.stringify({ t: 'load', config: older }))).toEqual({ t: 'load', config: { ...config, duelBot: 'none' } });
+  });
+
   it('sanitises names', () => {
     const parsed = parseEvent(JSON.stringify({ t: 'hello', v: 1, name: '<b>Ada</b>\u0000 Lovelace the First' }));
     expect(parsed?.t === 'hello' && parsed.name).toBe('bAdab Lovelace t');
@@ -262,6 +268,7 @@ describe('events', () => {
       { t: 'lobby', config: { ...config, botCount: 400 } },
       { t: 'lobby', config: { ...config, killTarget: 0 } },
       { t: 'lobby', config: { ...config, difficulty: 'god' } },
+      { t: 'lobby', config: { ...config, duelBot: 'both' } },
       { t: 'action', actor: 0, weapon: 'm4a1', stage: 'explode' },
       { t: 'match', wave: -1, enemies: 3, result: '', hostKills: 0, guestKills: 0 },
       { t: 'match', wave: 1, enemies: 3, result: 'draw', hostKills: 0, guestKills: 0 },

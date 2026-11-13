@@ -479,6 +479,8 @@ export interface MatchConfig {
   readonly rules?: 'skirmish' | 'survival';
   /** Duel: kills needed to win. */
   readonly killTarget?: number;
+  /** The team this machine's bots fight for. Bravo, the player's enemy, when left out. */
+  readonly botTeam?: Team;
 }
 
 export interface KillFeedEntry {

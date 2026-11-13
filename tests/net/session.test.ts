@@ -4,7 +4,7 @@ import type { NetGameHooks } from '../../src/net/api';
 import { PROTOCOL_VERSION, encodeEvent, type NetEvent, type NetMatchConfig } from '../../src/net/protocol';
 import { NetSession } from '../../src/net/session';
 
-const CONFIG: NetMatchConfig = { mapId: 'harbor', mode: 'duel', rules: 'skirmish', difficulty: 'regular', botCount: 4, killTarget: 5 };
+const CONFIG: NetMatchConfig = { mapId: 'harbor', mode: 'duel', rules: 'skirmish', difficulty: 'regular', botCount: 4, killTarget: 5, duelBot: 'none' };
 
 interface Internals {
   lobby: object;
@@ -66,5 +66,14 @@ describe('a guest and a host that does not follow the rules', () => {
     expect(session.state.error).toBe('version');
     expect(session.snapshot()?.peerConnected).toBe(false);
     expect(hooks.endMatch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('a duel with a bot', () => {
+  it('leaves the bot to the host: the guest runs none, whoever it fights for', () => {
+    const { session, hooks, receive } = connectedGuest();
+    session.setReady(true);
+    receive({ t: 'load', config: { ...CONFIG, duelBot: 'guest', difficulty: 'elite' } });
+    expect(hooks.startMatch).toHaveBeenCalledWith(expect.objectContaining({ mode: 'duel', botCount: 0, difficulty: 'elite' }));
   });
 });

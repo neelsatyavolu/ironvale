@@ -33,6 +33,7 @@ import {
 } from './protocol';
 import { BotProxies, MAX_PROXIES } from './proxies';
 import { RemoteSoldier } from './remote-soldier';
+import { duelBotSide } from './rules';
 
 const STATE_INTERVAL = 1 / 30;
 const BOT_INTERVAL = 1 / 12;
@@ -125,9 +126,11 @@ export class MatchSync {
   private readonly link: MatchLink;
   private readonly role: NetRole;
   private readonly coop: boolean;
+  /** The host runs bots the guest is shown: every co-op match, and a duel where a player has a bot. */
+  private readonly hostBots: boolean;
   private readonly myWire: number;
   private readonly peerWire: number;
-  /** Guest: stand-ins for the host's bots. Empty on a host and in a duel. */
+  /** Guest: stand-ins for the host's bots. Empty on a host and in a duel without a bot. */
   readonly proxies: BotProxies;
   private readonly gates = new Map<number, WeaponGate>();
   private readonly actionGate = new TokenBucket(30, 30);
@@ -155,6 +158,8 @@ export class MatchSync {
     this.link = options.link;
     this.role = options.role;
     this.coop = options.config.mode === 'coop';
+    const duelBot = options.config.mode === 'duel' ? options.config.duelBot : 'none';
+    this.hostBots = this.coop || duelBot !== 'none';
     this.myWire = options.role === 'host' ? WIRE_HOST : WIRE_GUEST;
     this.peerWire = options.role === 'host' ? WIRE_GUEST : WIRE_HOST;
     // In a duel the opponent is the other side on both machines. The uniform still tells
@@ -175,7 +180,8 @@ export class MatchSync {
     });
     ctx.combat.add(this.remote);
     ctx.engine.scene.add(this.remote.visual.root);
-    this.proxies = new BotProxies(ctx, (target, info) => this.forwardDamage(target, info));
+    const botSide = duelBot === 'none' ? { team: 'bravo' as const, uniform: 'bravo' as const } : duelBotSide(duelBot, options.role);
+    this.proxies = new BotProxies(ctx, (target, info) => this.forwardDamage(target, info), botSide.team, botSide.uniform);
 
     const events = ctx.events;
     this.unsubscribe = [
@@ -217,7 +223,7 @@ export class MatchSync {
       this.stateTimer = Math.min(this.stateTimer - STATE_INTERVAL, STATE_INTERVAL);
       this.link.sendState(encodePlayerState(this.localState(now)));
     }
-    if (this.role === 'host' && this.coop) {
+    if (this.role === 'host' && this.hostBots) {
       this.botTimer += dt;
       if (this.botTimer >= BOT_INTERVAL) {
         this.botTimer = Math.min(this.botTimer - BOT_INTERVAL, BOT_INTERVAL);
@@ -289,7 +295,7 @@ export class MatchSync {
 
   private isLocalShooter(id: number): boolean {
     if (id === this.ctx.player.id) return true;
-    return this.role === 'host' && this.coop && this.ctx.combat.get(id)?.kind === 'bot';
+    return this.role === 'host' && this.hostBots && this.ctx.combat.get(id)?.kind === 'bot';
   }
 
   private wireOf(localId: number): number {
@@ -353,7 +359,7 @@ export class MatchSync {
       this.life = Math.min(255, this.life + 1);
       return;
     }
-    if (this.role !== 'host' || !this.coop || this.remoteGone) return;
+    if (this.role !== 'host' || !this.hostBots || this.remoteGone) return;
     const combatant = this.ctx.combat.get(event.combatantId);
     if (!combatant || combatant.kind !== 'bot') return;
     const bot = combatant as BotView;
@@ -372,9 +378,9 @@ export class MatchSync {
     if (!isDamageSource(event.weaponId)) return;
     const victim = this.ctx.combat.get(event.victimId);
     const mine = event.victimId === this.ctx.player.id;
-    const hostBot = this.role === 'host' && this.coop && victim?.kind === 'bot';
+    const hostBot = this.role === 'host' && this.hostBots && victim?.kind === 'bot';
     if (!mine && !hostBot) return;
-    if (hostBot && event.killerId === this.remote.id) this.partnerKills++;
+    if (hostBot && this.coop && event.killerId === this.remote.id) this.partnerKills++;
     // The fatal hit's direction is announced just after the death: send at the end of the frame.
     this.pendingDeaths = [...this.pendingDeaths, { victimId: event.victimId, killerId: event.killerId, weapon: event.weaponId, headshot: event.headshot }];
   }
@@ -451,7 +457,7 @@ export class MatchSync {
         this.ctx.grenades.detonate(this.remote.id, a.set(event.p[0], event.p[1], event.p[2]));
         break;
       case 'botSpawn':
-        if (this.role === 'guest' && this.coop) this.proxies.spawn(event);
+        if (this.role === 'guest' && this.hostBots) this.proxies.spawn(event);
         break;
       case 'match':
         if (this.role === 'guest' && this.coop) this.onHostMatch(event);
@@ -489,7 +495,7 @@ export class MatchSync {
   }
 
   private onBotSnapshot(sent: number, bots: readonly BotState[], now: number): void {
-    if (this.role !== 'guest' || !this.coop) return;
+    if (this.role !== 'guest' || !this.hostBots) return;
     const time = this.arrivalTime(sent, now);
     if (time !== null) this.proxies.push(time, bots);
   }
@@ -497,8 +503,8 @@ export class MatchSync {
   /** Whoever `wire` names must be someone the other machine is allowed to speak for. */
   private remoteActor(wire: number): RemoteSoldier | undefined {
     if (wire === this.peerWire) return this.remote;
-    // Only the host has bots, and only in co-op.
-    if (this.role === 'guest' && this.coop && wire >= WIRE_BOT_BASE) return this.proxies.get(wire);
+    // Only the host has bots: in co-op, and in a duel where a player has one.
+    if (this.role === 'guest' && this.hostBots && wire >= WIRE_BOT_BASE) return this.proxies.get(wire);
     return undefined;
   }
 
@@ -564,13 +570,17 @@ export class MatchSync {
     const player = this.ctx.player;
     let target: Combatant | undefined;
     if (hit.target === this.myWire) {
-      // A partner cannot hurt a partner; in a duel only the opponent can. A co-op guest is also shot at by the host's bots.
+      // A partner cannot hurt a partner; in a duel only the opponent can. A guest is also shot at by the host's enemy bots.
       const fromPeer = hit.attacker === this.peerWire && !this.coop;
-      // Only a bot the host has announced: an unknown id would also get a fresh rate allowance each time.
-      const fromBot = this.role === 'guest' && this.coop && this.proxies.get(hit.attacker) !== undefined;
+      // Only a bot the host has announced, and not one on this player's side: an unknown id
+      // would also get a fresh rate allowance each time.
+      const bot = this.role === 'guest' && this.hostBots ? this.proxies.get(hit.attacker) : undefined;
+      const fromBot = bot !== undefined && bot.team !== player.team;
       if (fromPeer || fromBot) target = player;
-    } else if (this.role === 'host' && this.coop && hit.attacker === this.peerWire && hit.target >= WIRE_BOT_BASE) {
-      target = this.localOf(hit.target);
+    } else if (this.role === 'host' && this.hostBots && hit.attacker === this.peerWire && hit.target >= WIRE_BOT_BASE) {
+      // The other player may hurt only the bots fighting against them.
+      const bot = this.localOf(hit.target);
+      if (bot && bot.team !== this.remote.team) target = bot;
     }
     if (!target || !target.alive) return;
     // A blast is only believed from a player who has thrown a grenade, and only so many times.
@@ -613,7 +623,7 @@ export class MatchSync {
       this.ctx.events.emit('died', { victimId: this.remote.id, killerId: killer?.id ?? NOBODY, weaponId: death.weapon, headshot: death.headshot });
       return;
     }
-    if (this.role !== 'guest' || !this.coop) return;
+    if (this.role !== 'guest' || !this.hostBots) return;
     const proxy = this.proxies.get(death.victim);
     if (!proxy || proxy.endedLife >= 0) return;
     proxy.die(direction, 0);

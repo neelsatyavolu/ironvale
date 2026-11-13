@@ -123,7 +123,8 @@ export async function waitConnected(host, guest) {
 }
 
 /** The host chooses a match in the lobby, the guest presses Ready, the host starts, both wait out the countdown. */
-export async function startMatch(host, guest, { mode, rules = 'Skirmish', difficulty = 'Recruit', enemies = 4, target = 10 }) {
+/** `bot` ('With me' or 'With friend') gives one duel player a bot teammate at `difficulty`. */
+export async function startMatch(host, guest, { mode, rules = 'Skirmish', difficulty = 'Recruit', enemies = 4, target = 10, bot = '' }) {
   const lobby = host.page;
   // A range input cannot be typed into: set it and announce the change the way dragging does.
   const slide = (label, value) =>
@@ -140,7 +141,13 @@ export async function startMatch(host, guest, { mode, rules = 'Skirmish', diffic
     await lobby.getByRole('radio', { name: rules, exact: true }).filter({ visible: true }).click();
     await lobby.getByRole('radio', { name: difficulty, exact: true }).filter({ visible: true }).click();
     await slide('Enemies', enemies);
-  } else await slide('Kills to win', target);
+  } else {
+    await slide('Kills to win', target);
+    if (bot) {
+      await lobby.getByRole('radio', { name: bot, exact: true }).filter({ visible: true }).click();
+      await lobby.getByRole('radio', { name: difficulty, exact: true }).filter({ visible: true }).click();
+    }
+  }
   await clickButton(guest.page, 'Ready');
   await visible(lobby, 'button:has-text("Start match"):not([disabled])').waitFor({ timeout: 10000 });
   await clickButton(lobby, 'Start match');

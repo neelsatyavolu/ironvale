@@ -99,6 +99,8 @@ export class Game implements GameContext, GameCommands {
   private wave = 0;
   private waveTimer = 0;
   private respawnTimer = 0;
+  /** Duel: how long this machine's bot has been down. */
+  private botDownTime = 0;
   private snapshotTimer = 0;
   private killFeed: KillFeedEntry[] = [];
   private loadToken = 0;
@@ -241,6 +243,7 @@ export class Game implements GameContext, GameCommands {
       this.killFeed = [];
       this.wave = this.rules === 'survival' ? 1 : 0;
       this.waveTimer = 0;
+      this.botDownTime = 0;
       this.combat.add(this.player);
       this.net.enterMap(map);
       this.spawnPlayer(true);
@@ -249,7 +252,7 @@ export class Game implements GameContext, GameCommands {
       // One grenade for the whole match: this is the only place it is handed out.
       this.weapons.restockGrenades();
       // A co-op guest shows the host's enemies instead of running its own.
-      if (this.net.authority) this.bots.spawn(config.botCount, 'bravo', config.difficulty);
+      if (this.net.authority) this.bots.spawn(config.botCount, config.botTeam ?? 'bravo', config.difficulty);
       // Compile every shader while the loading screen is still up, so the first
       // seconds of play do not stutter.
       this.progress(0.95, 'Preparing the renderer');
@@ -367,6 +370,7 @@ export class Game implements GameContext, GameCommands {
         this.respawnTimer -= dt;
         if (this.respawnTimer <= 0) this.spawnPlayer();
       }
+      this.respawnDuelBot(dt, config);
       const result = duelResult(this.kills, this.deaths, config.killTarget ?? DEFAULT_KILL_TARGET);
       if (result) this.endMatch(result);
       return;
@@ -402,6 +406,18 @@ export class Game implements GameContext, GameCommands {
       this.waveTimer += dt;
       if (this.waveTimer >= WIN_DELAY_SECONDS) this.endMatch('won');
     }
+  }
+
+  /** A duel bot that is down comes back after the same wait as a player. */
+  private respawnDuelBot(dt: number, config: MatchConfig): void {
+    if (config.botCount === 0 || this.bots.alive > 0) {
+      this.botDownTime = 0;
+      return;
+    }
+    this.botDownTime += dt;
+    if (this.botDownTime < RESPAWN_SECONDS) return;
+    this.botDownTime = 0;
+    this.bots.spawn(config.botCount, config.botTeam ?? 'bravo', config.difficulty);
   }
 
   private endMatch(result: 'won' | 'lost'): void {
@@ -457,7 +473,9 @@ export class Game implements GameContext, GameCommands {
     if (event.victimId === this.player.id) {
       this.deaths++;
       this.respawnTimer = RESPAWN_SECONDS;
-    } else if (event.killerId === this.player.id) {
+    } else if (this.rules === 'duel' ? event.victimId === this.net.partner?.id : event.killerId === this.player.id) {
+      // A duel is scored by side: any death of the opponent is a point, whoever or whatever caused it,
+      // so a bot teammate's kills count and the opponent's own deaths agree with this tally.
       this.kills++;
     }
     this.emitSnapshot();

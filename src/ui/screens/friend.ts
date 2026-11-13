@@ -22,8 +22,10 @@ const DIFFICULTIES: readonly { value: Difficulty; label: string }[] = [
 
 const MODE_NOTES: Readonly<Record<NetMatchConfig['mode'], string>> = {
   coop: 'The two of you against the enemy. The enemies run on the host\'s machine.',
-  duel: 'One against one. Each kill is a point and you come back as far from your opponent as the map allows.',
+  duel: 'One against one, or with a bot on one side. Each kill is a point and you come back as far from your opponent as the map allows.',
 };
+
+const DUEL_BOT_NOTE = 'A bot fights for one of you and its kills count for its side. Killing it scores nothing; it comes back after a few seconds.';
 
 const RULES_NOTES: Readonly<Record<NetMatchConfig['rules'], string>> = {
   skirmish: 'Three lives each. Clear every enemy to win.',
@@ -284,13 +286,23 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     (killTarget) => net.setConfig({ killTarget }),
   );
   const targetSection = section('Kills to win', targetControl.element);
-  for (const control of [modeControl, mapControl, rulesControl, difficultyControl]) control.element.classList.add('iv-seg--wide');
+  const duelBotControl = segmented<NetMatchConfig['duelBot']>(
+    'Bot teammate',
+    [
+      { value: 'none', label: 'None' },
+      { value: 'host', label: 'With me' },
+      { value: 'guest', label: 'With friend' },
+    ],
+    (duelBot) => net.setConfig({ duelBot }),
+  );
+  const duelBotSection = section('Bot teammate', duelBotControl.element, h('p', 'iv-note', DUEL_BOT_NOTE));
+  for (const control of [modeControl, mapControl, rulesControl, difficultyControl, duelBotControl]) control.element.classList.add('iv-seg--wide');
   for (const control of [countControl, targetControl]) control.element.classList.add('iv-slider--wide');
   const setup = h(
     'div',
     'iv-friend__cols',
     h('div', 'iv-friend__stack', modeSection.element, mapSection.element),
-    h('div', 'iv-friend__stack', rulesSection.element, difficultySection.element, countSection.element, targetSection.element),
+    h('div', 'iv-friend__stack', rulesSection.element, targetSection.element, duelBotSection.element, difficultySection.element, countSection.element),
   );
 
   // The guest sees the host's choices but cannot change them.
@@ -301,6 +313,7 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     difficulty: summaryRow('Difficulty'),
     enemies: summaryRow('Enemies'),
     target: summaryRow('Kills to win'),
+    duelBot: summaryRow('Bot teammate'),
   };
   const summary = section('Set up by the host', h('div', 'iv-friend__facts', ...Object.values(facts).map((fact) => fact.element)));
 
@@ -409,8 +422,12 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
     difficultyControl.set(config.difficulty);
     countControl.set(Math.min(MAX_BOTS, Math.max(MIN_BOTS, config.botCount)));
     targetControl.set(Math.min(MAX_KILLS, Math.max(MIN_KILLS, config.killTarget)));
-    rulesSection.element.hidden = difficultySection.element.hidden = countSection.element.hidden = duel;
-    targetSection.element.hidden = !duel;
+    duelBotControl.set(config.duelBot);
+    const duelBot = duel && config.duelBot !== 'none';
+    rulesSection.element.hidden = countSection.element.hidden = duel;
+    targetSection.element.hidden = duelBotSection.element.hidden = !duel;
+    // In a duel the difficulty sets how well the bot plays, so it is shown only when there is one.
+    difficultySection.element.hidden = duel && !duelBot;
   }
 
   function renderLobby(state: LobbyState): void {
@@ -435,8 +452,10 @@ export function createFriend(ctx: GameContext, commands: GameCommands, actions: 
       facts.difficulty.set(DIFFICULTIES.find((item) => item.value === config.difficulty)?.label ?? config.difficulty);
       facts.enemies.set(String(config.botCount));
       facts.target.set(`First to ${config.killTarget}`);
-      facts.rules.element.hidden = facts.difficulty.element.hidden = facts.enemies.element.hidden = duel;
-      facts.target.element.hidden = !duel;
+      facts.duelBot.set(config.duelBot === 'host' ? `With ${state.peerName}` : config.duelBot === 'guest' ? 'With you' : 'None');
+      facts.rules.element.hidden = facts.enemies.element.hidden = duel;
+      facts.target.element.hidden = facts.duelBot.element.hidden = !duel;
+      facts.difficulty.element.hidden = duel && config.duelBot === 'none';
       readyButton.textContent = state.localReady ? 'Not ready' : 'Ready';
       readyButton.classList.toggle('iv-btn--accent', !state.localReady);
       readyButton.classList.toggle('iv-btn--ghost', state.localReady);

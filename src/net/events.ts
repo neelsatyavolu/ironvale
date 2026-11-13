@@ -12,6 +12,8 @@ import { MAX_COORDINATE, MAX_EVENT_CHARS, MAX_TIME_MS, MAX_WIRE_ID, WIRE_BOT_BAS
 
 export type NetMode = 'coop' | 'duel';
 export type NetRules = 'skirmish' | 'survival';
+/** Which player, if either, has an AI teammate in a duel. */
+export type DuelBot = 'none' | 'host' | 'guest';
 
 /** What the host chooses in the lobby. */
 export interface NetMatchConfig {
@@ -23,6 +25,8 @@ export interface NetMatchConfig {
   readonly botCount: number;
   /** Duel only: kills needed to win. */
   readonly killTarget: number;
+  /** Duel only: who has a bot teammate. It plays at `difficulty` and runs on the host. */
+  readonly duelBot: DuelBot;
 }
 
 export type ByeReason = 'left' | 'timeout' | 'ended';
@@ -79,6 +83,7 @@ export type NetEvent =
   | { readonly t: 'bye'; readonly reason: ByeReason };
 
 const MODES: readonly NetMode[] = ['coop', 'duel'];
+const DUEL_BOTS: readonly DuelBot[] = ['none', 'host', 'guest'];
 const RULES: readonly NetRules[] = ['skirmish', 'survival'];
 const DIFFICULTIES: readonly Difficulty[] = ['recruit', 'regular', 'veteran', 'elite'];
 const ZONES: readonly HitZone[] = ['head', 'torso', 'limb'];
@@ -146,8 +151,10 @@ function matchConfig(value: unknown): NetMatchConfig | null {
   const difficulty = oneOf(fields.difficulty, DIFFICULTIES);
   const botCount = whole(fields.botCount, 0, MAX_NET_BOTS);
   const killTarget = whole(fields.killTarget, 1, MAX_KILL_TARGET);
-  if (mapId === null || !mode || !rules || !difficulty || botCount === null || killTarget === null) return null;
-  return { mapId, mode, rules, difficulty, botCount, killTarget };
+  // A host from before duel bots sends no field: nobody has one.
+  const duelBot = fields.duelBot === undefined ? 'none' : oneOf(fields.duelBot, DUEL_BOTS);
+  if (mapId === null || !mode || !rules || !difficulty || botCount === null || killTarget === null || !duelBot) return null;
+  return { mapId, mode, rules, difficulty, botCount, killTarget, duelBot };
 }
 
 function build(fields: Fields): NetEvent | null {
