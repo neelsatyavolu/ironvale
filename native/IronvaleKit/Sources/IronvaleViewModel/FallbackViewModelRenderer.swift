@@ -1,4 +1,4 @@
-// First-person view model for M4: the stand-in gun posed in camera space and drawn over the scene.
+// Stand-in first-person view model (M4), used when the baked view model (ViewModelLayer) is missing: the stand-in gun posed in camera space and drawn over the scene.
 // Behaviour reference: src/weapons/view/rig.ts (hip / ADS blend from the sight anchor, lowered and
 // sprint carry, a spring kick per shot, 54 degree view-model field of view). The layered procedural
 // pose, arms, IK and gun materials are M9; this keeps the gun readable and gives the sim a muzzle.
@@ -40,7 +40,7 @@ private struct Uniforms {
 }
 
 @MainActor
-public final class ViewModelRenderer {
+public final class FallbackViewModelRenderer {
     /// rig.ts: the view model is drawn with its own narrower field of view.
     public static let fovDegrees: Float = 54
 
@@ -75,8 +75,8 @@ public final class ViewModelRenderer {
     public init(device: any MTLDevice, library: any MTLLibrary, colorFormat: MTLPixelFormat, guns: [String: FallbackGunData]) throws {
         self.device = device
         self.guns = guns
-        guard let vertex = library.makeFunction(name: "ivViewModelVertex") else { throw SetupError.missingFunction("ivViewModelVertex") }
-        guard let fragment = library.makeFunction(name: "ivViewModelFragment") else { throw SetupError.missingFunction("ivViewModelFragment") }
+        guard let vertex = library.makeFunction(name: "ivViewModelFallbackVertex") else { throw SetupError.missingFunction("ivViewModelFallbackVertex") }
+        guard let fragment = library.makeFunction(name: "ivViewModelFallbackFragment") else { throw SetupError.missingFunction("ivViewModelFallbackFragment") }
         let descriptor = MTLRenderPipelineDescriptor()
         descriptor.label = "view model"
         descriptor.vertexFunction = vertex

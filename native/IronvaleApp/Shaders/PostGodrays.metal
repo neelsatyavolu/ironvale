@@ -15,10 +15,10 @@ static float intersectRayPlane(float3 origin, float3 direction, float4 plane) {
     return -sdPlane(origin, plane) / dot(plane.xyz, direction);
 }
 
-/// three inShadow for a directional light: (amount in shadow, shadow-camera distance).
-static float2 inShadow(float3 worldPos, constant IVPostView &view, constant IVGodraysParams &params,
-                       depth2d<float> shadowMap) {
-    float4 clip = view.shadowViewProjection * float4(worldPos, 1.0);
+/// three inShadow for a directional light: (amount in shadow, shadow-camera distance). `clip` is the
+/// sample's shadow clip position; the shadow camera is orthographic (w = 1), so the march interpolates
+/// it between the clip positions of the ray's ends instead of transforming every sample.
+static float2 inShadow(float4 clip, constant IVGodraysParams &params, depth2d<float> shadowMap) {
     float3 ndc = clip.xyz / clip.w;
     float3 coord = float3(ndc.x * 0.5 + 0.5, 0.5 - ndc.y * 0.5, ndc.z);
     float2 output = float2(1.0, 0.0);
@@ -90,9 +90,10 @@ fragment float4 ivGodraysFragment(PostVaryings in [[stage_in]],
         float samplesFloat = round(float(params.raymarchSteps) + float(params.raymarchSteps / 8 + 2) * noise);
         uint samples = uint(samplesFloat);
         float span = distance(startPosition, worldPosition) * params.density;
+        float4 clipStart = view.shadowViewProjection * float4(startPosition, 1.0);
+        float4 clipEnd = view.shadowViewProjection * float4(worldPosition, 1.0);
         for (uint i = 0; i < samples; i++) {
-            float3 samplePos = mix(startPosition, worldPosition, float(i) / samplesFloat);
-            float2 shadowInfo = inShadow(samplePos, view, params, shadowMap);
+            float2 shadowInfo = inShadow(mix(clipStart, clipEnd, float(i) / samplesFloat), params, shadowMap);
             float shadowAmount = 1.0 - shadowInfo.x;
             illum += shadowAmount * span * pow(1.0 - shadowInfo.y / params.shadowFar, params.distanceAttenuation);
         }

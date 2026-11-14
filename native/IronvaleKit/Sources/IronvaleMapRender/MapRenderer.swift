@@ -47,6 +47,9 @@ public final class MapRenderer {
     public private(set) var triangleCount = 0
     /// Drawn inside the shadow and scene passes (M7a: the match's soldiers, IronvaleCharacters SoldierLayer).
     public var layers: [any SceneLayer] = []
+    /// Punctual lights that come and go (M9 effects: the muzzle-flash lights), appended after the
+    /// map's own for the scene pass; kept within IV_MAX_LIGHTS.
+    public var transientLights: [IVLight] = []
     /// The web's ?freeze dev switch (src/core/freeze.ts, `--freeze`): every shader clock reads 0, so
     /// parity captures are deterministic. Frame intervals (dynamic resolution, MetalFX) still advance.
     public var visualsFrozen = false
@@ -56,6 +59,8 @@ public final class MapRenderer {
     /// Colour attachment formats of the scene pass with the post chain (PostTypes.h IV_SCENE_ATTACHMENT_*).
     public static let sceneColorFormats: [MTLPixelFormat] = [.rgba16Float, .rgba8Unorm, .rg8Unorm]
     private var lastFrameTime: Double?
+    /// Per-pass GPU times (IV_POST_PROFILE=1), shared with the post chain.
+    private let profiler: PostProfiler?
 
     private let device: any MTLDevice
     private let buffer: any MTLBuffer
@@ -227,11 +232,14 @@ public final class MapRenderer {
             throw MapRenderScene.LoadError.wrongFormat("scene.json has the railyard sky but no programParams", 1)
         }
         post = try PostPass(device: device, library: library, outputFormat: .bgra8Unorm, exposure: Float(setup.exposure))
+        let profiler = PostProfiler(device: device)
+        self.profiler = profiler
         postChain = try postSettings.map {
             try PostChain(device: device, library: library, settings: $0, lighting: PostChain.Lighting(
                 exposure: Float(setup.exposure), sunColor: RenderMath.linearFromSRGBHex(setup.sunColor),
                 sunIntensity: Float(setup.sunIntensity), fogDensity: Float(setup.fog.density),
-                volumetric: Float(setup.volumetric), shaftDensity: Float(setup.shaftDensity ?? 1), bloom: Float(setup.bloom)))
+                volumetric: Float(setup.volumetric), shaftDensity: Float(setup.shaftDensity ?? 1), bloom: Float(setup.bloom)),
+                profiler: profiler)
         }
         (hdrTarget, depthTarget, shadowMap) = try Self.makeTargets(device: device, settings: settings)
 
@@ -286,7 +294,8 @@ public final class MapRenderer {
         if settings.shadowMapSize > 0 { encodeShadow(commandBuffer: commandBuffer, frame: &frame) }
         encodeScene(commandBuffer: commandBuffer, frame: &frame, eye: pose.eye,
                     targets: (hdrTarget, nil, nil, depthTarget))
-        post.encode(commandBuffer: commandBuffer, source: hdrTarget, target: output)
+        post.encode(commandBuffer: commandBuffer, source: hdrTarget, target: output, profiler: profiler)
+        profiler?.endFrame(commandBuffer)
     }
 
     /// The M9 frame: scene MRT at the chain's (dynamic) scene size with a jittered projection, then
@@ -387,6 +396,7 @@ public final class MapRenderer {
         pass.depthAttachment.loadAction = .clear
         pass.depthAttachment.clearDepth = 1
         pass.depthAttachment.storeAction = .store
+        profiler?.attach(pass, label: "sun shadow", commandBuffer: commandBuffer)
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else { return }
         encoder.label = "sun shadow"
         encoder.setRenderPipelineState(pipelines.shadow)
@@ -422,12 +432,18 @@ public final class MapRenderer {
         pass.depthAttachment.clearDepth = 0
         // The post chain reads the scene depth.
         pass.depthAttachment.storeAction = targets.normal == nil ? .dontCare : .store
+        profiler?.attach(pass, label: "scene", commandBuffer: commandBuffer)
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else { return }
         encoder.label = "scene"
         encoder.setFrontFacing(.counterClockwise)
+        var lightData = lights.isEmpty ? [IVLight](repeating: IVLight(), count: 1) : lights
+        if !transientLights.isEmpty {
+            let extra = transientLights.prefix(max(0, Int(IV_MAX_LIGHTS) - lights.count))
+            lightData = lights + extra
+            frame.lightCount = UInt32(lightData.count)
+        }
         encoder.setVertexBytes(&frame, length: MemoryLayout<IVFrameUniforms>.stride, index: Int(IV_BUFFER_FRAME))
         encoder.setFragmentBytes(&frame, length: MemoryLayout<IVFrameUniforms>.stride, index: Int(IV_BUFFER_FRAME))
-        var lightData = lights.isEmpty ? [IVLight](repeating: IVLight(), count: 1) : lights
         encoder.setFragmentBytes(&lightData, length: MemoryLayout<IVLight>.stride * lightData.count, index: Int(IV_BUFFER_LIGHTS))
         var params = programParams
         encoder.setFragmentBytes(&params, length: MemoryLayout<SIMD4<Float>>.stride * params.count, index: Self.programParamsIndex)
@@ -462,6 +478,7 @@ public final class MapRenderer {
         let transparent = draws.filter { $0.pass == .transparent }
             .sorted { simd_distance_squared($0.center, eye) > simd_distance_squared($1.center, eye) }
         for draw in transparent { encodeDraw(encoder, draw) }
+        for layer in layers { layer.encodeTransparent(encoder) }
         encoder.endEncoding()
     }
 

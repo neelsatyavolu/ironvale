@@ -27,6 +27,8 @@ targets:
         excludes:
           - Info.plist
           - Ironvale.entitlements
+          # Copied by the "Stage runtime data" phase into Contents/Resources/Licenses.
+          - Licenses
     dependencies:
       - package: IronvaleKit
         product: IronvaleKit
@@ -45,6 +47,26 @@ targets:
         # Shaders include ShaderTypes.h from the package's C target.
         MTL_HEADER_SEARCH_PATHS: $(SRCROOT)/../IronvaleKit/Sources/ShaderTypes/include
         MTL_LANGUAGE_REVISION: Metal32
+        # Version numbering (Info.plist reads these). build-app.sh sets CURRENT_PROJECT_VERSION from
+        # BUILD_NUMBER for release builds; bump MARKETING_VERSION per release (docs/native-port/RELEASE.md).
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        # The "Stage runtime data" phase reads the repository (map packages, assets) at build time.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+      configs:
+        Release:
+          # No Ironvale.debug.dylib / __preview.dylib in a shipped build.
+          ENABLE_DEBUG_DYLIB: NO
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+    postBuildScripts:
+      # Everything the app opens at run time goes into Contents/Resources (Contract/, Runtime/, Licenses/),
+      # so the app never reads the source tree (native/ci/stage-runtime.py; checked by check-m12-prep.sh).
+      - name: Stage runtime data
+        basedOnDependencyAnalysis: false
+        shell: /bin/bash
+        script: |
+          set -euo pipefail
+          /usr/bin/python3 "$SRCROOT/../ci/stage-runtime.py" "$SRCROOT/../.." "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
 schemes:
   Ironvale:
     build:

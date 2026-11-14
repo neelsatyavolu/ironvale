@@ -1,7 +1,7 @@
 // The M9 post frame graph (PLAN.md 3.3), ported from src/render/pipeline.ts at commit 1aca0b7:
 //   scene MRT (colour, packed view normal, metal/rough, depth) -> GTAO -> SSR -> godrays + bilateral
-//   blur -> composite (+ camera motion) -> MetalFX Temporal (for TRAA, upscaling to the output) ->
-//   bloom -> ACES tone map, vignette, film grain.
+//   blur -> composite (+ camera motion) -> MetalFX Temporal (for TRAA, at the render-scale size) ->
+//   bloom -> ACES tone map, vignette, film grain, upscaled to the output.
 // The chain owns the scene targets so it can resize them for the render scale and dynamic
 // resolution; the map renderer draws into `frame.targets` and then calls `encode`.
 import Metal
@@ -101,17 +101,24 @@ public final class PostChain {
     private var pipelines: PostPipelines
     private let temporal: PostTemporal?
     private var targets: PostTargets?
+    /// The target set of the previous scene size: dynamic resolution often probes one step up and
+    /// comes back, and switching back to a kept set avoids reallocating (and faulting in) ~100 MB of
+    /// targets in the middle of a run.
+    private var previousTargets: PostTargets?
     private var frameIndex = 0
     private var previousViewProjection: simd_float4x4?
-    private let profiler: PostProfiler?
+    /// Per-pass GPU timer (IV_POST_PROFILE=1); the map renderer shares it for the shadow and scene passes.
+    public let profiler: PostProfiler?
 
-    public init(device: any MTLDevice, library: any MTLLibrary, settings: PostSettings, lighting: Lighting) throws {
+    public init(device: any MTLDevice, library: any MTLLibrary, settings: PostSettings, lighting: Lighting,
+                profiler: PostProfiler? = nil) throws {
         self.device = device
         self.settings = settings
         self.lighting = lighting
         pipelines = try PostPipelines(device: device, library: library)
-        temporal = settings.antiAliasing == .temporal ? try PostTemporal(device: device) : nil
-        profiler = PostProfiler(device: device)
+        // The output pass tone maps colour x exposure / 0.6 (PostCommon.h ivACESFilmic).
+        temporal = settings.antiAliasing == .temporal ? try PostTemporal(device: device, exposure: lighting.exposure / 0.6) : nil
+        self.profiler = profiler
     }
 
     /// Scene size for an output size: the web's floor(css size x devicePixelRatio x renderScale x dynamic).
@@ -136,8 +143,10 @@ public final class PostChain {
     public func beginFrame(outputWidth: Int, outputHeight: Int) throws -> Frame {
         let size = sceneSize(outputWidth: outputWidth, outputHeight: outputHeight)
         if targets?.matches(width: size.width, height: size.height) != true {
-            targets = try PostTargets(device: device, width: size.width, height: size.height, settings: settings,
-                                      composite: temporal == nil)
+            let kept = previousTargets?.matches(width: size.width, height: size.height) == true ? previousTargets : nil
+            previousTargets = targets
+            targets = try kept ?? PostTargets(device: device, width: size.width, height: size.height, settings: settings,
+                                              composite: temporal == nil)
         }
         let jitter = temporal == nil ? .zero : PostTemporal.jitter(frame: frameIndex)
         return Frame(targets: targets!.scene, jitterPixels: jitter, outputWidth: outputWidth, outputHeight: outputHeight)
@@ -177,21 +186,27 @@ public final class PostChain {
         var flags: UInt32 = 0
         // Charges the end of the scene pass to "scene tail", not to the first post pass.
         profiler?.mark(commandBuffer, label: "scene tail", after: scene.depth)
-        if let bounds = t.ssrDepthBounds {
+        if let bounds = t.ssrDepthBounds, let coarse = t.ssrCoarseBounds, let blockMetal = t.ssrBlockMetal,
+           let metalMask = t.ssrMetalMask {
             let block = PostTargets.ssrBlock
             PostPipelines.dispatch(commandBuffer, label: "SSR depth bounds", pipeline: pipelines.ssrDepthBounds,
                                    threadgroups: MTLSize(width: bounds.width, height: bounds.height, depth: 1),
                                    threadsPerGroup: MTLSize(width: block, height: block, depth: 1)) { e in
                 e.setTexture(scene.depth, index: 0)
                 e.setTexture(bounds, index: 1)
+                e.setTexture(scene.metalRough, index: 2)
+                e.setTexture(blockMetal, index: 3)
             }
-            if let coarse = t.ssrCoarseBounds {
-                PostPipelines.dispatch(commandBuffer, label: "SSR coarse bounds", pipeline: pipelines.ssrCoarseBounds,
-                                       threadgroups: MTLSize(width: (coarse.width + 7) / 8, height: (coarse.height + 7) / 8, depth: 1),
-                                       threadsPerGroup: MTLSize(width: 8, height: 8, depth: 1)) { e in
-                    e.setTexture(bounds, index: 0)
-                    e.setTexture(coarse, index: 1)
-                }
+            let coarseGroups = MTLSize(width: (coarse.width + 7) / 8, height: (coarse.height + 7) / 8, depth: 1)
+            PostPipelines.dispatch(commandBuffer, label: "SSR coarse bounds", pipeline: pipelines.ssrCoarseBounds,
+                                   threadgroups: coarseGroups, threadsPerGroup: MTLSize(width: 8, height: 8, depth: 1)) { e in
+                e.setTexture(bounds, index: 0)
+                e.setTexture(coarse, index: 1)
+            }
+            PostPipelines.dispatch(commandBuffer, label: "SSR metal mask", pipeline: pipelines.ssrMetalMask,
+                                   threadgroups: coarseGroups, threadsPerGroup: MTLSize(width: 8, height: 8, depth: 1)) { e in
+                e.setTexture(blockMetal, index: 0)
+                e.setTexture(metalMask, index: 1)
             }
         }
         if let ao = t.ao {
@@ -240,8 +255,9 @@ public final class PostChain {
         var hdr: any MTLTexture
         if let temporal {
             let largest = Self.size(frame.outputWidth, frame.outputHeight, scale: Double(settings.renderScale))
-            let inputs = try temporal.inputs(maxWidth: largest.width, maxHeight: largest.height, outputWidth: frame.outputWidth,
-                                             outputHeight: frame.outputHeight,
+            // Resolved at the largest scene size; the output pass upscales to the display (PostTemporal).
+            let inputs = try temporal.inputs(maxWidth: largest.width, maxHeight: largest.height, outputWidth: largest.width,
+                                             outputHeight: largest.height,
                                              minScale: settings.dynamicResolution ? dynamicFloor : 1)
             encodeTemporalComposite(commandBuffer, inputs: inputs, width: scene.width, height: scene.height, bind: bindComposite)
             hdr = temporal.resolve(commandBuffer: commandBuffer, contentWidth: scene.width, contentHeight: scene.height,
@@ -285,7 +301,7 @@ public final class PostChain {
         pass.depthAttachment.texture = inputs.depth
         pass.depthAttachment.loadAction = .dontCare
         pass.depthAttachment.storeAction = .store
-        profiler?.attach(pass, label: "post composite")
+        profiler?.attach(pass, label: "post composite", commandBuffer: commandBuffer)
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else { return }
         encoder.label = "post composite"
         encoder.setRenderPipelineState(pipelines.compositeTemporal)
@@ -310,6 +326,7 @@ public final class PostChain {
             e.setFragmentTexture(scene.metalRough, index: 3)
             e.setFragmentTexture(bounds, index: 4)
             e.setFragmentTexture(t.ssrCoarseBounds, index: 5)
+            e.setFragmentTexture(t.ssrMetalMask, index: 6)
         }
         // Mip 0 is a copy; mip i a box blur of the SSR target with taps i texels apart (one dispatch).
         let views = t.ssrBlurLevels

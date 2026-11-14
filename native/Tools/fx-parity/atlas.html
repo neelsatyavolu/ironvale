@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fx atlases</title>
+<script type="module">
+  // Draws the three Canvas2D sheets of src/fx exactly as the game does; bake-atlases.mjs saves them.
+  import { createSpriteSheet } from '/src/fx/textures.ts';
+  import { createDecalSheet } from '/src/fx/decal-sheet.ts';
+  import { createFlashSheet } from '/src/fx/flash-sheet.ts';
+  window.__atlases = {
+    sprites: createSpriteSheet().image.toDataURL('image/png'),
+    decals: createDecalSheet().image.toDataURL('image/png'),
+    flash: createFlashSheet().image.toDataURL('image/png'),
+  };
+</script>

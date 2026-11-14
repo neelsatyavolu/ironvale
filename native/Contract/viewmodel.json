@@ -1,0 +1,718 @@
+{
+  "rig": {
+    "RUN_SPEED": 6.4,
+    "STRIDE": 1.7,
+    "MAX_TURN_RATE": 3,
+    "SWAY_ROTATION": 0.012,
+    "SWAY_SHIFT": 0.004,
+    "AIMED_SWAY": 0.15,
+    "AIMED_BOB": 0.08,
+    "AIMED_RISE": 0.4,
+    "KICK_IMPULSE": 26,
+    "WALL_MARGIN": 0.06,
+    "WALL_MAX_ANGLE": 1.25,
+    "VIEW_MODEL_FOV": 54,
+    "springs": {
+      "kick": [
+        260,
+        20
+      ],
+      "rise": [
+        230,
+        17
+      ],
+      "cant": [
+        200,
+        14
+      ],
+      "twist": [
+        200,
+        16
+      ],
+      "drop": [
+        120,
+        15
+      ],
+      "jolt": [
+        320,
+        22
+      ]
+    },
+    "SHOULDER": [
+      0,
+      0.02,
+      0.14
+    ]
+  },
+  "motion": {
+    "MAX_SPRING_STEP": 0.008333333333333333
+  },
+  "parts": {
+    "SLIDE_BACK_SECONDS": 0.02,
+    "SLIDE_RETURN_SECONDS": 0.055,
+    "MAG_DROP_METRES": 0.3,
+    "MAG_TOWARD_SHOOTER": 0.04,
+    "MAG_FALL_SECONDS": 0.24,
+    "MAG_SEAT_SECONDS": 0.3,
+    "BOLT_LIFT_RADIANS": 1.05,
+    "COVER_OPEN_RADIANS": 1.05,
+    "TRIGGER_PULL_RADIANS": 0.32,
+    "TRIGGER_HOLD_SECONDS": 0.05,
+    "TRIGGER_RELEASE_SECONDS": 0.1,
+    "WEIGHT_RATE": 14,
+    "RELEASE_RATE": 70
+  },
+  "poses": {
+    "lowered": {
+      "x": 0,
+      "y": -0.3,
+      "z": 0.04,
+      "pitch": -0.7,
+      "yaw": 0,
+      "roll": 0.2
+    },
+    "againstWall": {
+      "x": 0,
+      "y": -0.03,
+      "z": 0.07,
+      "pitch": 0.85,
+      "yaw": 0.5,
+      "roll": 0
+    }
+  },
+  "handling": {
+    "pistol": {
+      "hip": [
+        0.11,
+        -0.115,
+        -0.42
+      ],
+      "hipTilt": [
+        0.04,
+        0.06,
+        -0.03
+      ]
+    },
+    "smg": {
+      "hip": [
+        0.12,
+        -0.19,
+        -0.3
+      ],
+      "hipTilt": [
+        0.08,
+        0.066,
+        -0.04
+      ]
+    },
+    "carbine": {
+      "hip": [
+        0.125,
+        -0.2,
+        -0.3
+      ],
+      "hipTilt": [
+        0.08,
+        0.066,
+        -0.04
+      ]
+    },
+    "rifle": {
+      "hip": [
+        0.125,
+        -0.19,
+        -0.28
+      ],
+      "hipTilt": [
+        0.08,
+        0.066,
+        -0.04
+      ]
+    },
+    "shotgun": {
+      "hip": [
+        0.125,
+        -0.19,
+        -0.28
+      ],
+      "hipTilt": [
+        0.08,
+        0.066,
+        -0.04
+      ]
+    },
+    "sniper": {
+      "hip": [
+        0.125,
+        -0.2,
+        -0.28
+      ],
+      "hipTilt": [
+        0.08,
+        0.066,
+        -0.04
+      ]
+    },
+    "lmg": {
+      "hip": [
+        0.135,
+        -0.21,
+        -0.3
+      ],
+      "hipTilt": [
+        0.07,
+        0.066,
+        -0.05
+      ]
+    }
+  },
+  "sprint": {
+    "inSeconds": 0.22,
+    "outSeconds": 0.16
+  },
+  "arms": {
+    "asset": "mdl-fp-arms",
+    "SOURCE_SCALE": 0.01,
+    "FINGERS": [
+      "point",
+      "middle",
+      "ring",
+      "pink"
+    ],
+    "shoulders": {
+      "R": {
+        "home": [
+          0.3,
+          -0.32,
+          0.03
+        ],
+        "pole": [
+          0.6,
+          -0.75,
+          0.25
+        ]
+      },
+      "L": {
+        "home": [
+          -0.03,
+          -0.4,
+          -0.34
+        ],
+        "pole": [
+          -0.8,
+          -0.55,
+          0.2
+        ]
+      }
+    },
+    "hand": {
+      "palmAlong": 0.62,
+      "palmAcross": 0,
+      "palmDepth": 0.016,
+      "forearmTwistShare": 0.7,
+      "minReach": 0.12,
+      "maxReach": 0.985
+    },
+    "fingerCurls": {
+      "R": {
+        "point": [
+          22,
+          40,
+          18
+        ],
+        "pointSpread": 14,
+        "middle": [
+          70,
+          100,
+          60
+        ],
+        "ring": [
+          72,
+          100,
+          60
+        ],
+        "pink": [
+          74,
+          98,
+          56
+        ],
+        "thumb": [
+          28,
+          22,
+          18
+        ],
+        "thumbSpread": 0,
+        "cup": 6
+      },
+      "L": {
+        "point": [
+          42,
+          62,
+          32
+        ],
+        "pointSpread": 0,
+        "middle": [
+          42,
+          64,
+          32
+        ],
+        "ring": [
+          44,
+          64,
+          32
+        ],
+        "pink": [
+          46,
+          60,
+          30
+        ],
+        "thumb": [
+          30,
+          20,
+          14
+        ],
+        "thumbSpread": -12,
+        "cup": 4
+      }
+    },
+    "tuck": {
+      "position": [
+        -0.2,
+        -0.62,
+        -0.18
+      ],
+      "fingers": [
+        0.25,
+        -0.2,
+        -1
+      ],
+      "thumb": [
+        0.6,
+        0.8,
+        0
+      ]
+    },
+    "supportBlendSeconds": 0.22,
+    "EPSILON": 0.000001
+  },
+  "weapons": {
+    "m4a1": {
+      "weaponClass": "carbine",
+      "fireMode": "auto",
+      "reloadStyle": "magazine",
+      "scoped": false,
+      "aimTime": 0.24,
+      "aimZoom": 0.72,
+      "recoil": {
+        "kickback": 0.018,
+        "vertical": 0.62,
+        "horizontal": 0.34
+      },
+      "sprintPose": {
+        "x": -0.03,
+        "y": 0.03,
+        "z": 0.03,
+        "pitch": -0.1,
+        "yaw": 0.36,
+        "roll": 0.22
+      },
+      "reloadPose": {
+        "x": -0.02,
+        "y": 0.065,
+        "z": 0,
+        "pitch": 0.13,
+        "yaw": 0.06,
+        "roll": 0.42
+      },
+      "workPose": {
+        "x": 0,
+        "y": 0,
+        "z": 0.01,
+        "pitch": 0.05,
+        "yaw": 0.03,
+        "roll": 0.12
+      }
+    },
+    "mp5": {
+      "weaponClass": "smg",
+      "fireMode": "auto",
+      "reloadStyle": "magazine",
+      "scoped": false,
+      "aimTime": 0.18,
+      "aimZoom": 0.78,
+      "recoil": {
+        "kickback": 0.012,
+        "vertical": 0.4,
+        "horizontal": 0.26
+      },
+      "sprintPose": {
+        "x": -0.03,
+        "y": 0.03,
+        "z": 0.03,
+        "pitch": -0.1,
+        "yaw": 0.36,
+        "roll": 0.22
+      },
+      "reloadPose": {
+        "x": -0.02,
+        "y": 0.065,
+        "z": 0,
+        "pitch": 0.13,
+        "yaw": 0.06,
+        "roll": 0.42
+      },
+      "workPose": {
+        "x": 0,
+        "y": 0,
+        "z": 0.01,
+        "pitch": 0.05,
+        "yaw": 0.03,
+        "roll": 0.12
+      }
+    },
+    "m24": {
+      "weaponClass": "sniper",
+      "fireMode": "bolt",
+      "reloadStyle": "magazine",
+      "scoped": true,
+      "aimTime": 0.42,
+      "aimZoom": 0.16,
+      "recoil": {
+        "kickback": 0.06,
+        "vertical": 3.4,
+        "horizontal": 0.5
+      },
+      "sprintPose": {
+        "x": -0.03,
+        "y": 0.03,
+        "z": 0.03,
+        "pitch": -0.1,
+        "yaw": 0.36,
+        "roll": 0.22
+      },
+      "reloadPose": {
+        "x": -0.01,
+        "y": 0,
+        "z": 0.02,
+        "pitch": 0.1,
+        "yaw": 0.05,
+        "roll": 0.3
+      },
+      "workPose": {
+        "x": -0.01,
+        "y": -0.012,
+        "z": 0.025,
+        "pitch": 0.05,
+        "yaw": 0.03,
+        "roll": -0.18
+      }
+    },
+    "m249": {
+      "weaponClass": "lmg",
+      "fireMode": "auto",
+      "reloadStyle": "belt",
+      "scoped": false,
+      "aimTime": 0.42,
+      "aimZoom": 0.74,
+      "recoil": {
+        "kickback": 0.02,
+        "vertical": 0.72,
+        "horizontal": 0.5
+      },
+      "sprintPose": {
+        "x": -0.03,
+        "y": 0.03,
+        "z": 0.03,
+        "pitch": -0.1,
+        "yaw": 0.36,
+        "roll": 0.22
+      },
+      "reloadPose": {
+        "x": -0.02,
+        "y": 0.05,
+        "z": 0,
+        "pitch": 0.08,
+        "yaw": 0.06,
+        "roll": 0.26
+      },
+      "workPose": {
+        "x": 0,
+        "y": 0,
+        "z": 0.01,
+        "pitch": 0.05,
+        "yaw": 0.03,
+        "roll": 0.12
+      }
+    },
+    "m7": {
+      "weaponClass": "rifle",
+      "fireMode": "auto",
+      "reloadStyle": "magazine",
+      "scoped": false,
+      "aimTime": 0.3,
+      "aimZoom": 0.6,
+      "recoil": {
+        "kickback": 0.026,
+        "vertical": 0.95,
+        "horizontal": 0.42
+      },
+      "sprintPose": {
+        "x": -0.03,
+        "y": 0.03,
+        "z": 0.03,
+        "pitch": -0.1,
+        "yaw": 0.36,
+        "roll": 0.22
+      },
+      "reloadPose": {
+        "x": -0.02,
+        "y": 0.065,
+        "z": 0,
+        "pitch": 0.13,
+        "yaw": 0.06,
+        "roll": 0.42
+      },
+      "workPose": {
+        "x": 0,
+        "y": 0,
+        "z": 0.01,
+        "pitch": 0.05,
+        "yaw": 0.03,
+        "roll": 0.12
+      }
+    },
+    "scarh": {
+      "weaponClass": "rifle",
+      "fireMode": "auto",
+      "reloadStyle": "magazine",
+      "scoped": false,
+      "aimTime": 0.3,
+      "aimZoom": 0.6,
+      "recoil": {
+        "kickback": 0.025,
+        "vertical": 0.85,
+        "horizontal": 0.4
+      },
+      "sprintPose": {
+        "x": -0.03,
+        "y": 0.03,
+        "z": 0.03,
+        "pitch": -0.1,
+        "yaw": 0.36,
+        "roll": 0.22
+      },
+      "reloadPose": {
+        "x": -0.02,
+        "y": 0.065,
+        "z": 0,
+        "pitch": 0.13,
+        "yaw": 0.06,
+        "roll": 0.42
+      },
+      "workPose": {
+        "x": 0,
+        "y": 0,
+        "z": 0.01,
+        "pitch": 0.05,
+        "yaw": 0.03,
+        "roll": 0.12
+      }
+    }
+  },
+  "finishes": {
+    "tuned": {
+      "m4a1": {
+        "m4a1_magazine_tuned": {
+          "source": "m4a1_magazine",
+          "tint": 11053224,
+          "metalLift": 0.02,
+          "polymerLift": 0.012,
+          "roughness": 0.55,
+          "roughnessBias": 0,
+          "scratchGloss": 0.4,
+          "minRoughness": 0.3,
+          "maxRoughness": 0.95,
+          "metalness": 1,
+          "wear": 0.22,
+          "noiseScale": 60,
+          "rub": 0.15,
+          "normalScale": 1
+        },
+        "m4a1_metal_tuned": {
+          "source": "m4a1_metal",
+          "tint": 16777215,
+          "metalLift": 0.02,
+          "polymerLift": 0.012,
+          "roughness": 0.6,
+          "roughnessBias": 0,
+          "scratchGloss": 0.4,
+          "minRoughness": 0.3,
+          "maxRoughness": 0.95,
+          "metalness": 1,
+          "wear": 0.22,
+          "noiseScale": 60,
+          "rub": 0.15,
+          "normalScale": 1
+        },
+        "m4a1_stock_tuned": {
+          "source": "m4a1_stock",
+          "tint": 16777215,
+          "metalLift": 0.02,
+          "polymerLift": 0.012,
+          "roughness": 0.74,
+          "roughnessBias": 0,
+          "scratchGloss": 0.25,
+          "minRoughness": 0.3,
+          "maxRoughness": 0.95,
+          "metalness": 1,
+          "wear": 0.22,
+          "noiseScale": 60,
+          "rub": 0.05,
+          "normalScale": 1
+        }
+      },
+      "m249": {
+        "minimi_tuned": {
+          "source": "minimi",
+          "tint": 16777215,
+          "metalLift": 0.05,
+          "polymerLift": 0.012,
+          "roughness": 0.9,
+          "roughnessBias": 0.2,
+          "scratchGloss": 0.25,
+          "minRoughness": 0.22,
+          "maxRoughness": 0.95,
+          "metalness": 1,
+          "wear": 0.3,
+          "noiseScale": 55,
+          "rub": 0.25,
+          "normalScale": 1
+        }
+      },
+      "scarh": {
+        "scarh_main_tuned": {
+          "source": "scarh_main",
+          "tint": 16777215,
+          "metalLift": 0.02,
+          "polymerLift": 0.012,
+          "roughness": 0.75,
+          "roughnessBias": 0.1,
+          "scratchGloss": 0.3,
+          "minRoughness": 0.35,
+          "maxRoughness": 0.95,
+          "metalness": 1,
+          "wear": 0.2,
+          "noiseScale": 60,
+          "rub": 0.1,
+          "normalScale": 1
+        },
+        "scarh_swivel_tuned": {
+          "source": "scarh_swivel",
+          "tint": 16777215,
+          "metalLift": 0.02,
+          "polymerLift": 0.012,
+          "roughness": 0.75,
+          "roughnessBias": 0.1,
+          "scratchGloss": 0.3,
+          "minRoughness": 0.35,
+          "maxRoughness": 0.95,
+          "metalness": 1,
+          "wear": 0.2,
+          "noiseScale": 60,
+          "rub": 0.1,
+          "normalScale": 1
+        }
+      }
+    },
+    "m7": {
+      "m7_receiver_finish": {
+        "tint": 6707785,
+        "roughness": 0.56,
+        "metalness": 0.3,
+        "wear": 0.22,
+        "mottle": 0.1,
+        "rub": 0.14,
+        "noiseScale": 42
+      },
+      "m7_polymer_finish": {
+        "tint": 6115907,
+        "roughness": 0.78,
+        "metalness": 0,
+        "wear": 0.12,
+        "mottle": 0.05,
+        "rub": 0,
+        "noiseScale": 110
+      },
+      "m7_suppressor_finish": {
+        "tint": 5852736,
+        "roughness": 0.7,
+        "metalness": 0.4,
+        "wear": 0.25,
+        "mottle": 0.16,
+        "rub": 0.1,
+        "noiseScale": 30
+      },
+      "m7_black_finish": {
+        "tint": 1644826,
+        "roughness": 0.7,
+        "metalness": 0.1,
+        "wear": 0.18,
+        "mottle": 0.04,
+        "rub": 0,
+        "noiseScale": 110
+      },
+      "m7_steel_finish": {
+        "tint": 2500394,
+        "roughness": 0.5,
+        "metalness": 0.9,
+        "wear": 0.3,
+        "mottle": 0.06,
+        "rub": 0.2,
+        "noiseScale": 55
+      },
+      "m7_bolt_finish": {
+        "tint": 7830142,
+        "roughness": 0.34,
+        "metalness": 1,
+        "wear": 0.4,
+        "mottle": 0.05,
+        "rub": 0,
+        "noiseScale": 45
+      },
+      "m7_magazine_finish": {
+        "tint": 1842205,
+        "roughness": 0.62,
+        "metalness": 0,
+        "wear": 0.15,
+        "mottle": 0.04,
+        "rub": 0,
+        "noiseScale": 110
+      },
+      "m7_brass_finish": {
+        "tint": 11110210,
+        "roughness": 0.36,
+        "metalness": 1,
+        "wear": 0.2,
+        "mottle": 0,
+        "rub": 0,
+        "noiseScale": 60
+      },
+      "m7_bullet_finish": {
+        "tint": 10247996,
+        "roughness": 0.36,
+        "metalness": 1,
+        "wear": 0.2,
+        "mottle": 0,
+        "rub": 0,
+        "noiseScale": 60
+      }
+    }
+  },
+  "reticle": {
+    "dot": 0.0011,
+    "ring": 0.0099,
+    "ringWidth": 0.00055,
+    "color": 16722452,
+    "gain": 6
+  }
+}

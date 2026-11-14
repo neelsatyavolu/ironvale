@@ -99,6 +99,23 @@ struct CreditsView: View {
                         .padding(.top, 12)
                     }
                 }
+                LedgerSection(label: "Licences", meta: String(CreditsModel.licenceTexts.count)) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        ForEach(CreditsModel.licenceTexts, id: \.resource) { licence in
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(licence.covers).font(Ledger.sans(14, .medium)).foregroundStyle(Ledger.ink)
+                                Text(CreditsModel.licenceText(licence) ?? "Shipped with the app as \(licence.resource).")
+                                    .font(Ledger.mono(11)).foregroundStyle(Ledger.mute)
+                                    .frame(maxWidth: 800, alignment: .leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        if let version = CreditsModel.versionLine() {
+                            Text(version).font(Ledger.mono(12)).foregroundStyle(Ledger.mute)
+                        }
+                    }
+                    .padding(.top, 12)
+                }
             }
         }
     }

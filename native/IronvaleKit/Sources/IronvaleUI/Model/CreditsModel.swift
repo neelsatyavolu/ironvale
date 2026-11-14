@@ -77,6 +77,37 @@ public enum CreditsModel {
                      note: "The connection to a friend, built by github.com/stasel/WebRTC"),
     ]
 
+    /// A licence text the app bundles and the Credits screen shows in full (M12).
+    public struct LicenceText: Equatable, Sendable {
+        public let name: String
+        /// What it covers.
+        public let covers: String
+        /// The file in the app bundle, relative to Contents/Resources.
+        public let resource: String
+    }
+
+    /// Every third-party licence text shipped in the bundle: the WebRTC framework (Resources/Licenses, copied
+    /// by native/ci/stage-runtime.py) and the fonts' OFL (Resources/Fonts). CC BY 4.0 and CC0 assets are
+    /// credited above with the licence's URL, which is what those licences ask for.
+    public static let licenceTexts = [
+        LicenceText(name: "WebRTC", covers: "WebRTC.framework (BSD 3-Clause)", resource: "Licenses/WebRTC-LICENSE.txt"),
+        LicenceText(name: "Newsreader", covers: "The Newsreader font (SIL OFL 1.1)", resource: "Newsreader-OFL.txt"),
+        LicenceText(name: "Geist and Geist Mono", covers: "The Geist fonts (SIL OFL 1.1)", resource: "Geist-OFL.txt"),
+    ]
+
+    /// The text of a bundled licence, or nil outside the app (swift test has no app bundle).
+    public static func licenceText(_ licence: LicenceText, bundle: Bundle = .main) -> String? {
+        guard let base = bundle.resourceURL else { return nil }
+        return try? String(contentsOf: base.appending(path: licence.resource), encoding: .utf8)
+    }
+
+    /// "Version 0.1.0 (12)" from the bundle's Info.plist, or nil outside the app.
+    public static func versionLine(bundle: Bundle = .main) -> String? {
+        guard bundle.bundleIdentifier?.hasPrefix("dev.n3el.ironvale") == true, let info = bundle.infoDictionary, let version = info["CFBundleShortVersionString"] as? String,
+              let build = info["CFBundleVersion"] as? String else { return nil }
+        return "Version \(version) (\(build))"
+    }
+
     static func creditedLines(_ entries: [Asset]) -> [Line] {
         var order: [String] = []
         var lines: [String: Line] = [:]

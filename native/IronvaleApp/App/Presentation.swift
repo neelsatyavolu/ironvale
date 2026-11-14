@@ -12,7 +12,7 @@ enum Presentation {
     private static let automationFlags: Set<String> = [
         "--frames", "--frame-log", "--autopilot", "--flythrough", "--capture",
         "--offscreen", "--autohost", "--autojoin", "--duel-map", "--duel-shot",
-        "--duel-hide", "--event-log", "--match-log", "--code-out", "--soldier-bench",
+        "--duel-hide", "--event-log", "--match-log", "--code-out", "--soldier-bench", "--vm-bench",
         "--lobby-log", "--accept-invite", "--paste-join",
     ]
 

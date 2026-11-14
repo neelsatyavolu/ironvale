@@ -13,7 +13,8 @@
 #      GPU milliseconds per frame (median, p99) are printed with it: on a GPU shared with other work
 #      they are the number to compare, the frame rate is pessimistic.
 #   6. a 15 s profiled flythrough at the fixed High render scale (IV_POST_PROFILE=1, dynamic resolution
-#      off): per-pass GPU milliseconds of the post chain (mean, median, p10), printed, not gated.
+#      off): per-pass GPU milliseconds of the frame (sun shadow, scene, every post pass; mean, median,
+#      p10, p99), printed, not gated.
 #
 # Overrides: SCRATCH (swift scratch path), DERIVED_DATA (xcodebuild derived data), PARITY_OUT
 # (capture directory), NATIVE_RES (WxH output for the flythrough; default: the main display's
@@ -93,7 +94,7 @@ if [[ "${SKIP_PROFILE:-0}" != 1 ]]; then
   IV_POST_PROFILE=1 "$BIN" --map railyard --flythrough 15 --offscreen --repo "$REPO" --q high --internal "$NATIVE_RES" \
     --gpu-log "$NATIVE_OUT/gpu-fixed.csv" -ApplePersistenceIgnoreState YES 2> "$NATIVE_OUT/profile.log"
   # The last report covers the whole run.
-  awk '/^post profile/ { block = "" } { block = block $0 "\n" } END { printf "%s", block }' "$NATIVE_OUT/profile.log"
+  awk '/^pass profile/ { block = "" } { block = block $0 "\n" } END { printf "%s", block }' "$NATIVE_OUT/profile.log"
   PROFILE="$(gpu_ms "$NATIVE_OUT/gpu-fixed.csv")"
 fi
 

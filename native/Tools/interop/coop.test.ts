@@ -120,6 +120,21 @@ const UNTIL_SCORED = ['--until-score', '1', '--duration', '100'];
  */
 const HUNTED_STAND: Readonly<Record<string, Vec3>> = { railyard: [20, 0.05, -40], headworks: [31.5, 0.05, 6.5] };
 
+/**
+ * Where the guest (and, a step away, the native host) stand in the 8-bot co-op on maps where the player
+ * spawns are too far from the bots for them to arrive within the run. On Harbor the two spawn sides are
+ * 95 m apart and the bots sweep only after their quiet spell (regular: 16 s, then a 10 s ramp, 1.5 s per
+ * soldier), so the web's own src/ai BotManager first fires at a player at the spawn 43-50 s after go and
+ * fired no shot at all in 4 of 12 matches within 50 s (the native port, the same rules: 33-49.5 s), while
+ * this run gives the bots about 49.6 s. At these spots the web's bots, with the first three soldiers
+ * (the ones the guest kills) left out, fired within 39.7 s (20,0.05,0) and 36.0 s (20,0.05,-1.5) of go in
+ * every one of 32 matches. Measured with native/Tools/nav-fixtures/skirmish.test.ts:
+ *   SKIRMISH_STAND=x,y,z SKIRMISH_MAPS=harbor SKIRMISH_DIFFICULTY=regular SKIRMISH_SEEDS=32 SKIRMISH_SECONDS=50
+ */
+const COOP_STAND: Readonly<Record<string, { guest: Vec3; host: Vec3 }>> = {
+  harbor: { guest: [20, 0.05, 0], host: [20, 0.05, -1.5] },
+};
+
 function expectClean(run: Run): void {
   expect(run.web.rejections, 'web side rejected messages').toEqual([]);
   expect(run.native.filter((line) => line.kind === 'reject'), 'native side rejected messages').toEqual([]);
@@ -136,9 +151,10 @@ describe.runIf(SIGNAL && IVPEER).each(MAPS)('co-op on %s', (mapId) => {
   const guestStand = player[1] ?? player[0]!;
 
   test('native host, 8 bots: the web guest sees every bot, kills 3, and the host agrees', async () => {
+    const stand = COOP_STAND[mapId];
     const run = await play(`${mapId}-coop-native-host`, 'host', coopConfig(mapId), {
-      stand: guestStand, durationMs: 50_000, killBots: { count: 3, startMs: 2_000 },
-    }, ['--duration', '52']);
+      stand: stand?.guest ?? guestStand, durationMs: 50_000, killBots: { count: 3, startMs: 2_000 },
+    }, ['--duration', '52', ...(stand ? ['--stand', stand.host.join(',')] : [])]);
     expectClean(run);
     expect(run.web.botSpawns).toBe(8);
     expect(run.web.snapshotBots).toBe(8);

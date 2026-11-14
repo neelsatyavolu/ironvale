@@ -33,6 +33,10 @@ final class PostTargets {
     static let ssrBlurLevels = 5
     /// Nearest depth per 64 x 64 block (PostSSR.metal IV_SSR_COARSE), from `ssrDepthBounds`.
     let ssrCoarseBounds: (any MTLTexture)?
+    /// Largest metalness per IV_SSR_BLOCK block, and per IV_SSR_COARSE block whether metal is within two
+    /// coarse blocks (PostSSR.metal ivSSRMetalMaskKernel): the SSR march runs only where it is.
+    let ssrBlockMetal: (any MTLTexture)?
+    let ssrMetalMask: (any MTLTexture)?
     /// PostSSR.metal IV_SSR_BLOCK and IV_SSR_COARSE.
     static let ssrBlock = 16
     static let ssrCoarse = 64
@@ -72,12 +76,20 @@ final class PostTargets {
             ssrCoarseBounds = try Self.texture(device: device, format: .r32Float, width: (width + Self.ssrCoarse - 1) / Self.ssrCoarse,
                                                height: (height + Self.ssrCoarse - 1) / Self.ssrCoarse, label: "SSR coarse bounds",
                                                usage: [.shaderWrite, .shaderRead])
+            ssrBlockMetal = try Self.texture(device: device, format: .r8Unorm, width: (width + Self.ssrBlock - 1) / Self.ssrBlock,
+                                             height: (height + Self.ssrBlock - 1) / Self.ssrBlock, label: "SSR block metal",
+                                             usage: [.shaderWrite, .shaderRead])
+            ssrMetalMask = try Self.texture(device: device, format: .r8Unorm, width: (width + Self.ssrCoarse - 1) / Self.ssrCoarse,
+                                            height: (height + Self.ssrCoarse - 1) / Self.ssrCoarse, label: "SSR metal mask",
+                                            usage: [.shaderWrite, .shaderRead])
         } else {
             ssr = nil
             ssrBlur = nil
             ssrBlurLevels = []
             ssrDepthBounds = nil
             ssrCoarseBounds = nil
+            ssrBlockMetal = nil
+            ssrMetalMask = nil
         }
         if settings.volumetricLight && settings.shadowMapSize > 0 {
             // GodraysNode resolutionScale 0.5 (floor), the bilateral blur at the same scale.

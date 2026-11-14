@@ -149,4 +149,7 @@ typedef struct {
 // M9 post chain types.
 #include "PostTypes.h"
 
+// M9 first-person view-model types.
+#include "ViewModelTypes.h"
+
 #endif

@@ -125,6 +125,7 @@ final class CoopGame {
     private var proxiesSeen = 0
     private var scoredAt: Double?
     private var logClosed = false
+    private var firedBots: Set<Int> = []
 
     init(options: CoopGameOptions) throws {
         self.options = options
@@ -279,6 +280,11 @@ final class CoopGame {
                 write("botSpawned", [("id", .number(Double(id))), ("team", .string(bot.team.rawValue)),
                                      ("uniform", .string(bot.uniform.rawValue)), ("weapon", .string(bot.weaponDef.id))])
             }
+        case let .shotFired(shooterId, weapon, _, _, _):
+            if let bot = bots.bots.first(where: { $0.id == shooterId }), !firedBots.contains(shooterId) {
+                firedBots.insert(shooterId)
+                write("botFirstShot", [("id", .number(Double(shooterId))), ("role", .string(bot.role.rawValue)), ("weapon", .string(weapon))])
+            }
         default:
             break
         }
@@ -298,6 +304,10 @@ final class CoopGame {
             ("enemiesRemaining", .number(Double(game.snapshot.enemiesRemaining))), ("wave", .number(Double(game.snapshot.wave))),
             ("playerAlive", .bool(game.player.alive)), ("rejections", .number(Double(rejections))),
             ("drawn", .number(Double(SoldierDrawList.build(from: [bots, match]).soldiers.count))),
+            ("botsFired", .number(Double(firedBots.count))),
+            ("bots", .string(bots.bots.filter(\.alive).map { b in
+                "\(b.id):\(b.role.rawValue):\(b.state.rawValue)@\(Int(b.position.x.rounded())),\(Int(b.position.y.rounded())),\(Int(b.position.z.rounded()))"
+            }.joined(separator: " "))),
         ])
     }
 

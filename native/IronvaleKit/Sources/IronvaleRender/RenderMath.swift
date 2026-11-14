@@ -57,6 +57,11 @@ public enum RenderMath {
         return simd_float4x4(columns: (SIMD4(1, 0, 0, 0), SIMD4(0, c, s, 0), SIMD4(0, -s, c, 0), SIMD4(0, 0, 0, 1)))
     }
 
+    public static func rotationZ(_ a: Float) -> simd_float4x4 {
+        let c = cos(a), s = sin(a)
+        return simd_float4x4(columns: (SIMD4(c, s, 0, 0), SIMD4(-s, c, 0, 0), SIMD4(0, 0, 1, 0), SIMD4(0, 0, 0, 1)))
+    }
+
     /// Inverse-transpose of the upper 3x3, stored in a 4x4 for the shader.
     public static func normalMatrix(_ m: simd_float4x4) -> simd_float4x4 {
         let m3 = simd_float3x3(SIMD3(m.columns.0.x, m.columns.0.y, m.columns.0.z),
@@ -90,6 +95,8 @@ public struct CameraPose: Sendable, Equatable {
     public var eye: SIMD3<Float>
     public var yaw: Float
     public var pitch: Float
+    /// Rotation about the view axis, after yaw and pitch (three's YXZ Euler z; the M9 blast shake).
+    public var roll: Float = 0
 
     public init(eye: SIMD3<Float>, yaw: Float, pitch: Float) {
         self.eye = eye
@@ -106,7 +113,8 @@ public struct CameraPose: Sendable, Equatable {
     }
 
     public var world: simd_float4x4 {
-        RenderMath.translation(eye) * RenderMath.rotationY(yaw) * RenderMath.rotationX(pitch)
+        roll == 0 ? RenderMath.translation(eye) * RenderMath.rotationY(yaw) * RenderMath.rotationX(pitch)
+            : RenderMath.translation(eye) * RenderMath.rotationY(yaw) * RenderMath.rotationX(pitch) * RenderMath.rotationZ(roll)
     }
 
     public var view: simd_float4x4 { world.inverse }

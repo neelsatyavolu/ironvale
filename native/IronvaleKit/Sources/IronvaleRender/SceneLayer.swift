@@ -12,4 +12,11 @@ public protocol SceneLayer: AnyObject {
     func encodeShadow(_ encoder: any MTLRenderCommandEncoder)
     /// Inside the scene pass, after the opaque geometry.
     func encodeScene(_ encoder: any MTLRenderCommandEncoder)
+    /// Inside the scene pass, after the sky and the map's transparent draws (M9 effects: decals,
+    /// particles, rain, tracers, flashes). Default: nothing.
+    func encodeTransparent(_ encoder: any MTLRenderCommandEncoder)
+}
+
+public extension SceneLayer {
+    func encodeTransparent(_ encoder: any MTLRenderCommandEncoder) {}
 }

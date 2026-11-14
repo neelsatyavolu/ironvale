@@ -8,3 +8,4 @@ IronvaleApp/IronvaleApp.xcodeproj/
 *.xcuserstate
 xcuserdata/
 .build-app.lock/
+.wrangler/

@@ -9,6 +9,13 @@
 // while the ray is in front of that nearest surface (or the block is all background), since none of
 // those steps can pass the hit test. A second level (ivSSRCoarseBoundsKernel, IV_SSR_COARSE^2 texels)
 // lets long rays over open ground jump four blocks at a time.
+// Second speed-up with the same result: a pixel's reflection is weighted by its metalness, so a
+// non-metal pixel writes zero colour and only its alpha (hit distance) can matter, through the blur
+// mips and the composite's trilinear sample, which multiply the filtered colour by the filtered
+// alpha. Those reach at most 25 SSR texels (16 for the last mip's bilinear footprint, 9 for its box
+// taps), so a pixel with no metal within 50 SSR texels (100 scene texels) can never change the
+// composite. ivSSRMetalMaskKernel marks the IV_SSR_COARSE blocks with metal within two blocks (at
+// least 128 scene texels) and the march runs only there; elsewhere the pixel writes the cleared 0.
 #include <metal_stdlib>
 #include "ShaderTypes.h"
 #include "PostCommon.h"
@@ -20,21 +27,45 @@ using namespace metal;
 /// Nearest (reverse-Z: largest) depth of each IV_SSR_BLOCK x IV_SSR_BLOCK block of the scene depth:
 /// one threadgroup per block, one thread per texel (clamped at the right and bottom edges), reduced
 /// across SIMD groups.
+/// Also the largest metalness of the block into `metal` (for ivSSRMetalMaskKernel).
 kernel void ivSSRDepthBoundsKernel(depth2d<float, access::read> depthTex [[texture(0)]],
                                    texture2d<float, access::write> bounds [[texture(1)]],
+                                   texture2d<float, access::read> metalRoughTex [[texture(2)]],
+                                   texture2d<float, access::write> metal [[texture(3)]],
                                    uint2 block [[threadgroup_position_in_grid]],
                                    uint2 local [[thread_position_in_threadgroup]],
                                    uint lane [[thread_index_in_simdgroup]],
                                    uint simdIndex [[simdgroup_index_in_threadgroup]],
                                    uint simdCount [[simdgroups_per_threadgroup]]) {
-    threadgroup float partial[32];
+    threadgroup float2 partial[32];
     uint2 last = uint2(depthTex.get_width(), depthTex.get_height()) - 1;
-    float nearest = simd_max(depthTex.read(min(block * IV_SSR_BLOCK + local, last)));
-    if (lane == 0) partial[simdIndex] = nearest;
+    uint2 texel = min(block * IV_SSR_BLOCK + local, last);
+    float d = depthTex.read(texel);
+    // Background texels keep the MRT clear value (metalness 0.5); the SSR pass's bilinear metalness
+    // sample only mixes one in next to a surface texel, so only those count.
+    float m = metalRoughTex.read(texel).r;
+    if (ivIsBackground(d) && m > 0.0) {
+        bool nearSurface = false;
+        for (int y = -1; y <= 1; y++) {
+            for (int x = -1; x <= 1; x++) {
+                uint2 t = uint2(clamp(int2(texel) + int2(x, y), int2(0), int2(last)));
+                nearSurface = nearSurface || !ivIsBackground(depthTex.read(t));
+            }
+        }
+        if (!nearSurface) m = 0.0;
+    }
+    float nearest = simd_max(d);
+    float metalness = simd_max(m);
+    if (lane == 0) partial[simdIndex] = float2(nearest, metalness);
     threadgroup_barrier(mem_flags::mem_threadgroup);
     if (simdIndex == 0) {
-        nearest = simd_max(lane < simdCount ? partial[lane] : 0.0);
-        if (lane == 0) bounds.write(float4(nearest), block);
+        float2 p = lane < simdCount ? partial[lane] : float2(0.0);
+        nearest = simd_max(p.x);
+        metalness = simd_max(p.y);
+        if (lane == 0) {
+            bounds.write(float4(nearest), block);
+            metal.write(float4(metalness), block);
+        }
     }
 }
 
@@ -50,6 +81,23 @@ kernel void ivSSRCoarseBoundsKernel(texture2d<float, access::read> bounds [[text
         for (uint x = 0; x < ratio; x++) nearest = max(nearest, bounds.read(min(gid * ratio + uint2(x, y), last)).r);
     }
     coarse.write(float4(nearest), gid);
+}
+
+/// Whether any IV_SSR_BLOCK block within two IV_SSR_COARSE blocks of coarse block `gid` has metal
+/// (1) or not (0): the SSR march runs only in marked coarse blocks (see the header).
+kernel void ivSSRMetalMaskKernel(texture2d<float, access::read> metal [[texture(0)]],
+                                 texture2d<float, access::write> mask [[texture(1)]],
+                                 uint2 gid [[thread_position_in_grid]]) {
+    if (gid.x >= mask.get_width() || gid.y >= mask.get_height()) return;
+    const int ratio = IV_SSR_COARSE / IV_SSR_BLOCK;
+    int2 size = int2(metal.get_width(), metal.get_height());
+    int2 lo = max(int2(gid) * ratio - 2 * ratio, 0);
+    int2 hi = min(int2(gid) * ratio + 3 * ratio, size);
+    float any = 0.0;
+    for (int y = lo.y; y < hi.y; y++) {
+        for (int x = lo.x; x < hi.x; x++) any = max(any, metal.read(uint2(x, y)).r);
+    }
+    mask.write(float4(any > 0.0 ? 1.0 : 0.0), gid);
 }
 
 /// Last step index j >= i whose depth texel (nearest sampling) stays in block `block` (of `size`
@@ -99,10 +147,15 @@ fragment float4 ivSSRFragment(PostVaryings in [[stage_in]],
                               texture2d<float> normalTex [[texture(2)]],
                               texture2d<float> metalRoughTex [[texture(3)]],
                               texture2d<float> boundsTex [[texture(4)]],
-                              texture2d<float> coarseTex [[texture(5)]]) {
+                              texture2d<float> coarseTex [[texture(5)]],
+                              texture2d<float> metalMaskTex [[texture(6)]]) {
     float2 resolution = params.resolution;
     float2 depthSize = float2(depthTex.get_width(), depthTex.get_height());
     float2 uvPos = (floor(in.uv * depthSize) + 0.5) / depthSize;
+    // No metal near this pixel: its output cannot reach the composite (see the header).
+    uint2 coarseBlock = min(uint2(floor(in.uv * depthSize)) / IV_SSR_COARSE,
+                            uint2(metalMaskTex.get_width(), metalMaskTex.get_height()) - 1);
+    if (metalMaskTex.read(coarseBlock).r == 0.0) discard_fragment();
     float depth = depthTex.sample(ivPostNearest, uvPos);
     if (ivIsBackground(depth)) discard_fragment();
 

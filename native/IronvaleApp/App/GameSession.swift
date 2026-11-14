@@ -13,6 +13,7 @@ import IronvaleRender
 import IronvaleSim
 import IronvaleUI
 import IronvaleViewModel
+import IronvaleWorld
 import Metal
 import os
 import simd
@@ -34,7 +35,10 @@ final class GameSession {
     let game: Game
     /// M7b: the bots of every match (IronvaleAI), drawn through `actorSources`.
     let bots: BotManager
-    let viewModel: ViewModelRenderer
+    /// The stand-in gun (M4), drawn only when the baked view model is missing.
+    let viewModel: FallbackViewModelRenderer
+    /// M9: the first-person view model (guns, arms, rig), drawn inside the map's passes.
+    let viewModelLayer: ViewModelLayer?
     let hud = HUDModel()
     let interface: InterfaceModel
     let lobbyLaunch: LobbyLaunch
@@ -46,6 +50,8 @@ final class GameSession {
     private var lastConfig: MatchConfig?
     /// M7a: the third-person soldiers, drawn inside the map's passes; nil when the baked soldier is missing.
     private var soldiers: SoldierLayer?
+    /// M9: the match's effects and weather (GameEffects.swift); nil without a renderer or atlases.
+    private var effects: GameEffects?
     /// Everything that contributes soldiers to draw each frame (the two-player match, bots).
     var actorSources: [any ActorSource] = []
     /// M6: a scripted duel against another machine (NetDuel.swift).
@@ -71,8 +77,9 @@ final class GameSession {
         game = Game(input: input, settings: settings, data: data)
         bots = BotManager(game: game)
         game.bots = bots
-        viewModel = try ViewModelRenderer(device: device, library: library, colorFormat: .bgra8Unorm,
-                                          guns: FallbackGunData.loadAll(contractDirectory: data.contract.directory))
+        viewModel = try FallbackViewModelRenderer(device: device, library: library, colorFormat: .bgra8Unorm,
+                                                  guns: FallbackGunData.loadAll(contractDirectory: data.contract.directory))
+        viewModelLayer = Self.makeViewModel(device: device, library: library, contract: data.contract.directory, repositoryRoot: repositoryRoot)
 
         let frame = NSRect(x: 0, y: 0, width: 1280, height: 800)
         metalView = MetalView(frame: frame, device: device, pixelFormat: .bgra8Unorm)
@@ -114,11 +121,38 @@ final class GameSession {
 
     private func wire() {
         let viewModel = viewModel, game = game
-        game.weapons.muzzle = { viewModel.muzzleWorld(camera: game.player.camera) ?? game.player.camera.position }
-        game.weapons.ejectionPort = { viewModel.ejectionWorld(camera: game.player.camera) }
+        if let layer = viewModelLayer {
+            // rig.ts muzzleWorld / ejectionWorld: the rig's camera space onto the player's camera.
+            game.weapons.muzzle = {
+                let m = layer.rig.muzzleWorld
+                return game.player.camera.position + game.player.camera.rotate(IronvaleWorld.Vec3(m.x, m.y, m.z))
+            }
+            game.weapons.ejectionPort = {
+                let e = layer.rig.ejectionWorld
+                let camera = game.player.camera
+                return (camera.position + camera.rotate(IronvaleWorld.Vec3(e.position.x, e.position.y, e.position.z)),
+                        camera.rotate(IronvaleWorld.Vec3(e.direction.x, e.direction.y, e.direction.z)).normalized())
+            }
+        } else {
+            game.weapons.muzzle = { viewModel.muzzleWorld(camera: game.player.camera) ?? game.player.camera.position }
+            game.weapons.ejectionPort = { viewModel.ejectionWorld(camera: game.player.camera) }
+        }
         game.events.on { [weak self] event in
-            if case let .shotFired(_, _, _, _, local) = event, local, let self {
-                self.viewModel.fired(aimBlend: Float(self.game.weapons.aimBlend))
+            guard let self else { return }
+            switch event {
+            case let .shotFired(_, _, _, _, local) where local:
+                if let layer = viewModelLayer {
+                    // player-weapons.ts passes recoil.kickYaw / horizontal: a random -1 to 1 the native recoil keeps private.
+                    layer.rig.fired(aim: game.weapons.aimBlend, side: Double.random(in: -1...1))
+                } else {
+                    viewModel.fired(aimBlend: Float(game.weapons.aimBlend))
+                }
+            case let .weaponAction(_, _, stage, _, local) where local:
+                viewModelLayer?.rig.stage(stage)
+            case let .landed(_, _, _, speed, local) where local:
+                viewModelLayer?.rig.landed(speed: speed)
+            default:
+                break
             }
         }
         game.onPhase = { [weak self] phase in self?.phaseChanged(phase) }
@@ -245,6 +279,9 @@ final class GameSession {
             hud.mapName = mapName
             lastConfig = config
             game.start(map: package, config: config)
+            effects?.stop()
+            effects = renderer.flatMap { GameEffects.make(game: game, renderer: $0, device: device, library: library,
+                                                          repositoryRoot: repositoryRoot, contract: data.contract) }
             interface.showPlaying()
             if runner == nil, netDuel == nil { deviceInput.capture() }
             Self.logger.info("Match started on \(config.mapId, privacy: .public)")
@@ -270,6 +307,10 @@ final class GameSession {
             renderSettings.fovDegrees = Float(game.settings.fov)
             let renderer = try MapRenderer(assets: assets, device: device, library: library, settings: renderSettings)
             if let soldiers { renderer.layers.append(soldiers) }
+            if let viewModelLayer {
+                viewModelLayer.mrt = renderer.postChain != nil
+                renderer.layers.append(viewModelLayer)
+            }
             return renderer
         } catch {
             Self.logger.error("Map renderer unavailable: \(error, privacy: .public)")
@@ -329,8 +370,10 @@ final class GameSession {
         let camera = game.player.camera
         let pose = CameraPose(eye: SIMD3(Float(camera.position.x), Float(camera.position.y), Float(camera.position.z)),
                               yaw: Float(camera.yaw), pitch: Float(camera.pitch))
-        renderer.encode(commandBuffer: commandBuffer, pose: pose, time: game.time, output: target)
-        if game.player.alive { viewModel.encode(commandBuffer: commandBuffer, target: target, camera: camera) }
+        viewModelLayer?.cameraPose = pose
+        let shaken = effects?.frame(dt, game: game, renderer: renderer, pose: pose) ?? pose
+        renderer.encode(commandBuffer: commandBuffer, pose: shaken, time: game.time, output: target)
+        if game.player.alive, viewModelLayer == nil { viewModel.encode(commandBuffer: commandBuffer, target: target, camera: camera) }
         hud.encode(commandBuffer: commandBuffer, target: target)
         if let path = netDuel?.takeShotRequest() { NetDuel.capture(renderer: renderer, pose: pose, time: game.time, device: device, to: path) }
     }
@@ -347,8 +390,35 @@ final class GameSession {
         }
     }
 
+    /// M9 view model, or nil (logged) when its bake is missing: the stand-in gun is drawn instead.
+    private static func makeViewModel(device: any MTLDevice, library: any MTLLibrary, contract: URL, repositoryRoot: URL) -> ViewModelLayer? {
+        do {
+            return try ViewModelLayer(device: device, library: library, tables: ViewModelTables.load(contractDirectory: contract),
+                                      bakedDirectory: ViewModelAssets.bakedDirectory(repositoryRoot: repositoryRoot),
+                                      gunsMeta: repositoryRoot.appending(path: "native/MapPackages/guns"))
+        } catch {
+            logger.error("View model unavailable, using the stand-in gun: \(error, privacy: .public)")
+            return nil
+        }
+    }
+
     private func updateViewModel(_ dt: Double) {
         let weapons = game.weapons
+        if let layer = viewModelLayer {
+            let player = game.player
+            layer.show(weaponId: weapons.current.def.id)
+            layer.visible = player.alive
+            layer.rig.fovDegrees = player.camera.fov
+            let frame = ViewFrame(dt: dt, machine: MachineView(weapons.current), aim: weapons.aimBlend, sprint: weapons.sprintCarry,
+                                  lowered: weapons.lowered, speed: player.speed, verticalSpeed: player.velocity.y,
+                                  onGround: player.onGround, lookYaw: player.lookYaw, lookPitch: player.lookPitch,
+                                  hidden: weapons.scopedIn)
+            let camera = player.camera, world = game.map?.world
+            layer.rig.update(frame, wall: { _, _, far in
+                world?.raycast(origin: camera.position, direction: camera.direction, maxDistance: far)?.distance
+            })
+            return
+        }
         let def = weapons.current.def
         let handling = data.constants.handling.classes[def.weaponClass]
         let hip = handling?.hip ?? [0.125, -0.2, -0.3]
@@ -381,7 +451,7 @@ final class GameSession {
         if let botMonitor, failure == nil {
             let report = botMonitor.report
             // The web's own range of bots that fire on this map (native/Contract/nav/skirmish.json).
-            let reference = try? SkirmishReference.load(contractRoot: repositoryRoot.appending(path: "native/Contract"))
+            let reference = try? SkirmishReference.load(contractRoot: ContractLocation.directory())
             let webFired = game.config.flatMap { reference?.firedRange(mapId: $0.mapId, bots: options.botCount) }
             missing = report.failures(expectEnemies: options.botCount, webFired: webFired)
             runner.recorder.log.write(time: game.time, kind: "botScenario", fields: [
@@ -426,10 +496,7 @@ enum GameLauncher {
                                   device: any MTLDevice, library: any MTLLibrary) throws -> Bool {
         let options = GameOptions.parse(arguments)
         guard options.wantsGame else { return false }
-        let repo = repositoryRoot.map { URL(fileURLWithPath: $0) }
-            ?? MapAssets.findRepositoryRoot(from: Bundle.main.bundleURL)
-            ?? MapAssets.findRepositoryRoot(from: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
-        guard let repo else { throw AppError.noRepository }
+        guard let repo = RuntimeRoot.resolve(explicit: repositoryRoot) else { throw AppError.noRepository }
         let created = try GameSession(options: options, launch: launch, device: device, library: library, repositoryRoot: repo)
         session = created
         try created.start()

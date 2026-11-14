@@ -3,6 +3,7 @@
 import AppKit
 import IronvaleCharacters
 import IronvaleCore
+import IronvaleMapData
 import IronvaleMapRender
 import IronvaleRender
 import Metal
@@ -55,8 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         // M7a: offscreen soldier benchmark (IronvaleCharacters/Render/SoldierBenchmark.swift).
         if let bench = SoldierBenchmark.Options.parse(CommandLine.arguments.dropFirst()) {
-            guard let repo = map.repositoryRoot.map({ URL(fileURLWithPath: $0) })
-                ?? MapAssets.findRepositoryRoot(from: Bundle.main.bundleURL) else { throw AppError.noRepository }
+            guard let repo = RuntimeRoot.resolve(explicit: map.repositoryRoot) else { throw AppError.noRepository }
             let assets = try MapAssets(package: repo.appending(path: "native/MapPackages/\(bench.mapId)"), repositoryRoot: repo)
             let result = try SoldierBenchmark.run(options: bench, repositoryRoot: repo, lighting: assets.meta.lighting,
                                                   environmentHDR: assets.assetFile(id: assets.meta.lighting.hdri, key: "hdr@2k"),
@@ -73,8 +73,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let gpuLog = map.gpuLogPath.map { _ in GPUFrameLog() }
         if let mapId = map.mapId {
             let renderer = try makeRenderer(mapId: mapId, options: map, device: device, library: library)
+            // M9: --vm-weapon draws the first-person view model in captures and the --vm-bench benchmark.
+            if let vm = ViewModelLaunch.parse(CommandLine.arguments.dropFirst()) {
+                guard let repo = RuntimeRoot.resolve(explicit: map.repositoryRoot) else { throw AppError.noRepository }
+                let pose = map.pose ?? Self.defaultPose
+                let layer = try vm.attach(to: renderer, pose: pose, repositoryRoot: repo, device: device, library: library)
+                if vm.benchFrames != nil {
+                    try vm.bench(renderer: renderer, layer: layer, pose: pose, device: device)
+                    exit(0)
+                }
+            }
+            // M9: --fx draws the effects and weather in captures and the --fx-bench benchmark (FXLaunch.swift).
+            var shakenPose: CameraPose?
+            if let fx = FXLaunch.parse(CommandLine.arguments.dropFirst()) {
+                guard let repo = RuntimeRoot.resolve(explicit: map.repositoryRoot) else { throw AppError.noRepository }
+                let pose = map.pose ?? Self.defaultPose
+                let layer = try fx.attach(to: renderer, pose: pose, repositoryRoot: repo, device: device, library: library)
+                shakenPose = FXLaunch.shaken(pose, by: layer)
+                if fx.benchFrames != nil {
+                    try fx.bench(renderer: renderer, layer: layer, pose: pose, device: device)
+                    exit(0)
+                }
+            }
             if let path = map.capturePath {
-                try capture(renderer: renderer, pose: map.pose ?? Self.defaultPose, device: device, to: path)
+                try capture(renderer: renderer, pose: shakenPose ?? map.pose ?? Self.defaultPose, device: device, to: path)
                 exit(0)
             }
             if map.offscreen, let seconds = map.flythroughSeconds {
@@ -129,14 +151,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func makeRenderer(mapId: String, options: MapRenderOptions, device: any MTLDevice,
                               library: any MTLLibrary) throws -> MapRenderer {
-        let repo = options.repositoryRoot.map { URL(fileURLWithPath: $0) }
-            ?? MapAssets.findRepositoryRoot(from: Bundle.main.bundleURL)
-            ?? MapAssets.findRepositoryRoot(from: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
-        guard let repo else { throw AppError.noRepository }
+        guard let repo = RuntimeRoot.resolve(explicit: options.repositoryRoot) else { throw AppError.noRepository }
         let assets = try MapAssets(package: repo.appending(path: "native/MapPackages/\(mapId)"), repositoryRoot: repo)
         var settings = MapRenderer.Settings.high
         settings.internalWidth = options.internalWidth
         settings.internalHeight = options.internalHeight
+        if let vm = ViewModelLaunch.parse(CommandLine.arguments.dropFirst()) { settings.fovDegrees = try vm.fovDegrees(base: settings.fovDegrees) }
         let started = Date()
         // M9: --q TIER / --no LIST (the web's ?q= / ?no=) turn on the post chain at that preset.
         let post = PostSettings.parse(CommandLine.arguments.dropFirst())
@@ -207,7 +227,7 @@ enum AppError: Error, CustomStringConvertible {
         switch self {
         case .noMetalDevice: "No Metal device available"
         case .noDefaultLibrary: "default.metallib is missing from the app bundle"
-        case .noRepository: "Could not find the repository root (native/MapPackages); pass --repo PATH"
+        case .noRepository: "The app bundle has no Runtime data (native/ci/stage-runtime.py); rebuild it or pass --repo PATH"
         }
     }
 }

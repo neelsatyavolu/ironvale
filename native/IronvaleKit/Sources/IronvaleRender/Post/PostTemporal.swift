@@ -1,9 +1,14 @@
 // MetalFX Temporal in place of the web's TRAA and its dynamic-resolution resize (PLAN.md 3.3, 11):
 // the scene is rendered with a sub-pixel jittered projection at the scene size and the scaler
-// resolves it, with camera motion and reverse-Z depth, into an HDR texture at the output size.
-// One scaler per output size serves every dynamic scene size: its inputs (composite colour, motion,
-// depth) are allocated at the largest scene size and the composite pass fills their top-left
-// corner, so a resolution step neither rebuilds the scaler nor drops its history.
+// resolves it, with camera motion and reverse-Z depth, into an HDR texture at the largest scene size
+// (the render scale without the dynamic step), as the web resolves TRAA at the render size and lets
+// the canvas upscale to the display; the output pass then samples it bilinearly to the display size.
+// (Resolving straight to the display size cost 0.5 - 1 ms more on the reference Mac at 3024x1964.)
+// One scaler serves every dynamic scene size: its inputs (composite colour, motion, depth) are
+// allocated at the largest scene size and the composite pass fills their top-left corner, so a
+// resolution step neither rebuilds the scaler nor drops its history.
+// The scaler is given the exposure the output pass tone maps with (a 1x1 texture) instead of
+// computing its own (auto exposure), which costs a reduction over the frame.
 import Metal
 import MetalFX
 
@@ -26,12 +31,23 @@ final class PostTemporal {
     private let device: any MTLDevice
     private var current: (key: Key, scaler: any MTLFXTemporalScaler, inputs: Inputs, output: any MTLTexture)?
     private var resetNext = true
+    /// 1x1 r32Float holding the exposure the colour is tone mapped with.
+    private let exposure: any MTLTexture
 
-    init(device: any MTLDevice) throws {
+    /// `exposure`: the factor the output pass scales HDR colour by before its tone curve.
+    init(device: any MTLDevice, exposure: Float) throws {
         guard MTLFXTemporalScalerDescriptor.supportsDevice(device) else {
             throw RenderError.allocation("MetalFX temporal scaler is not supported on \(device.name)")
         }
         self.device = device
+        let d = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .r32Float, width: 1, height: 1, mipmapped: false)
+        d.usage = [.shaderRead]
+        d.storageMode = .shared
+        guard let texture = device.makeTexture(descriptor: d) else { throw RenderError.allocation("MetalFX exposure") }
+        var value = exposure
+        texture.replace(region: MTLRegionMake2D(0, 0, 1, 1), mipmapLevel: 0, withBytes: &value, bytesPerRow: 4)
+        texture.label = "MetalFX exposure"
+        self.exposure = texture
     }
 
     /// Sub-pixel offset of frame `index` in scene pixels, each component in [-0.5, 0.5).
@@ -55,7 +71,7 @@ final class PostTemporal {
         d.inputHeight = maxHeight
         d.outputWidth = outputWidth
         d.outputHeight = outputHeight
-        d.isAutoExposureEnabled = true
+        d.isAutoExposureEnabled = false
         // Output size over input content size, from the largest scene to the smallest.
         let low = Float(outputWidth) / Float(maxWidth)
         let high = Float(outputWidth) / (Float(maxWidth) * Float(minScale))
@@ -97,6 +113,7 @@ final class PostTemporal {
         scaler.depthTexture = c.inputs.depth
         scaler.motionTexture = c.inputs.motion
         scaler.outputTexture = c.output
+        scaler.exposureTexture = exposure
         scaler.inputContentWidth = contentWidth
         scaler.inputContentHeight = contentHeight
         // The projection is shifted by +jitter pixels (x right, y down); MetalFX wants the offset of

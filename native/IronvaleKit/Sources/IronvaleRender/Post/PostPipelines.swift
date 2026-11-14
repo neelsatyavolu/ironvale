@@ -9,6 +9,7 @@ struct PostPipelines {
     let ssr: any MTLRenderPipelineState
     let ssrDepthBounds: any MTLComputePipelineState
     let ssrCoarseBounds: any MTLComputePipelineState
+    let ssrMetalMask: any MTLComputePipelineState
     let ssrBlur: any MTLComputePipelineState
     let godrays: any MTLRenderPipelineState
     let bilateral: any MTLRenderPipelineState
@@ -33,6 +34,7 @@ struct PostPipelines {
         ssr = try make("ivSSRFragment", [.rgba16Float])
         ssrDepthBounds = try Self.kernel(device: device, library: library, "ivSSRDepthBoundsKernel")
         ssrCoarseBounds = try Self.kernel(device: device, library: library, "ivSSRCoarseBoundsKernel")
+        ssrMetalMask = try Self.kernel(device: device, library: library, "ivSSRMetalMaskKernel")
         ssrBlur = try Self.kernel(device: device, library: library, "ivSSRBlurKernel")
         godrays = try make("ivGodraysFragment", [.rgba8Unorm])
         bilateral = try make("ivBilateralBlurFragment", [.rgba8Unorm])
@@ -93,7 +95,7 @@ struct PostPipelines {
             pass.colorAttachments[i].clearColor = clear ?? MTLClearColor()
             pass.colorAttachments[i].storeAction = .store
         }
-        profiler?.attach(pass, label: label)
+        profiler?.attach(pass, label: label, commandBuffer: commandBuffer)
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else { return }
         encoder.label = label
         encoder.setRenderPipelineState(pipeline)
@@ -108,7 +110,7 @@ extension PostPipelines {
     static func dispatch(_ commandBuffer: any MTLCommandBuffer, label: String, pipeline: any MTLComputePipelineState,
                          threadgroups: MTLSize, threadsPerGroup: MTLSize, bind: (any MTLComputeCommandEncoder) -> Void) {
         let pass = MTLComputePassDescriptor()
-        profiler?.attach(pass, label: label)
+        profiler?.attach(pass, label: label, commandBuffer: commandBuffer)
         guard let encoder = commandBuffer.makeComputeCommandEncoder(descriptor: pass) else { return }
         encoder.label = label
         encoder.setComputePipelineState(pipeline)

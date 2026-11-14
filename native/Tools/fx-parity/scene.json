@@ -1,0 +1,15 @@
+{
+  "note": "Scripted FX parity scene (check-m9fx.sh), in camera space [right, up, forward] metres from the eye. shots: a bot at `from` fires `weapon` toward `toward` (muzzle flash and its light, trace, impact where the ray lands, a casing); impacts: hits where the eye ray toward each point lands; grenades: a blast where the eye ray lands on ground. Resolved against each map's collision by the web capture, replayed natively from the written events.",
+  "shots": [
+    { "weapon": "m4a1", "from": [-1.6, -0.25, 3.2], "toward": [2.5, -0.8, 6] },
+    { "weapon": "m249", "from": [1.8, -0.3, 3.8], "toward": [-3, -0.6, 7] },
+    { "weapon": "mp5", "from": [-0.9, -0.4, 2.6], "toward": [0.4, -1.6, 4.5] },
+    { "weapon": "m24", "from": [2.6, 0.05, 6], "toward": [-6, -0.8, 12] },
+    { "weapon": "scarh", "from": [0.7, -0.2, 3], "toward": [3, 0.4, 14] }
+  ],
+  "impacts": [
+    [-0.9, -1.3, 2.4], [-0.3, -1.4, 2.6], [0.3, -1.35, 2.5], [0.9, -1.3, 2.4], [0, -1.2, 3.4],
+    [-1.4, -1.0, 3.6], [1.4, -1.0, 3.6], [-4, 0, 12], [4, 0.4, 12], [0, 0.6, 20], [-1.5, 0.2, 9], [1.5, 0.1, 9]
+  ],
+  "grenades": [[-1.2, -1.55, 4.5]]
+}
