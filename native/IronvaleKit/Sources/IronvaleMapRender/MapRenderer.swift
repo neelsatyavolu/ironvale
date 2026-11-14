@@ -59,6 +59,10 @@ public final class MapRenderer {
     /// Colour attachment formats of the scene pass with the post chain (PostTypes.h IV_SCENE_ATTACHMENT_*).
     public static let sceneColorFormats: [MTLPixelFormat] = [.rgba16Float, .rgba8Unorm, .rg8Unorm]
     private var lastFrameTime: Double?
+    /// Without a display (--offscreen): the refresh interval of the display the run stands in for.
+    /// Frame intervals reach dynamic resolution rounded up to whole refresh intervals, as the web's
+    /// requestAnimationFrame and the native display link deliver them (PresentedInterval).
+    public var presentationRefreshInterval: Double?
     /// Per-pass GPU times (IV_POST_PROFILE=1), shared with the post chain.
     private let profiler: PostProfiler?
 
@@ -302,7 +306,10 @@ public final class MapRenderer {
     /// every post pass of pipeline.ts into `output`.
     private func encodeWithPostChain(_ chain: PostChain, commandBuffer: any MTLCommandBuffer, pose: CameraPose,
                                      time: Double, output: any MTLTexture) throws {
-        if let last = lastFrameTime { chain.recordFrameInterval(time - last) }
+        if let last = lastFrameTime {
+            let dt = time - last
+            chain.recordFrameInterval(presentationRefreshInterval.map { PresentedInterval.quantized(dt, refresh: $0) } ?? dt)
+        }
         lastFrameTime = time
         let post = try chain.beginFrame(outputWidth: output.width, outputHeight: output.height)
         let aspect = Float(output.width) / Float(output.height)

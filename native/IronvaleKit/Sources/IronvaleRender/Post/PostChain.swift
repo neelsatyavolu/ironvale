@@ -48,8 +48,6 @@ public final class PostChain {
         public let targets: SceneTargets
         /// Sub-pixel jitter in scene pixels (x right, y down); zero without the temporal pass.
         public let jitterPixels: SIMD2<Float>
-        let outputWidth: Int
-        let outputHeight: Int
 
         /// Shifts `projection` by the jitter (a perspective projection: clip.w = -z).
         public func jittered(_ projection: simd_float4x4) -> simd_float4x4 {
@@ -101,11 +99,23 @@ public final class PostChain {
     private var pipelines: PostPipelines
     private let temporal: PostTemporal?
     private var targets: PostTargets?
-    /// The target set of the previous scene size: dynamic resolution often probes one step up and
-    /// comes back, and switching back to a kept set avoids reallocating (and faulting in) ~100 MB of
+    /// Target sets of other scene sizes, most recently used first: the previous size (dynamic resolution
+    /// often probes one step up and comes back) and, with MetalFX, the sizes one step either side,
+    /// allocated and cleared ahead of a step so it neither reallocates nor first-touches ~100 MB of
     /// targets in the middle of a run.
-    private var previousTargets: PostTargets?
+    private var keptTargets: [PostTargets] = []
+    static let keptTargetSets = 3
+    /// Clears ahead-of-time target sets beside the frames.
+    private lazy var warmQueue: (any MTLCommandQueue)? = {
+        let queue = device.makeCommandQueue()
+        queue?.label = "post warm-up"
+        return queue
+    }()
     private var frameIndex = 0
+    /// Output size of the previous frame (dynamic resolution waits for a scaler only at a steady output size).
+    private var lastOutput: PostTemporal.Size?
+    /// The dynamic multiplier of the scene size being rendered (it lags the controller while a scaler builds).
+    private var renderedScale = 1.0
     private var previousViewProjection: simd_float4x4?
     /// Per-pass GPU timer (IV_POST_PROFILE=1); the map renderer shares it for the shadow and scene passes.
     public let profiler: PostProfiler?
@@ -141,15 +151,70 @@ public final class PostChain {
 
     /// Starts a frame for an output of the given size: (re)allocates the scene targets and picks the jitter.
     public func beginFrame(outputWidth: Int, outputHeight: Int) throws -> Frame {
-        let size = sceneSize(outputWidth: outputWidth, outputHeight: outputHeight)
+        var size = sceneSize(outputWidth: outputWidth, outputHeight: outputHeight)
+        if let temporal, settings.dynamicResolution {
+            size = temporalSize(temporal, wanted: size, outputWidth: outputWidth, outputHeight: outputHeight)
+        }
         if targets?.matches(width: size.width, height: size.height) != true {
-            let kept = previousTargets?.matches(width: size.width, height: size.height) == true ? previousTargets : nil
-            previousTargets = targets
-            targets = try kept ?? PostTargets(device: device, width: size.width, height: size.height, settings: settings,
-                                              composite: temporal == nil)
+            let next = try takeTargets(width: size.width, height: size.height)
+            if let current = targets { keep(current) }
+            targets = next
         }
         let jitter = temporal == nil ? .zero : PostTemporal.jitter(frame: frameIndex)
-        return Frame(targets: targets!.scene, jitterPixels: jitter, outputWidth: outputWidth, outputHeight: outputHeight)
+        return Frame(targets: targets!.scene, jitterPixels: jitter)
+    }
+
+    /// The scene size to render with dynamic resolution and MetalFX: `wanted` once its scaler is built,
+    /// until then the current size (PostTemporal builds scalers in the background). Also starts building
+    /// the sizes one dynamic step either side of the one rendered. An output resize switches at once.
+    private func temporalSize(_ temporal: PostTemporal, wanted: (width: Int, height: Int), outputWidth: Int,
+                              outputHeight: Int) -> (width: Int, height: Int) {
+        let output = PostTemporal.Size(width: outputWidth, height: outputHeight)
+        defer { lastOutput = output }
+        let wantedSize = PostTemporal.Size(width: wanted.width, height: wanted.height)
+        var size = wanted
+        if lastOutput == output, temporal.currentSize != nil, !temporal.isReady(wantedSize) {
+            temporal.prepare(wantedSize)
+            size = (temporal.currentSize!.width, temporal.currentSize!.height)
+        } else {
+            renderedScale = dynamicResolution.scale
+        }
+        // DynamicResolution's next steps from the rendered multiplier.
+        let step = DynamicResolution.resolutionStep
+        for neighbour in [max(dynamicFloor, renderedScale - step), min(1, renderedScale + step)] where neighbour != renderedScale {
+            let n = Self.size(outputWidth, outputHeight, scale: Double(settings.renderScale) * neighbour)
+            let neighbourSize = PostTemporal.Size(width: n.width, height: n.height)
+            temporal.prepare(neighbourSize)
+            // Once its scaler is ready, the step's targets too (the scaler can take most of a second).
+            if temporal.isReady(neighbourSize) { prepareTargets(width: n.width, height: n.height) }
+        }
+        return size
+    }
+
+    /// The kept target set of this size (removed from the kept list), or a new one.
+    private func takeTargets(width: Int, height: Int) throws -> PostTargets {
+        if let i = keptTargets.firstIndex(where: { $0.matches(width: width, height: height) }) {
+            return keptTargets.remove(at: i)
+        }
+        return try PostTargets(device: device, width: width, height: height, settings: settings, composite: temporal == nil)
+    }
+
+    private func keep(_ set: PostTargets) {
+        keptTargets.insert(set, at: 0)
+        if keptTargets.count > Self.keptTargetSets { keptTargets.removeLast(keptTargets.count - Self.keptTargetSets) }
+    }
+
+    /// Allocates and clears (on the warm-up queue) the target set of a size about to be stepped to.
+    private func prepareTargets(width: Int, height: Int) {
+        guard targets?.matches(width: width, height: height) != true,
+              !keptTargets.contains(where: { $0.matches(width: width, height: height) }),
+              let set = try? PostTargets(device: device, width: width, height: height, settings: settings,
+                                         composite: temporal == nil),
+              let commandBuffer = warmQueue?.makeCommandBuffer() else { return }
+        commandBuffer.label = "post warm-up"
+        guard (try? set.warm(device: device, commandBuffer: commandBuffer)) != nil else { return }
+        commandBuffer.commit()
+        keep(set)
     }
 
     /// Encodes every post pass of `frame` and writes display colour into `output`.
@@ -203,8 +268,9 @@ public final class PostChain {
                 e.setTexture(bounds, index: 0)
                 e.setTexture(coarse, index: 1)
             }
+            let blockGroups = MTLSize(width: (metalMask.width + 7) / 8, height: (metalMask.height + 7) / 8, depth: 1)
             PostPipelines.dispatch(commandBuffer, label: "SSR metal mask", pipeline: pipelines.ssrMetalMask,
-                                   threadgroups: coarseGroups, threadsPerGroup: MTLSize(width: 8, height: 8, depth: 1)) { e in
+                                   threadgroups: blockGroups, threadsPerGroup: MTLSize(width: 8, height: 8, depth: 1)) { e in
                 e.setTexture(blockMetal, index: 0)
                 e.setTexture(metalMask, index: 1)
             }
@@ -254,14 +320,10 @@ public final class PostChain {
 
         var hdr: any MTLTexture
         if let temporal {
-            let largest = Self.size(frame.outputWidth, frame.outputHeight, scale: Double(settings.renderScale))
-            // Resolved at the largest scene size; the output pass upscales to the display (PostTemporal).
-            let inputs = try temporal.inputs(maxWidth: largest.width, maxHeight: largest.height, outputWidth: largest.width,
-                                             outputHeight: largest.height,
-                                             minScale: settings.dynamicResolution ? dynamicFloor : 1)
+            // Resolved at the scene size; the output pass upscales to the display (PostTemporal).
+            let inputs = try temporal.inputs(width: scene.width, height: scene.height)
             encodeTemporalComposite(commandBuffer, inputs: inputs, width: scene.width, height: scene.height, bind: bindComposite)
-            hdr = temporal.resolve(commandBuffer: commandBuffer, contentWidth: scene.width, contentHeight: scene.height,
-                                   jitterPixels: frame.jitterPixels)
+            hdr = temporal.resolve(commandBuffer: commandBuffer, jitterPixels: frame.jitterPixels)
             profiler?.mark(commandBuffer, label: "MetalFX temporal", after: hdr)
         } else {
             guard let color = t.composite, let motion = t.motion else { return }
@@ -289,7 +351,7 @@ public final class PostChain {
 
     // MARK: - Passes
 
-    /// The composite into the top-left `width` x `height` of the temporal inputs, copying the depth.
+    /// The composite into the temporal inputs (`width` x `height`), copying the depth.
     private func encodeTemporalComposite(_ commandBuffer: any MTLCommandBuffer, inputs: PostTemporal.Inputs, width: Int,
                                          height: Int, bind: (any MTLRenderCommandEncoder) -> Void) {
         let pass = MTLRenderPassDescriptor()

@@ -17,8 +17,10 @@ public enum OffscreenBenchmark {
         public let gpu: GPUFrameLog
     }
 
-    public static func run(renderer: MapRenderer, device: any MTLDevice, duration: Double,
+    /// `refreshInterval`: the display the run stands in for (MapRenderer.presentationRefreshInterval).
+    public static func run(renderer: MapRenderer, device: any MTLDevice, duration: Double, refreshInterval: Double? = nil,
                            poseAt: (Double) -> CameraPose) throws -> Result {
+        renderer.presentationRefreshInterval = refreshInterval
         guard let queue = device.makeCommandQueue() else { throw RenderError.allocation("benchmark queue") }
         if let repeats = ProcessInfo.processInfo.environment["IV_BENCH_REPEAT"].flatMap(Int.init), repeats > 0 {
             try minimumGPUTimes(renderer: renderer, device: device, queue: queue, duration: duration, repeats: repeats, poseAt: poseAt)

@@ -101,7 +101,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             if map.offscreen, let seconds = map.flythroughSeconds {
                 let flight = Flythrough()
-                let result = try OffscreenBenchmark.run(renderer: renderer, device: device, duration: seconds) { flight.pose(at: $0) }
+                // Dynamic resolution judges frames as the main display would present them.
+                let refresh = NSScreen.main.map { 1 / Double(max(1, $0.maximumFramesPerSecond)) }
+                let result = try OffscreenBenchmark.run(renderer: renderer, device: device, duration: seconds,
+                                                        refreshInterval: refresh) { flight.pose(at: $0) }
                 if let path = map.gpuLogPath { write(result.gpu, to: path) }
                 if let path = options.frameLogPath { try result.frames.write(to: URL(fileURLWithPath: path)) }
                 exit(0)

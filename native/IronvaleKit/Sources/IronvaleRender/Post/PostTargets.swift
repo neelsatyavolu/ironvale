@@ -33,8 +33,8 @@ final class PostTargets {
     static let ssrBlurLevels = 5
     /// Nearest depth per 64 x 64 block (PostSSR.metal IV_SSR_COARSE), from `ssrDepthBounds`.
     let ssrCoarseBounds: (any MTLTexture)?
-    /// Largest metalness per IV_SSR_BLOCK block, and per IV_SSR_COARSE block whether metal is within two
-    /// coarse blocks (PostSSR.metal ivSSRMetalMaskKernel): the SSR march runs only where it is.
+    /// Largest metalness per IV_SSR_BLOCK block, and per IV_SSR_BLOCK block whether metal is within
+    /// IV_SSR_MASK_BLOCKS blocks (PostSSR.metal ivSSRMetalMaskKernel): the SSR march runs only where it is.
     let ssrBlockMetal: (any MTLTexture)?
     let ssrMetalMask: (any MTLTexture)?
     /// PostSSR.metal IV_SSR_BLOCK and IV_SSR_COARSE.
@@ -79,8 +79,8 @@ final class PostTargets {
             ssrBlockMetal = try Self.texture(device: device, format: .r8Unorm, width: (width + Self.ssrBlock - 1) / Self.ssrBlock,
                                              height: (height + Self.ssrBlock - 1) / Self.ssrBlock, label: "SSR block metal",
                                              usage: [.shaderWrite, .shaderRead])
-            ssrMetalMask = try Self.texture(device: device, format: .r8Unorm, width: (width + Self.ssrCoarse - 1) / Self.ssrCoarse,
-                                            height: (height + Self.ssrCoarse - 1) / Self.ssrCoarse, label: "SSR metal mask",
+            ssrMetalMask = try Self.texture(device: device, format: .r8Unorm, width: (width + Self.ssrBlock - 1) / Self.ssrBlock,
+                                            height: (height + Self.ssrBlock - 1) / Self.ssrBlock, label: "SSR metal mask",
                                             usage: [.shaderWrite, .shaderRead])
         } else {
             ssr = nil
@@ -123,6 +123,33 @@ final class PostTargets {
         let chain = BloomChain(bright: bright, horizontal: horizontal, vertical: vertical)
         bloomChain = (width, height, chain)
         return chain
+    }
+
+    /// Clears every render target of this set and of its bloom chain once, on `commandBuffer`, so their
+    /// memory is resident before a frame first draws into them (a dynamic resolution step to a new size
+    /// otherwise pays the first touch of ~100 MB inside a frame).
+    func warm(device: any MTLDevice, commandBuffer: any MTLCommandBuffer) throws {
+        let chain = try bloom(device: device, width: scene.width, height: scene.height)
+        let own: [(any MTLTexture)?] = [scene.color, scene.normal, scene.metalRough, scene.depth, ao, ssr, godrays, shaftsH,
+                                        shaftsV, composite, motion]
+        Self.touch(own.compactMap { $0 } + [chain.bright] + chain.horizontal + chain.vertical, commandBuffer: commandBuffer)
+    }
+
+    /// One clearing render pass per render-target texture in `textures`.
+    static func touch(_ textures: [any MTLTexture], commandBuffer: any MTLCommandBuffer) {
+        for texture in textures where texture.usage.contains(.renderTarget) {
+            let pass = MTLRenderPassDescriptor()
+            if texture.pixelFormat == .depth32Float {
+                pass.depthAttachment.texture = texture
+                pass.depthAttachment.loadAction = .clear
+                pass.depthAttachment.storeAction = .store
+            } else {
+                pass.colorAttachments[0].texture = texture
+                pass.colorAttachments[0].loadAction = .clear
+                pass.colorAttachments[0].storeAction = .store
+            }
+            commandBuffer.makeRenderCommandEncoder(descriptor: pass)?.endEncoding()
+        }
     }
 
     private static func round(_ size: Int, _ scale: Float) -> Int { max(1, Int((Float(size) * scale).rounded())) }

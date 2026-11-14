@@ -58,3 +58,26 @@ private struct DynResFixture: Decodable {
         #expect(abs(paired - c.dropFirst().reduce(0, +)) < 1e-5)
     }
 }
+
+@Test func presentedIntervalRoundsUpToWholeRefreshIntervals() {
+    let refresh = 1.0 / 120
+    #expect(PresentedInterval.quantized(0.004, refresh: refresh) == refresh)
+    #expect(PresentedInterval.quantized(0.0083, refresh: refresh) == refresh)
+    #expect(PresentedInterval.quantized(0.0086, refresh: refresh) == 2 * refresh)
+    #expect(PresentedInterval.quantized(0.0180, refresh: refresh) == 3 * refresh)
+    // A display-paced interval passes through unchanged.
+    #expect(PresentedInterval.quantized(refresh, refresh: refresh) == refresh)
+    #expect(PresentedInterval.quantized(0.0086, refresh: 0) == 0.0086)
+}
+
+@Test func presentedIntervalsPastTheBudgetStepTheResolutionDown() {
+    // 8.6 ms frames at a 120 fps target: never long as measured (budget x 1.18 = 9.8 ms), always
+    // long as a 120 Hz display presents them.
+    var raw = DynamicResolution(), presented = DynamicResolution()
+    for _ in 0..<400 {
+        raw.update(dt: 0.0086, budget: 1.0 / 120, floor: 0.5)
+        presented.update(dt: PresentedInterval.quantized(0.0086, refresh: 1.0 / 120), budget: 1.0 / 120, floor: 0.5)
+    }
+    #expect(raw.scale == 1)
+    #expect(presented.scale < 1)
+}

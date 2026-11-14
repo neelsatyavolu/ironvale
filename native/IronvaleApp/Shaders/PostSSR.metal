@@ -14,8 +14,9 @@
 // mips and the composite's trilinear sample, which multiply the filtered colour by the filtered
 // alpha. Those reach at most 25 SSR texels (16 for the last mip's bilinear footprint, 9 for its box
 // taps), so a pixel with no metal within 50 SSR texels (100 scene texels) can never change the
-// composite. ivSSRMetalMaskKernel marks the IV_SSR_COARSE blocks with metal within two blocks (at
-// least 128 scene texels) and the march runs only there; elsewhere the pixel writes the cleared 0.
+// composite. ivSSRMetalMaskKernel marks the IV_SSR_BLOCK blocks with metal within IV_SSR_MASK_BLOCKS
+// blocks (texels of blocks k apart are at least 16 k - 15 apart, so 7 blocks reach every texel within
+// 100) and the march runs only there; elsewhere the pixel writes the cleared 0.
 #include <metal_stdlib>
 #include "ShaderTypes.h"
 #include "PostCommon.h"
@@ -23,6 +24,8 @@ using namespace metal;
 
 #define IV_SSR_BLOCK 16
 #define IV_SSR_COARSE 64
+/// Mask dilation in IV_SSR_BLOCK blocks: the smallest k with 16 (k + 1) - 15 > 100 scene texels, minus one.
+#define IV_SSR_MASK_BLOCKS 7
 
 /// Nearest (reverse-Z: largest) depth of each IV_SSR_BLOCK x IV_SSR_BLOCK block of the scene depth:
 /// one threadgroup per block, one thread per texel (clamped at the right and bottom edges), reduced
@@ -83,16 +86,15 @@ kernel void ivSSRCoarseBoundsKernel(texture2d<float, access::read> bounds [[text
     coarse.write(float4(nearest), gid);
 }
 
-/// Whether any IV_SSR_BLOCK block within two IV_SSR_COARSE blocks of coarse block `gid` has metal
-/// (1) or not (0): the SSR march runs only in marked coarse blocks (see the header).
+/// Whether any IV_SSR_BLOCK block within IV_SSR_MASK_BLOCKS blocks of block `gid` has metal (1) or not
+/// (0): the SSR march runs only in marked blocks (see the header).
 kernel void ivSSRMetalMaskKernel(texture2d<float, access::read> metal [[texture(0)]],
                                  texture2d<float, access::write> mask [[texture(1)]],
                                  uint2 gid [[thread_position_in_grid]]) {
     if (gid.x >= mask.get_width() || gid.y >= mask.get_height()) return;
-    const int ratio = IV_SSR_COARSE / IV_SSR_BLOCK;
     int2 size = int2(metal.get_width(), metal.get_height());
-    int2 lo = max(int2(gid) * ratio - 2 * ratio, 0);
-    int2 hi = min(int2(gid) * ratio + 3 * ratio, size);
+    int2 lo = max(int2(gid) - IV_SSR_MASK_BLOCKS, 0);
+    int2 hi = min(int2(gid) + IV_SSR_MASK_BLOCKS + 1, size);
     float any = 0.0;
     for (int y = lo.y; y < hi.y; y++) {
         for (int x = lo.x; x < hi.x; x++) any = max(any, metal.read(uint2(x, y)).r);
@@ -101,29 +103,41 @@ kernel void ivSSRMetalMaskKernel(texture2d<float, access::read> metal [[texture(
 }
 
 /// Last step index j >= i whose depth texel (nearest sampling) stays in block `block` (of `size`
-/// texels) along one axis, for texel coordinate a + b j; conservative (may undershoot by one step,
-/// never overshoots).
-static float lastStepInBlock(float a, float b, float block, float size) {
-    if (b > 0.0) return floor((block * size + size - a) / b - 0.01);
-    if (b < 0.0) return floor((block * size - a) / b - 0.01);
+/// texels) along one axis, for texel coordinate a + b j (`invB` = 1 / b); conservative (may undershoot
+/// by one step, never overshoots).
+static float lastStepInBlock(float a, float b, float invB, float block, float size) {
+    if (b > 0.0) return floor((block * size + size - a) * invB - 0.01);
+    if (b < 0.0) return floor((block * size - a) * invB - 0.01);
     return INFINITY;
 }
+
+/// The ray's march in reciprocal view z, which is linear in the step fraction: 1 / z at step j is
+/// recipStart + j recipPerStep. View z values here are negative, so z1 > z2 exactly when 1/z1 < 1/z2,
+/// and a reverse-Z depth d has 1 / viewZ = -(d + depthA) invDepthB (PostCommon.h ivViewZ), so every
+/// depth test of the march is division-free.
+struct SSRRay {
+    float recipStart;
+    float recipPerStep;
+    float depthA;
+    float invDepthB;
+};
 
 /// Whether the march can jump from step i to `last` (the last step inside the `size`-texel block of
 /// `texel`) because the ray stays in front of the block's nearest surface or the block is background.
 static bool canSkip(texture2d<float> bounds, float size, float2 texel, float i, float totalStep, float2 texelBase,
-                    float2 texelStep, float recipVPZ, float recipD1VPZ, constant IVPostView &view, thread float &last) {
+                    float2 texelStep, float2 invTexelStep, SSRRay ray, thread float &last) {
     float2 block = floor(texel / size);
-    last = min(min(lastStepInBlock(texelBase.x, texelStep.x, block.x, size),
-                   lastStepInBlock(texelBase.y, texelStep.y, block.y, size)), totalStep - 1.0);
+    last = min(min(lastStepInBlock(texelBase.x, texelStep.x, invTexelStep.x, block.x, size),
+                   lastStepInBlock(texelBase.y, texelStep.y, invTexelStep.y, block.y, size)), totalStep - 1.0);
     if (last <= i) return false;
     float nearest = bounds.read(uint2(block)).r;
     if (ivIsBackground(nearest)) return true;
-    float nearestZ = ivViewZ(nearest, view.near, view.far);
-    float rayZi = 1.0 / (recipVPZ + (i / totalStep) * (recipD1VPZ - recipVPZ));
-    float rayZl = 1.0 / (recipVPZ + (last / totalStep) * (recipD1VPZ - recipVPZ));
-    // A relative margin keeps the skip conservative under fast-math rounding.
-    return min(rayZi, rayZl) > nearestZ + 1e-3 * abs(nearestZ);
+    // In front of the nearest surface with a relative margin (conservative under fast-math rounding):
+    // min(z_i, z_last) > 0.999 z_nearest, in reciprocals max(1/z_i, 1/z_last) < 1 / (0.999 z_nearest).
+    float recipI = ray.recipStart + i * ray.recipPerStep;
+    float recipLast = ray.recipStart + last * ray.recipPerStep;
+    float recipNearest = -(nearest + ray.depthA) * ray.invDepthB * (1.0 / 0.999);
+    return max(recipI, recipLast) < recipNearest;
 }
 
 static float pointToLineDistance(float3 p, float3 a, float3 b) {
@@ -153,9 +167,9 @@ fragment float4 ivSSRFragment(PostVaryings in [[stage_in]],
     float2 depthSize = float2(depthTex.get_width(), depthTex.get_height());
     float2 uvPos = (floor(in.uv * depthSize) + 0.5) / depthSize;
     // No metal near this pixel: its output cannot reach the composite (see the header).
-    uint2 coarseBlock = min(uint2(floor(in.uv * depthSize)) / IV_SSR_COARSE,
-                            uint2(metalMaskTex.get_width(), metalMaskTex.get_height()) - 1);
-    if (metalMaskTex.read(coarseBlock).r == 0.0) discard_fragment();
+    uint2 maskBlock = min(uint2(floor(in.uv * depthSize)) / IV_SSR_BLOCK,
+                          uint2(metalMaskTex.get_width(), metalMaskTex.get_height()) - 1);
+    if (metalMaskTex.read(maskBlock).r == 0.0) discard_fragment();
     float depth = depthTex.sample(ivPostNearest, uvPos);
     if (ivIsBackground(depth)) discard_fragment();
 
@@ -202,28 +216,33 @@ fragment float4 ivSSRFragment(PostVaryings in [[stage_in]],
     // Depth texel of step j: texelBase + texelStep j (before flooring).
     float2 texelBase = d0 * invResolution * depthSize;
     float2 texelStep = stepVec * invResolution * depthSize;
+    float2 invTexelStep = 1.0 / texelStep;
+    float depthA = view.near / (view.far - view.near);
+    float invDepthB = (view.far - view.near) / (view.near * view.far);
+    float invTotalStep = 1.0 / float(totalStep);
+    SSRRay ray = {recipVPZ, (recipD1VPZ - recipVPZ) * invTotalStep, depthA, invDepthB};
     for (int i = 1; i < totalStep; i++) {
-        float s = float(i) / float(totalStep);
-        float2 xy = d0 + stepVec * (s * float(totalStep));
+        float s = float(i) * invTotalStep;
+        float2 xy = d0 + stepVec * float(i);
         if (xy.x < 0.0 || xy.x > resolution.x || xy.y < 0.0 || xy.y > resolution.y) break;
         float2 uvS = xy * invResolution;
 
         float2 texel = floor(uvS * depthSize);
         if (all(texel >= 0.0) && all(texel < depthSize)) {
             float last;
-            if (canSkip(coarseTex, IV_SSR_COARSE, texel, float(i), float(totalStep), texelBase, texelStep, recipVPZ,
-                        recipD1VPZ, view, last)
-                || canSkip(boundsTex, IV_SSR_BLOCK, texel, float(i), float(totalStep), texelBase, texelStep, recipVPZ,
-                           recipD1VPZ, view, last)) {
+            if (canSkip(coarseTex, IV_SSR_COARSE, texel, float(i), float(totalStep), texelBase, texelStep, invTexelStep,
+                        ray, last)
+                || canSkip(boundsTex, IV_SSR_BLOCK, texel, float(i), float(totalStep), texelBase, texelStep, invTexelStep,
+                           ray, last)) {
                 i = int(last);
                 continue;
             }
         }
 
         float d = depthTex.sample(ivPostNearest, uvS);
-        float vZ = ivViewZ(d, view.near, view.far);
-        float viewReflectRayZ = 1.0 / (recipVPZ + s * (recipD1VPZ - recipVPZ));
-        if (!ivIsBackground(d) && viewReflectRayZ <= vZ) {
+        // viewReflectRayZ <= viewZ(d), in reciprocals (see SSRRay).
+        float recipRay = recipVPZ + s * (recipD1VPZ - recipVPZ);
+        if (!ivIsBackground(d) && recipRay >= -(d + depthA) * invDepthB) {
             float3 vP = ivViewPosition(uvS, d, view.inverseProjection);
             float away = pointToLineDistance(vP, viewPosition, d1viewPosition);
             float3 vPNeighbor = ivViewPosition(uvS + uvPixelStepX, d, view.inverseProjection);
