@@ -1,0 +1,178 @@
+{
+  "binary": {
+    "ANGLE_SCALE": 10000,
+    "BOTS_HEADER_BYTES": 12,
+    "BOT_BYTES": 20,
+    "DIRECTION_SCALE": 32767,
+    "PING_BYTES": 10,
+    "PONG_BYTES": 18,
+    "SHOT_HEADER_BYTES": 23,
+    "SPEED_SCALE": 20,
+    "STATE_BYTES": 37,
+    "TYPE_BOTS": 2,
+    "TYPE_PING": 4,
+    "TYPE_PONG": 5,
+    "TYPE_SHOT": 3,
+    "TYPE_STATE": 1,
+    "VELOCITY_SCALE": 100
+  },
+  "events": {
+    "BYE_REASONS": [
+      "left",
+      "timeout",
+      "ended"
+    ],
+    "DIFFICULTIES": [
+      "recruit",
+      "regular",
+      "veteran",
+      "elite"
+    ],
+    "DUEL_BOTS": [
+      "none",
+      "host",
+      "guest"
+    ],
+    "MAP_ID": "^[a-z0-9-]{1,24}$",
+    "MAX_COUNT": 100000,
+    "MAX_DAMAGE": 1000,
+    "MAX_THROW_SPEED": 40,
+    "MODES": [
+      "coop",
+      "duel"
+    ],
+    "RESULTS": [
+      "",
+      "won",
+      "lost"
+    ],
+    "RULES": [
+      "skirmish",
+      "survival"
+    ],
+    "STAGES": [
+      "magOut",
+      "magIn",
+      "boltBack",
+      "boltForward",
+      "boltLift",
+      "boltClose",
+      "shellInsert",
+      "beltOpen",
+      "beltClose"
+    ],
+    "ZONES": [
+      "head",
+      "torso",
+      "limb"
+    ],
+    "grenadeSource": "grenade",
+    "maxKillTarget": 50,
+    "maxNetBots": 32
+  },
+  "invite": {
+    "MAX_SDP_BYTES": 12000,
+    "PREFIX": {
+      "answer": "IVG1.",
+      "offer": "IVH1."
+    },
+    "maxCodeChars": 6000
+  },
+  "limits": {
+    "BURST_SECONDS": 0.75,
+    "RATE_SLACK": 1.25,
+    "chatLength": 140,
+    "nameLength": 16
+  },
+  "protocolVersion": 4,
+  "relay": {
+    "close": {
+      "expired": 4000,
+      "flooding": 4008,
+      "hostLeft": 4001
+    },
+    "limits": {
+      "burst": 40,
+      "messageBytes": 16384,
+      "perSecond": 4,
+      "roomTtlMs": 600000
+    }
+  },
+  "room": {
+    "alphabet": "ABCDEFGHJKMNPQRSTUVWXYZ23456789",
+    "joinParam": "join",
+    "length": 6
+  },
+  "storage": {
+    "NAME_KEY": "ironvale.net.v1"
+  },
+  "timing": {
+    "clock": {
+      "MAX_RTT_MS": 10000,
+      "RTT_SMOOTHING": 0.2,
+      "WINDOW": 10
+    },
+    "interp": {
+      "DEFAULT_CAPACITY": 32,
+      "MAX_EXTRAPOLATION_MS": 250
+    },
+    "match": {
+      "BOT_INTERVAL": 0.08333333333333333,
+      "GRENADE_REACH": 8,
+      "GRENADE_SPEED_SLACK": 1.05,
+      "MAX_EXTRAPOLATION_MS": 250,
+      "NEAR_MISS_RADIUS": 1.2,
+      "PLAYER_DELAY_MS": 100,
+      "STALE_MS": 2000,
+      "STATE_INTERVAL": 0.03333333333333333
+    },
+    "proxies": {
+      "BOT_DELAY_MS": 170,
+      "BOT_RUN_SPEED": 4.5,
+      "CORPSE_SECONDS": 20,
+      "MAX_EXTRAPOLATION_MS": 250,
+      "MAX_PROXIES": 96
+    },
+    "session": {
+      "CONNECT_TIMEOUT_MS": 25000,
+      "COUNTDOWN_MS": 3000,
+      "MATCH_REPORT_MS": 500,
+      "MAX_QUEUED_EVENTS": 256,
+      "PEER_TIMEOUT_MS": 5000,
+      "PING_FAST_COUNT": 8,
+      "PING_FAST_MS": 250,
+      "PING_SLOW_MS": 1000,
+      "REACHABLE_CACHE_MS": 10000,
+      "SIDE_STEP": 1.6
+    }
+  },
+  "transport": {
+    "EVENT_BACKLOG_BYTES": 1000000,
+    "GATHER_TIMEOUT_MS": 4000,
+    "HEALTH_TIMEOUT_MS": 2500,
+    "HOST_CODE_ATTEMPTS": 4,
+    "MAX_CANDIDATE_CHARS": 1000,
+    "MAX_EXTRA_SERVERS": 6,
+    "MAX_INCOMING_BYTES": 8192,
+    "MAX_SDP_CHARS": 12000,
+    "RELAY_TIMEOUT_MS": 3000,
+    "STATE_BACKLOG_BYTES": 16384,
+    "STUN": {
+      "urls": [
+        "stun:stun.cloudflare.com:3478",
+        "stun:stun.l.google.com:19302"
+      ]
+    }
+  },
+  "wire": {
+    "botBase": 2,
+    "guest": 1,
+    "host": 0,
+    "maxBotsPerSnapshot": 48,
+    "maxCoordinate": 5000,
+    "maxEventChars": 2048,
+    "maxPellets": 12,
+    "maxTimeMs": 1000000000000,
+    "maxWireId": 65535
+  }
+}

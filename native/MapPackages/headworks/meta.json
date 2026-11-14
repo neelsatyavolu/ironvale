@@ -1,0 +1,293 @@
+{
+  "format": "ironvale-map-package",
+  "version": 1,
+  "id": "headworks",
+  "name": "Headworks",
+  "tagline": "Mountain water works, low winter sun",
+  "playable": true,
+  "detailDensity": 1,
+  "assets": [
+    "hdri-headworks",
+    "pbr-headworks-formed",
+    "pbr-headworks-paving",
+    "pbr-headworks-road"
+  ],
+  "bounds": {
+    "min": [
+      -47,
+      -1,
+      -41
+    ],
+    "max": [
+      47,
+      12,
+      41
+    ]
+  },
+  "collisionBounds": {
+    "min": [
+      -70,
+      -1,
+      -65
+    ],
+    "max": [
+      70,
+      6.5,
+      65
+    ]
+  },
+  "spawns": {
+    "player": [
+      {
+        "position": [
+          -45.2,
+          0.05,
+          0
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          -43.6,
+          0.05,
+          -4.6
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -43.6,
+          0.05,
+          4.6
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -45.6,
+          0.05,
+          -6.4
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          -45.6,
+          0.05,
+          6.4
+        ],
+        "yaw": 3.141592653589793
+      }
+    ],
+    "enemy": [
+      {
+        "position": [
+          45.2,
+          0.05,
+          0
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          36,
+          0.05,
+          -32
+        ],
+        "yaw": 1.5707963267948966
+      },
+      {
+        "position": [
+          37,
+          0.05,
+          29
+        ],
+        "yaw": 1.5707963267948966
+      },
+      {
+        "position": [
+          20,
+          0.05,
+          -38.5
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          31.5,
+          0.05,
+          6.5
+        ],
+        "yaw": 1.5707963267948966
+      },
+      {
+        "position": [
+          7,
+          0.05,
+          -36
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          26,
+          0.05,
+          30
+        ],
+        "yaw": 1.5707963267948966
+      },
+      {
+        "position": [
+          -7,
+          0.05,
+          37.6
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          30,
+          0.05,
+          -12.5
+        ],
+        "yaw": 1.5707963267948966
+      }
+    ]
+  },
+  "weather": "clear",
+  "reverb": "industrial",
+  "interiors": [
+    {
+      "min": [
+        -28,
+        0,
+        27
+      ],
+      "max": [
+        -12,
+        4.6,
+        41
+      ],
+      "reverb": "interior",
+      "skyLight": 0.25
+    },
+    {
+      "min": [
+        12,
+        0,
+        -41
+      ],
+      "max": [
+        28,
+        4.6,
+        -27
+      ],
+      "reverb": "interior",
+      "skyLight": 0.25
+    }
+  ],
+  "ambience": [
+    {
+      "sound": "snd-amb-wind",
+      "volume": 0.5
+    },
+    {
+      "sound": "snd-amb-industrial",
+      "volume": 0.22
+    },
+    {
+      "sound": "snd-loop-water-lap",
+      "volume": 0.45,
+      "position": [
+        -11,
+        4,
+        -5
+      ],
+      "radius": 24
+    },
+    {
+      "sound": "snd-loop-water-lap",
+      "volume": 0.45,
+      "position": [
+        11,
+        4,
+        5
+      ],
+      "radius": 24
+    },
+    {
+      "sound": "snd-loop-generator",
+      "volume": 0.6,
+      "position": [
+        -32.6,
+        1.2,
+        24.6
+      ],
+      "radius": 20
+    },
+    {
+      "sound": "snd-loop-generator",
+      "volume": 0.6,
+      "position": [
+        32.6,
+        1.2,
+        -24.6
+      ],
+      "radius": 20
+    }
+  ],
+  "lighting": {
+    "hdri": "hdri-headworks",
+    "hdriRotation": -1.3051572146413597,
+    "skyIntensity": 0.8,
+    "sunDirection": [
+      -0.37912474409613955,
+      0.24192189559966773,
+      0.8931619253212153
+    ],
+    "sunColor": 16768436,
+    "sunIntensity": 6.4,
+    "fog": {
+      "color": 9347769,
+      "density": 0.0085,
+      "sunTint": 15981760,
+      "sunTintStrength": 0.8,
+      "heightFalloff": 0.018,
+      "baseHeight": 0
+    },
+    "exposure": 0.72,
+    "volumetric": 0.55,
+    "shaftDensity": 2.2,
+    "bloom": 0.7
+  },
+  "surfaceTable": [
+    "concrete",
+    "cobble",
+    "asphalt",
+    "gravel",
+    "dirt",
+    "grass",
+    "sand",
+    "wood",
+    "metal",
+    "plaster",
+    "glass",
+    "water",
+    "foliage",
+    "flesh"
+  ],
+  "collision": {
+    "triangles": 2408,
+    "boundaryTriangles": 96
+  },
+  "collisionSha256": "8c08683706a303d7bb497883f8e5183c019ec58b3e4b5ae7c8707c861d078a1c",
+  "fixtures": {
+    "file": "fixtures/queries.bin",
+    "raycast": 2500,
+    "los": 2000,
+    "ground": 2000,
+    "fits": 1500,
+    "paths": 2000
+  },
+  "sourceCommit": "14d5266aa968d0c7d66ae855ceb97a74a924a02b"
+}

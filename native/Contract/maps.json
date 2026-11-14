@@ -1,0 +1,16 @@
+{
+  "all": [
+    "range",
+    "harbor",
+    "headworks",
+    "railyard"
+  ],
+  "developer": [
+    "range"
+  ],
+  "playable": [
+    "railyard",
+    "harbor",
+    "headworks"
+  ]
+}

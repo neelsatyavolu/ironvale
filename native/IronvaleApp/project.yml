@@ -1,0 +1,54 @@
+# Source of truth for IronvaleApp.xcodeproj (generated, git-ignored). Regenerate with:
+#   cd native/IronvaleApp && xcodegen generate
+name: IronvaleApp
+options:
+  bundleIdPrefix: dev.n3el
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: YES
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+packages:
+  IronvaleKit:
+    path: ../IronvaleKit
+targets:
+  Ironvale:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+      - path: Shaders
+      - path: Resources
+        excludes:
+          - Info.plist
+          - Ironvale.entitlements
+    dependencies:
+      - package: IronvaleKit
+        product: IronvaleKit
+    settings:
+      base:
+        PRODUCT_NAME: Ironvale
+        PRODUCT_BUNDLE_IDENTIFIER: dev.n3el.ironvale
+        INFOPLIST_FILE: Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Resources/Ironvale.entitlements
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        ENABLE_HARDENED_RUNTIME: YES
+        GENERATE_INFOPLIST_FILE: NO
+        # Shaders include ShaderTypes.h from the package's C target.
+        MTL_HEADER_SEARCH_PATHS: $(SRCROOT)/../IronvaleKit/Sources/ShaderTypes/include
+        MTL_LANGUAGE_REVISION: Metal32
+schemes:
+  Ironvale:
+    build:
+      targets:
+        Ironvale: all
+    run:
+      config: Debug
+    archive:
+      config: Release

@@ -1,0 +1,61 @@
+{
+  "hitbox": {
+    "CROUCHING": [
+      {
+        "bottom": 1.04,
+        "radius": 0.125,
+        "top": 1.12,
+        "zone": "head"
+      },
+      {
+        "bottom": 0.56,
+        "radius": 0.25,
+        "top": 0.9,
+        "zone": "torso"
+      },
+      {
+        "bottom": 0.14,
+        "radius": 0.24,
+        "top": 0.46,
+        "zone": "limb"
+      }
+    ],
+    "STANDING": [
+      {
+        "bottom": 1.6,
+        "radius": 0.125,
+        "top": 1.68,
+        "zone": "head"
+      },
+      {
+        "bottom": 0.98,
+        "radius": 0.24,
+        "top": 1.42,
+        "zone": "torso"
+      },
+      {
+        "bottom": 0.14,
+        "radius": 0.2,
+        "top": 0.9,
+        "zone": "limb"
+      }
+    ]
+  },
+  "player": {
+    "CROUCH_EYE": 1.08,
+    "CROUCH_HEIGHT": 1.2,
+    "RADIUS": 0.34,
+    "STAND_EYE": 1.64,
+    "STAND_HEIGHT": 1.8
+  },
+  "remote": {
+    "CHEST_CROUCH": 0.8,
+    "CHEST_STAND": 1.25,
+    "CROUCH_EYE": 1.08,
+    "STAND_EYE": 1.64
+  },
+  "session": {
+    "BODY_HEIGHT": 1.8,
+    "BODY_RADIUS": 0.34
+  }
+}

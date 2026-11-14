@@ -1,0 +1,10 @@
+{
+  "note": "M3 parity poses: [x, feet y, z, yaw degrees, pitch degrees], the same form as ?pose= on the web (src/main.ts). Picked from scripts/dev/map-railyard-shot.mjs VIEWS; all outdoors so interior sky light does not apply.",
+  "poses": {
+    "spawn": [-3, 0, 45.5, 0, 0],
+    "avenue": [4, 0, 30, 0, -2],
+    "lane-west": [-7, 0, 13, 0, 0],
+    "quay": [-34, 0, -38, -90, 2],
+    "rails": [27, 0, 44, 0, 0]
+  }
+}

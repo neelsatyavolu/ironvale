@@ -1,0 +1,158 @@
+{
+  "format": "ironvale-map-package",
+  "version": 1,
+  "id": "range",
+  "name": "Test Range",
+  "tagline": "Developer test map",
+  "playable": false,
+  "detailDensity": 1,
+  "assets": [
+    "hdri-test",
+    "pbr-test-concrete"
+  ],
+  "bounds": {
+    "min": [
+      -55,
+      -1,
+      -55
+    ],
+    "max": [
+      55,
+      30,
+      55
+    ]
+  },
+  "collisionBounds": {
+    "min": [
+      -60,
+      -5.112961076747524e-8,
+      -60
+    ],
+    "max": [
+      60,
+      4.244999885559082,
+      60
+    ]
+  },
+  "spawns": {
+    "player": [
+      {
+        "position": [
+          0,
+          0.05,
+          6
+        ],
+        "yaw": 0
+      }
+    ],
+    "enemy": [
+      {
+        "position": [
+          -30,
+          0.05,
+          -30
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          30,
+          0.05,
+          -30
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          -30,
+          0.05,
+          30
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          30,
+          0.05,
+          30
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          0,
+          0.05,
+          -40
+        ],
+        "yaw": 0
+      }
+    ]
+  },
+  "weather": "clear",
+  "reverb": "open-field",
+  "interiors": [
+    {
+      "min": [
+        -5,
+        0,
+        -18
+      ],
+      "max": [
+        5,
+        4,
+        -10
+      ],
+      "reverb": "interior"
+    }
+  ],
+  "ambience": [],
+  "lighting": {
+    "hdri": "hdri-test",
+    "hdriRotation": 0,
+    "skyIntensity": 1,
+    "sunDirection": [
+      -0.5507440069535275,
+      0.42056815076451187,
+      -0.7209739727391632
+    ],
+    "sunColor": 16769728,
+    "sunIntensity": 4.5,
+    "fog": {
+      "color": 11187392,
+      "density": 0.006
+    },
+    "exposure": 0.9,
+    "volumetric": 0.6,
+    "bloom": 1
+  },
+  "surfaceTable": [
+    "concrete",
+    "cobble",
+    "asphalt",
+    "gravel",
+    "dirt",
+    "grass",
+    "sand",
+    "wood",
+    "metal",
+    "plaster",
+    "glass",
+    "water",
+    "foliage",
+    "flesh"
+  ],
+  "collision": {
+    "triangles": 314,
+    "boundaryTriangles": 0
+  },
+  "collisionSha256": "113bd4fcac428a3929dea8a775c71014d322c4571efeb7f0eae8e09c371e8bb7",
+  "fixtures": {
+    "file": "fixtures/queries.bin",
+    "raycast": 2500,
+    "los": 2000,
+    "ground": 2000,
+    "fits": 1500,
+    "paths": 2000
+  },
+  "sourceCommit": "14d5266aa968d0c7d66ae855ceb97a74a924a02b"
+}

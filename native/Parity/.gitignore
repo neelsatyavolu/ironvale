@@ -1,0 +1,5 @@
+# Captures are rebuilt by native/Tools/m3-parity (web) and the app's --capture (native).
+*.png
+*.csv
+*.json
+!railyard-poses.json

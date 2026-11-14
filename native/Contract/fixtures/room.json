@@ -1,0 +1,338 @@
+{
+  "links": [
+    {"code":"ABC234","page":"https://ironvale.n3el.dev/play/?map=harbor#x","out":"https://ironvale.n3el.dev/play/?join=ABC234"},
+    {"code":"ABC234","page":"https://ironvale.n3el.dev/","out":"https://ironvale.n3el.dev/?join=ABC234"},
+    {"code":"ABC234","page":"https://ironvale.n3el.dev","out":"https://ironvale.n3el.dev/?join=ABC234"},
+    {"code":"K7M2QX","page":"http://localhost:5311/?signal=ws://127.0.0.1:8787&q=high","out":"http://localhost:5311/?join=K7M2QX"},
+    {"code":"K7M2QX","page":"https://ironvale.n3el.dev/a/b/index.html?x=1#join=OLD","out":"https://ironvale.n3el.dev/a/b/index.html?join=K7M2QX"},
+    {"code":"K7M2QX","page":"https://user:pw@ironvale.n3el.dev:8443/p","out":"https://user:pw@ironvale.n3el.dev:8443/p?join=K7M2QX"}
+  ],
+  "make": [
+    {"seed":0,"codes":["JAGERT","WXRVHD","7PZX3W","UDH4MC","37URND","2TGEMH","MJFM4Q","RZ28TT","NPGXAP","8RSCAF","A2MH96","R5CHZ4","3CGQNB","43U6BV","ZGKWRA","GWWGJ8","VF3WUM","RPUVJU","3SAWXC","5E5BXD"]},
+    {"seed":1,"codes":["WAT99J","VZQ9RS","EPHESC","P2JFBQ","V3KGXT","2FZR29","H2EMPH","EZUDJB","W5H9ZP","KX87Y7","47DB5K","6S8YFX","8E9FPD","PMXSTC","45JFK6","JEXUMD","ECKXXD","STG3H9","85AFA9","MZ5CH5"]},
+    {"seed":2,"codes":["ZMJT6W","SN3D3G","Q4VEXN","9B7BDF","A8RW9H","RMBTCB","83A9C9","TGYB37","4Q8CZ9","5WTB55","TK67QM","A8KQ35","7QGXWZ","8GJMTA","J4F3PP","P5R9JC","YAZ3XJ","MXDFZ9","WDU8AU","TZ5QSC"]},
+    {"seed":3,"codes":["ZBRC2R","SFJUGC","ZR36MY","JXT4TA","6K82QZ","ENZAAR","5VY3VV","CNT4PR","SU35XN","YYR96Z","X82BCT","5MTJRU","UP2F8W","22BPEY","2W999V","684KW8","PVEWTH","6B5CQ6","AXDJ9T","FAEXW4"]},
+    {"seed":99,"codes":["J3TYA4","ADPXNB","MZHFR2","SJU2N2","9TJ8GR","YPKHYP","6F4SVY","2JV2RE","AX9TKZ","4SYH2W","2EZCJW","NM5C3B","UUZA94","FU38EC","PYS5PQ","CB5NZ7","236MB5","V4G9NA","TKRMER","YEUS5X"]}
+  ],
+  "text": [
+    {"input":" k7m-2qx ","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"k7m 2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"K7M2Q","normalized":"K7M2Q","from":"K7M2Q","isRoomCode":false},
+    {"input":"K7M2QO","normalized":"K7M2QO","from":"K7M2QO","isRoomCode":false},
+    {"input":" https://ironvale.n3el.dev/play/?join=abc234 ","normalized":"HTTPSIRONVALEN3ELDEVPLAYJOINABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://x.dev/play/?q=high&join=ABC-234","normalized":"HTTPSXDEVPLAYQHIGHJOINABC234","from":"ABC234","isRoomCode":false},
+    {"input":"abc 234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"abc-234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://example.com/","normalized":"HTTPSEXAMPLECOM","from":"HTTPSEXAMPLECOM","isRoomCode":false},
+    {"input":"","normalized":"","from":"","isRoomCode":false},
+    {"input":"x#join=zzz999","normalized":"XJOINZZZ999","from":"ZZZ999","isRoomCode":false},
+    {"input":"?join=","normalized":"JOIN","from":"JOIN","isRoomCode":false},
+    {"input":"join=ABC234","normalized":"JOINABC234","from":"JOINABC234","isRoomCode":false},
+    {"input":"ñandú","normalized":"AND","from":"AND","isRoomCode":false},
+    {"input":"straße","normalized":"STRASSE","from":"STRASSE","isRoomCode":false},
+    {"input":"ﬀ","normalized":"FF","from":"FF","isRoomCode":false},
+    {"input":"ı","normalized":"I","from":"I","isRoomCode":false},
+    {"input":"K7M2QX\u0000","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"𝐀BC234","normalized":"BC234","from":"BC234","isRoomCode":false},
+    {"input":" 9 \f 𠀀　​\u000b‮ABC234","normalized":"9ABC234","from":"9ABC234","isRoomCode":false},
+    {"input":"0  日\t�あ k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":" 0-< \t\tk7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":"　あ�\u000b\u0007 あa0ABC234","normalized":"A0ABC234","from":"A0ABC234","isRoomCode":false},
+    {"input":"​　А'🇺 🇺　!ⅧABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"𠀀ß\u0007﻿\\ \u0007　 k7m-2qx","normalized":"SSK7M2QX","from":"SSK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=А𠀀²ß²\u000b_ ß́ABC234","normalized":"HTTPSHABJOINSSSSABC234","from":"HTTPSHABJOINSSSSABC234","isRoomCode":false},
+    {"input":"А�ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"ก_\u000b<𝟘\u0007Z\u000b᠎ABC234","normalized":"ZABC234","from":"ZABC234","isRoomCode":false},
+    {"input":" k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"é😀᠎ß\fk7m-2qx","normalized":"SSK7M2QX","from":"SSK7M2QX","isRoomCode":false},
+    {"input":"k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=½ !< 9Z​᠎","normalized":"HTTPSHABJOIN9Z","from":"HTTPSHABJOIN9Z","isRoomCode":false},
+    {"input":"ßaZ!! >𝐀􏿿ABC234","normalized":"SSAZABC234","from":"SSAZABC234","isRoomCode":false},
+    {"input":"󠀁'٣᠎k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" ½.ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"󠀁 ‮\t 0>k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=éあ́\r\f>\u000bABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":" _ß‌","normalized":"SS","from":"SS","isRoomCode":false},
+    {"input":"². \\ /\n\nABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"日\u0000","normalized":"","from":"","isRoomCode":false},
+    {"input":"!\t‍ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"﻿ก","normalized":"","from":"","isRoomCode":false},
+    {"input":"/􏿿ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=aABC234","normalized":"HTTPSHABJOINAABC234","from":"AABC234","isRoomCode":false},
+    {"input":"😀𝟘\u0007 ⁠‌ А","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join= a> 🇺٣𠀀𝟘","normalized":"HTTPSHABJOINA","from":"HTTPSHABJOINA","isRoomCode":false},
+    {"input":"https://h/?a=b&join=  00k7m-2qx","normalized":"HTTPSHABJOIN00K7M2QX","from":"HTTPSHABJOIN00K7M2QX","isRoomCode":false},
+    {"input":"-﻿ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"ß\tABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\u000b 󠀁0󠀁0/‌","normalized":"HTTPSHABJOIN00","from":"HTTPSHABJOIN00","isRoomCode":false},
+    {"input":"𝐀 𝐀a‍²  ABC234","normalized":"AABC234","from":"AABC234","isRoomCode":false},
+    {"input":"А\u0007a<𠀀٣ \u000b","normalized":"A","from":"A","isRoomCode":false},
+    {"input":"https://h/?a=b&join=_﻿-\u0000½😀","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"https://h/?a=b&join=_Ⅷ","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"https://h/?a=b&join=́\u0007​ ! ² ‮éABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"᠎\u000b9‍!","normalized":"9","from":"9","isRoomCode":false},
+    {"input":"𝐀\r.\n_日.!k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"אABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":" \u0007𝐀\n ᠎ ⁠\" ","normalized":"","from":"","isRoomCode":false},
+    {"input":"‌ ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\t﻿ \u0007‍\n..","normalized":"","from":"","isRoomCode":false},
+    {"input":"\u0007","normalized":"","from":"","isRoomCode":false},
+    {"input":"\r ","normalized":"","from":"","isRoomCode":false},
+    {"input":"a  ​᠎\"éⅧ ABC234","normalized":"AABC234","from":"AABC234","isRoomCode":false},
+    {"input":"\u000b.󠀁½́󠀁ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\f�k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"⁠ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"᠎  '­é>","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=9\\\u0000日½\u000b9ABC234","normalized":"HTTPSHABJOIN99ABC234","from":"HTTPSHABJOIN99ABC234","isRoomCode":false},
+    {"input":"\u0000﻿á᠎𝐀","normalized":"A","from":"A","isRoomCode":false},
+    {"input":"https://h/?a=b&join= ก","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"󠀁 日日0‌k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"́é�-⁠ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\n \nА >﻿/\u0007𠀀\u0007k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"\u0000ZА_א\rABC234","normalized":"ZABC234","from":"ZABC234","isRoomCode":false},
+    {"input":"\f9ABC234","normalized":"9ABC234","from":"9ABC234","isRoomCode":false},
+    {"input":"­� 　.᠎􏿿 Z‮0ABC234","normalized":"Z0ABC234","from":"Z0ABC234","isRoomCode":false},
+    {"input":"　 �\u000b𝐀ß","normalized":"SS","from":"SS","isRoomCode":false},
+    {"input":"https://h/?a=b&join= ½k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"日　½/‌\u000b‌.k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ABC234","normalized":"HTTPSHABJOINABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\u0000日​²‍�\f􏿿<","normalized":"","from":"","isRoomCode":false},
+    {"input":"日","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\\ก󠀁А9​ 􏿿\fABC234","normalized":"HTTPSHABJOIN9ABC234","from":"HTTPSHABJOIN9ABC234","isRoomCode":false},
+    {"input":"󠀁\u0007􏿿Ⅷ","normalized":"","from":"","isRoomCode":false},
+    {"input":"!\\𝟘\f0 ABC234","normalized":"0ABC234","from":"0ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"‍́\u000b","normalized":"","from":"","isRoomCode":false},
+    {"input":"� -ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"\tZⅧ﻿k7m-2qx","normalized":"ZK7M2QX","from":"ZK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\u00009　󠀁k7m-2qx","normalized":"HTTPSHABJOIN9K7M2QX","from":"HTTPSHABJOIN9K7M2QX","isRoomCode":false},
+    {"input":"𝐀 ⁠","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ß½0ก²Ⅷ  ABC234","normalized":"HTTPSHABJOINSS0ABC234","from":"HTTPSHABJOINSS0ABC234","isRoomCode":false},
+    {"input":"א<\u0000 𠀀! ﻿\t ⅧABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":" 𠀀0😀   ﻿k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=².9А. ABC234","normalized":"HTTPSHABJOIN9ABC234","from":"HTTPSHABJOIN9ABC234","isRoomCode":false},
+    {"input":"é Ⅷß\f‌𠀀²ABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":">‌ Z\u0000กk7m-2qx","normalized":"ZK7M2QX","from":"ZK7M2QX","isRoomCode":false},
+    {"input":" א‍ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"󠀁𝐀 　\" \u000b  ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"􏿿􏿿>́  ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"²ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"‮٣�‌Z􏿿﻿\u0007‍","normalized":"Z","from":"Z","isRoomCode":false},
+    {"input":" \\🇺ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"Ⅷ‮🇺²ก𠀀٣ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=А_􏿿א \"\rABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"\"  ­²\"k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join= >\"𠀀ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"\t!　ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"Ⅷ 󠀁𝟘日a⁠","normalized":"A","from":"A","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\ń'ก\t󠀁‌ ﻿𝐀́k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":" \u0000 .  ²А","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=᠎. 𠀀ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"א󠀁あ᠎> ก­\u000b' ","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=⁠>é⁠\n󠀁/⁠\tk7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":" 0k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":"\r\u0000𝐀  /ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"²\u0007ééⅧ½　\fZ½‮","normalized":"Z","from":"Z","isRoomCode":false},
+    {"input":" >‌ ⁠","normalized":"","from":"","isRoomCode":false},
+    {"input":"　А²\fk7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"_ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=<􏿿\f‮ Ⅷ","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"ß􏿿АABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=­²\n","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":" 𝐀Аß_א\t<k7m-2qx","normalized":"SSK7M2QX","from":"SSK7M2QX","isRoomCode":false},
+    {"input":"Ⅷ😀 \" ᠎­","normalized":"","from":"","isRoomCode":false},
+    {"input":" \rk7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"_!\n <​é‌","normalized":"","from":"","isRoomCode":false},
+    {"input":".\u0000​-ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join= 􏿿⁠'k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=𝐀'  ‌ \"́","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"!/a𠀀.٣k7m-2qx","normalized":"AK7M2QX","from":"AK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=½<>k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":" Ⅷk7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"日\r\u000bk7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"\u0007​k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"! ́é﻿²ก'k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"ก\"<'k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"­𠀀𝐀","normalized":"","from":"","isRoomCode":false},
+    {"input":"<>.�́\u0000","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ß😀é","normalized":"HTTPSHABJOINSS","from":"HTTPSHABJOINSS","isRoomCode":false},
+    {"input":"  ́𠀀⁠>  ","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=>\t _𝟘k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"𠀀 >99","normalized":"99","from":"99","isRoomCode":false},
+    {"input":"\\aⅧ\u000b​..k7m-2qx","normalized":"AK7M2QX","from":"AK7M2QX","isRoomCode":false},
+    {"input":"\\0‮Z9􏿿  k7m-2qx","normalized":"0Z9K7M2QX","from":"0Z9K7M2QX","isRoomCode":false},
+    {"input":"­﻿","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=­‮­﻿‌ß​ABC234","normalized":"HTTPSHABJOINSSABC234","from":"HTTPSHABJOINSSABC234","isRoomCode":false},
+    {"input":" ","normalized":"","from":"","isRoomCode":false},
+    {"input":"<�9 日 􏿿🇺","normalized":"9","from":"9","isRoomCode":false},
+    {"input":"א日k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=�-","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":" \rא‮ /日\tあ'ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=‍ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=  ­ ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"‌ß٣​٣. < ","normalized":"SS","from":"SS","isRoomCode":false},
+    {"input":"²ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":" 　􏿿_ 󠀁","normalized":"","from":"","isRoomCode":false},
+    {"input":" 🇺𠀀�Z","normalized":"Z","from":"Z","isRoomCode":false},
+    {"input":"https://h/?a=b&join=􏿿\t./Аé -\r² k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"⁠­0éABC234","normalized":"0ABC234","from":"0ABC234","isRoomCode":false},
+    {"input":"‮􏿿🇺‌　 ²\f","normalized":"","from":"","isRoomCode":false},
+    {"input":"𠀀>⁠­Z⁠/ ⁠","normalized":"Z","from":"Z","isRoomCode":false},
+    {"input":"�k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" .'\u000b k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=‍𝐀\u0007 ½ \\􏿿  k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ßa 日a‮' ABC234","normalized":"HTTPSHABJOINSSAAABC234","from":"HTTPSHABJOINSSAAABC234","isRoomCode":false},
+    {"input":"あ𝐀\n﻿𠀀","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=Z  é\u000b!­􏿿\\ABC234","normalized":"HTTPSHABJOINZABC234","from":"Z","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ก﻿٣k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":true},
+    {"input":"https://h/?a=b&join=﻿_\t‍<ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"́‌'Ⅷ","normalized":"","from":"","isRoomCode":false},
+    {"input":"　 𝟘�\t​𝐀","normalized":"","from":"","isRoomCode":false},
+    {"input":"　\u000b\\<","normalized":"","from":"","isRoomCode":false},
+    {"input":"\t🇺\r᠎ ½ ²\rk7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"א/\n𝟘\u0000ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":" 𠀀‌- ² ﻿日😀 k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"\nZ\t<﻿'Ⅷ\f𝟘k7m-2qx","normalized":"ZK7M2QX","from":"ZK7M2QX","isRoomCode":false},
+    {"input":">_ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join= k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"𝐀  \t 𝐀\f​k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=‍\tABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"😀ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=²\\󠀁😀\u0000  𝟘k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ß>  .  Ⅷ­ABC234","normalized":"HTTPSHABJOINSSABC234","from":"HTTPSHABJOINSSABC234","isRoomCode":false},
+    {"input":"ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":true},
+    {"input":"﻿>あ‍𝐀 é ก>אk7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" ก² ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=א>>","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"⁠ \tABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=²Аก🇺 k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"\u0007⁠ \u000b​\n　ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\u0007\\́�⁠\"Z󠀁‮ k7m-2qx","normalized":"ZK7M2QX","from":"ZK7M2QX","isRoomCode":false},
+    {"input":"½ あא​　k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" ","normalized":"","from":"","isRoomCode":false},
+    {"input":"𝐀","normalized":"","from":"","isRoomCode":false},
+    {"input":"  ­\u0007�𝟘0a𝐀 􏿿","normalized":"0A","from":"0A","isRoomCode":false},
+    {"input":"\u0000>ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"𝐀ß\u0000 ก\\ 日᠎󠀁ABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"https://h/?a=b&join=éABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ß ­\nééZⅧ‍ß","normalized":"HTTPSHABJOINSSZSS","from":"HTTPSHABJOINSSZSS","isRoomCode":false},
+    {"input":"a�ß\n日! k7m-2qx","normalized":"ASSK7M2QX","from":"ASSK7M2QX","isRoomCode":false},
+    {"input":"\r","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=﻿0½😀�","normalized":"HTTPSHABJOIN0","from":"HTTPSHABJOIN0","isRoomCode":false},
+    {"input":" 😀𝟘あ\"! 0k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=­_ ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=‮𝐀あé\u000b ⁠'²󠀁k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join= \u000bกא𝐀​󠀁\u000b ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"\u0007k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" 𝐀'󠀁  \r ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"! ᠎あßABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":"᠎�<\fß​😀>k7m-2qx","normalized":"SSK7M2QX","from":"SSK7M2QX","isRoomCode":false},
+    {"input":" ก²ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=　あé/ А\\ ","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"!　 🇺　􏿿\\😀 𠀀􏿿k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"aא<\u0000ABC234","normalized":"AABC234","from":"AABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=󠀁\fあ   k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"<k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"𝐀�あ 𝐀 ́  󠀁-k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=> ﻿\u0000�'‌ \\k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join='\u0000⁠日.ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"�𝐀𝐀Ⅷ'<\t","normalized":"","from":"","isRoomCode":false},
+    {"input":"\"ก‮!😀< 9 😀⁠k7m-2qx","normalized":"9K7M2QX","from":"9K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=ß\\‌ אABC234","normalized":"HTTPSHABJOINSSABC234","from":"HTTPSHABJOINSSABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\u0007ß' \tא","normalized":"HTTPSHABJOINSS","from":"HTTPSHABJOINSS","isRoomCode":false},
+    {"input":"日\u000b\u0007𠀀- 0a9 ABC234","normalized":"0A9ABC234","from":"0A9ABC234","isRoomCode":false},
+    {"input":"⁠Ⅷ k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\r　","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":" ß𝟘","normalized":"SS","from":"SS","isRoomCode":false},
+    {"input":"' aあא²!­􏿿/ ABC234","normalized":"AABC234","from":"AABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=‮　.\f ","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"https://h/?a=b&join=. あก𠀀\f-ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"󠀁🇺Ⅷ𝐀 \f<\u000b⁠ ","normalized":"","from":"","isRoomCode":false},
+    {"input":"\u0007\u0007﻿","normalized":"","from":"","isRoomCode":false},
+    {"input":"あА!\u0000a\f½-k7m-2qx","normalized":"AK7M2QX","from":"AK7M2QX","isRoomCode":false},
+    {"input":"ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":true},
+    {"input":"ß\f\f́­","normalized":"SS","from":"SS","isRoomCode":false},
+    {"input":"ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":true},
+    {"input":"https://h/?a=b&join= �𝟘'󠀁9","normalized":"HTTPSHABJOIN9","from":"HTTPSHABJOIN9","isRoomCode":false},
+    {"input":"᠎ß٣ Ⅷ.ABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":"\n_\u000b<‍٣9/​ ABC234","normalized":"9ABC234","from":"9ABC234","isRoomCode":false},
+    {"input":"А😀𝟘²!᠎­_﻿⁠𝟘ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":" ​\t \tก󠀁⁠א⁠ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\".\u0000‍_ \t\"","normalized":"","from":"","isRoomCode":false},
+    {"input":"Z","normalized":"Z","from":"Z","isRoomCode":false},
+    {"input":"a_ ​ 𠀀 ­󠀁k7m-2qx","normalized":"AK7M2QX","from":"AK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join= \"  >-Ⅷ","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"<󠀁²\rk7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"½\u0000ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\u0007. 0\rZ9 9ABC234","normalized":"0Z99ABC234","from":"0Z99ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\t>","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"https://h/?a=b&join=0  ! -k7m-2qx","normalized":"HTTPSHABJOIN0K7M2QX","from":"0","isRoomCode":false},
+    {"input":"https://h/?a=b&join=‍⁠𝟘ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"https://h/?a=b&join=А あABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=>あ⁠ \n","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":". 󠀁>.ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\"٣𠀀ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"А\u0000🇺あ \n𝐀","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=-/½日日éABC234","normalized":"HTTPSHABJOINABC234","from":"","isRoomCode":false},
+    {"input":"᠎Zk7m-2qx","normalized":"ZK7M2QX","from":"ZK7M2QX","isRoomCode":false},
+    {"input":"󠀁 ½ \u0000k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=􏿿 _あABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"　Z<Ⅷk7m-2qx","normalized":"ZK7M2QX","from":"ZK7M2QX","isRoomCode":false},
+    {"input":"א\f__󠀁𝟘/٣_٣ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"😀\n","normalized":"","from":"","isRoomCode":false},
+    {"input":"-𠀀𠀀½k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=Z²\r.\n⁠.Ⅷ k7m-2qx","normalized":"HTTPSHABJOINZK7M2QX","from":"Z","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\u0000/ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"<a\u000b　́᠎ 'ABC234","normalized":"AABC234","from":"AABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\\  \\ กß ‮󠀁k7m-2qx","normalized":"HTTPSHABJOINSSK7M2QX","from":"HTTPSHABJOINSSK7M2QX","isRoomCode":false},
+    {"input":"ß‌ABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":"  𝐀日😀 А𠀀‌🇺ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"\u0007󠀁","normalized":"","from":"","isRoomCode":false},
+    {"input":"ⅧאⅧ⁠ ٣  ٣k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"٣ �󠀁𝐀\n","normalized":"","from":"","isRoomCode":false},
+    {"input":"­½Ⅷ ‮⁠　. 0<","normalized":"0","from":"0","isRoomCode":false},
+    {"input":"https://h/?a=b&join=é́‮>ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"　日🇺\t\n!�ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"​🇺 \t𝐀","normalized":"","from":"","isRoomCode":false},
+    {"input":"\"́�\r\f0 กⅧ𝐀!k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":" \u00009²\u0000\t𠀀 >k7m-2qx","normalized":"9K7M2QX","from":"9K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=/᠎ ก日","normalized":"HTTPSHABJOIN","from":"HTTPSHABJOIN","isRoomCode":false},
+    {"input":"🇺","normalized":"","from":"","isRoomCode":false},
+    {"input":"\u000b\tß‌\u0007\u0007𝟘٣日ก𠀀k7m-2qx","normalized":"SSK7M2QX","from":"SSK7M2QX","isRoomCode":false},
+    {"input":" \u0000!-‍\fא²k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" 0 >k7m-2qx","normalized":"0K7M2QX","from":"0K7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=  k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"https://h/?a=b&join=Ź󠀁⁠ é𝟘 >aABC234","normalized":"HTTPSHABJOINZAABC234","from":"Z","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\t\u000b́​k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"\n_\u000b\t<½","normalized":"","from":"","isRoomCode":false},
+    {"input":"0�a","normalized":"0A","from":"0A","isRoomCode":false},
+    {"input":"\u0000 \u0000 -\u0007½ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":" ß\"\"","normalized":"SS","from":"SS","isRoomCode":false},
+    {"input":"-𝐀0😀 \rABC234","normalized":"0ABC234","from":"0ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=�ABC234","normalized":"HTTPSHABJOINABC234","from":"HTTPSHABJOINABC234","isRoomCode":false},
+    {"input":"_ß ABC234","normalized":"SSABC234","from":"SSABC234","isRoomCode":false},
+    {"input":"ß","normalized":"SS","from":"SS","isRoomCode":false},
+    {"input":"🇺 \r--","normalized":"","from":"","isRoomCode":false},
+    {"input":"᠎א²< ABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":" あABC234","normalized":"ABC234","from":"ABC234","isRoomCode":false},
+    {"input":"‮\u000b‌ ‮ ½﻿Ⅷ­a","normalized":"A","from":"A","isRoomCode":false},
+    {"input":"https://h/?a=b&join=Ⅷ﻿>　-/ .a","normalized":"HTTPSHABJOINA","from":"HTTPSHABJOINA","isRoomCode":false},
+    {"input":"﻿󠀁 ²‮�\f🇺\u0007\\","normalized":"","from":"","isRoomCode":false},
+    {"input":"https://h/?a=b&join=\n_\n日Ⅷ\\k7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"😀𠀀᠎\t­'­k7m-2qx","normalized":"K7M2QX","from":"K7M2QX","isRoomCode":false},
+    {"input":"9\"⁠ABC234","normalized":"9ABC234","from":"9ABC234","isRoomCode":false},
+    {"input":"https://h/?a=b&join=½\fあk7m-2qx","normalized":"HTTPSHABJOINK7M2QX","from":"HTTPSHABJOINK7M2QX","isRoomCode":false},
+    {"input":"","normalized":"","from":"","isRoomCode":false},
+    {"input":" \u000b<<9‌\r","normalized":"9","from":"9","isRoomCode":false}
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "format": "ironvale-map-package",
+  "version": 1,
+  "id": "harbor",
+  "name": "Harbor",
+  "tagline": "Fishing town at golden hour",
+  "playable": true,
+  "detailDensity": 1,
+  "assets": [
+    "hdri-harbor-venice-sunset",
+    "pbr-harbor-cobble",
+    "pbr-harbor-plaster-yellow",
+    "pbr-harbor-plaster-white",
+    "pbr-harbor-stone",
+    "pbr-harbor-roof-tiles",
+    "pbr-harbor-planks",
+    "pbr-harbor-blue-planks",
+    "mdl-harbor-barrel",
+    "mdl-harbor-crate",
+    "mdl-harbor-bench"
+  ],
+  "bounds": {
+    "min": [
+      -53,
+      -3,
+      -23
+    ],
+    "max": [
+      53,
+      30,
+      49
+    ]
+  },
+  "collisionBounds": {
+    "min": [
+      -150,
+      -2.5,
+      -156
+    ],
+    "max": [
+      130,
+      141.5135040283203,
+      48.5
+    ]
+  },
+  "spawns": {
+    "player": [
+      {
+        "position": [
+          47.5,
+          0.05,
+          -1.4
+        ],
+        "yaw": 1.5707963267948966
+      },
+      {
+        "position": [
+          45,
+          0.05,
+          -0.4
+        ],
+        "yaw": 1.5707963267948966
+      },
+      {
+        "position": [
+          48.5,
+          0.05,
+          13.2
+        ],
+        "yaw": 1.5707963267948966
+      },
+      {
+        "position": [
+          46,
+          0.05,
+          16.4
+        ],
+        "yaw": 1.5707963267948966
+      }
+    ],
+    "enemy": [
+      {
+        "position": [
+          -47,
+          0.05,
+          15
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -43,
+          0.05,
+          14
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -48,
+          0.05,
+          -1
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -42.5,
+          0.05,
+          0.6
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -25,
+          0.05,
+          -1.6
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -36.75,
+          0.05,
+          6
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          -46,
+          3.11,
+          -19
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -24,
+          3.11,
+          -19.5
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -5,
+          3.11,
+          -19
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          -5.2,
+          0.05,
+          -9.4
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          -26,
+          0.05,
+          30
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          -48.6,
+          0.05,
+          33
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          -29.2,
+          0.05,
+          7.3
+        ],
+        "yaw": -1.5707963267948966
+      },
+      {
+        "position": [
+          15,
+          3.11,
+          -19
+        ],
+        "yaw": 1.5707963267948966
+      }
+    ]
+  },
+  "weather": "clear",
+  "reverb": "street",
+  "interiors": [
+    {
+      "min": [
+        -11.61,
+        0,
+        2.1
+      ],
+      "max": [
+        2.61,
+        3,
+        9.9
+      ],
+      "reverb": "interior",
+      "skyLight": 0.32
+    },
+    {
+      "min": [
+        -35.11,
+        0,
+        2.1
+      ],
+      "max": [
+        -25.39,
+        3,
+        9.9
+      ],
+      "reverb": "interior",
+      "skyLight": 0.32
+    },
+    {
+      "min": [
+        7.5,
+        0,
+        2.4
+      ],
+      "max": [
+        11,
+        2.9,
+        9.6
+      ],
+      "reverb": "interior",
+      "skyLight": 0.32
+    }
+  ],
+  "ambience": [
+    {
+      "sound": "snd-amb-harbor",
+      "volume": 0.6
+    },
+    {
+      "sound": "snd-amb-wind",
+      "volume": 0.16
+    },
+    {
+      "sound": "snd-loop-water-lap",
+      "volume": 0.5,
+      "position": [
+        3,
+        -0.85,
+        32
+      ],
+      "radius": 24
+    },
+    {
+      "sound": "snd-loop-water-lap",
+      "volume": 0.45,
+      "position": [
+        -26,
+        -0.85,
+        28
+      ],
+      "radius": 20
+    },
+    {
+      "sound": "snd-loop-water-lap",
+      "volume": 0.45,
+      "position": [
+        -45.5,
+        -0.85,
+        36
+      ],
+      "radius": 20
+    },
+    {
+      "sound": "snd-loop-water-lap",
+      "volume": 0.4,
+      "position": [
+        29,
+        -0.85,
+        28
+      ],
+      "radius": 20
+    },
+    {
+      "sound": "snd-loop-metal-creak",
+      "volume": 0.3,
+      "position": [
+        -11.4,
+        3.5,
+        10.6
+      ],
+      "radius": 10
+    },
+    {
+      "sound": "snd-loop-birds",
+      "volume": 0.25,
+      "position": [
+        11.3,
+        18,
+        -24
+      ],
+      "radius": 45
+    }
+  ],
+  "lighting": {
+    "hdri": "hdri-harbor-venice-sunset",
+    "hdriRotation": -1.6794930260853276,
+    "skyIntensity": 0.5,
+    "sunDirection": [
+      -0.6609789215299314,
+      0.17364817766693033,
+      0.7300364207942523
+    ],
+    "sunColor": 16756848,
+    "sunIntensity": 8.2,
+    "fog": {
+      "color": 13611682,
+      "density": 0.0033,
+      "sunTint": 16760963,
+      "sunTintStrength": 0.8
+    },
+    "exposure": 0.94,
+    "volumetric": 0.36,
+    "shaftDensity": 1.5,
+    "bloom": 1
+  },
+  "surfaceTable": [
+    "concrete",
+    "cobble",
+    "asphalt",
+    "gravel",
+    "dirt",
+    "grass",
+    "sand",
+    "wood",
+    "metal",
+    "plaster",
+    "glass",
+    "water",
+    "foliage",
+    "flesh"
+  ],
+  "collision": {
+    "triangles": 6976,
+    "boundaryTriangles": 12
+  },
+  "collisionSha256": "731bc0ac842a990fc70de1dba06ecb9f24b09589b1b463e2992aa5afebd222b8",
+  "fixtures": {
+    "file": "fixtures/queries.bin",
+    "raycast": 2500,
+    "los": 2000,
+    "ground": 2000,
+    "fits": 1500,
+    "paths": 2000
+  },
+  "sourceCommit": "14d5266aa968d0c7d66ae855ceb97a74a924a02b"
+}

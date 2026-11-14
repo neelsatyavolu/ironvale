@@ -1,0 +1,336 @@
+{
+  "format": "ironvale-map-package",
+  "version": 1,
+  "id": "railyard",
+  "name": "Railyard",
+  "tagline": "Container yard in the rain at dusk",
+  "playable": true,
+  "detailDensity": 1,
+  "assets": [
+    "hdri-railyard",
+    "pbr-railyard-asphalt",
+    "pbr-railyard-concrete",
+    "pbr-railyard-container",
+    "pbr-railyard-cladding",
+    "pbr-railyard-wall",
+    "pbr-railyard-ballast",
+    "mdl-railyard-barrel",
+    "mdl-railyard-barrel-rusty",
+    "mdl-railyard-barrier",
+    "mdl-railyard-propane"
+  ],
+  "bounds": {
+    "min": [
+      -43,
+      -1,
+      -47
+    ],
+    "max": [
+      43,
+      14,
+      50.5
+    ]
+  },
+  "collisionBounds": {
+    "min": [
+      -52,
+      -1,
+      -46
+    ],
+    "max": [
+      54,
+      28.299999237060547,
+      58
+    ]
+  },
+  "spawns": {
+    "player": [
+      {
+        "position": [
+          -3,
+          0.05,
+          45.5
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          -1.9,
+          0.05,
+          47.3
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          9.8,
+          0.05,
+          45.5
+        ],
+        "yaw": 0
+      },
+      {
+        "position": [
+          12.2,
+          0.05,
+          46.8
+        ],
+        "yaw": 0
+      }
+    ],
+    "enemy": [
+      {
+        "position": [
+          -31,
+          0.05,
+          -38
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          -9,
+          0.05,
+          -41
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          4,
+          0.05,
+          -36
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          20,
+          0.05,
+          -40
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          37,
+          0.05,
+          -41
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          -30,
+          0.05,
+          -17
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          -21.5,
+          0.05,
+          -7
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          -7,
+          0.05,
+          -20
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          12.2,
+          0.05,
+          -19
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          4,
+          0.05,
+          -22
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          26.4,
+          0.05,
+          -26
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          36.5,
+          0.05,
+          -6
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          -15.8,
+          0.05,
+          -3
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "position": [
+          19.6,
+          0.05,
+          -14
+        ],
+        "yaw": 3.141592653589793
+      }
+    ]
+  },
+  "weather": "rain",
+  "reverb": "industrial",
+  "interiors": [
+    {
+      "min": [
+        -42,
+        0,
+        -24
+      ],
+      "max": [
+        -18,
+        10.6,
+        20
+      ],
+      "reverb": "industrial",
+      "skyLight": 0.22
+    },
+    {
+      "min": [
+        35.2,
+        0,
+        9
+      ],
+      "max": [
+        41.2,
+        2.75,
+        18.5
+      ],
+      "reverb": "interior",
+      "skyLight": 0.28
+    }
+  ],
+  "ambience": [
+    {
+      "sound": "snd-amb-rain",
+      "volume": 0.6
+    },
+    {
+      "sound": "snd-amb-harbor",
+      "volume": 0.45
+    },
+    {
+      "sound": "snd-amb-industrial",
+      "volume": 0.28
+    },
+    {
+      "sound": "snd-loop-generator",
+      "volume": 0.7,
+      "position": [
+        40.2,
+        0.8,
+        21.6
+      ],
+      "radius": 22
+    },
+    {
+      "sound": "snd-loop-generator",
+      "volume": 0.55,
+      "position": [
+        -38.5,
+        0.8,
+        -43
+      ],
+      "radius": 18
+    },
+    {
+      "sound": "snd-loop-water-lap",
+      "volume": 0.6,
+      "position": [
+        2,
+        -1.5,
+        -47
+      ],
+      "radius": 30
+    },
+    {
+      "sound": "snd-loop-metal-creak",
+      "volume": 0.5,
+      "position": [
+        4,
+        11,
+        6
+      ],
+      "radius": 28
+    }
+  ],
+  "lighting": {
+    "hdri": "hdri-railyard",
+    "hdriRotation": 2.3031364809317174,
+    "skyIntensity": 0.42,
+    "sunDirection": [
+      -0.10313082499872193,
+      0.16298157364765814,
+      -0.98122425550249
+    ],
+    "sunColor": 16762516,
+    "sunIntensity": 5.6,
+    "fog": {
+      "color": 5660779,
+      "density": 0.0125,
+      "sunTint": 13808016,
+      "sunTintStrength": 0.8,
+      "heightFalloff": 0.03,
+      "baseHeight": 0
+    },
+    "exposure": 0.92,
+    "volumetric": 0.62,
+    "shaftDensity": 3,
+    "bloom": 0.8
+  },
+  "surfaceTable": [
+    "concrete",
+    "cobble",
+    "asphalt",
+    "gravel",
+    "dirt",
+    "grass",
+    "sand",
+    "wood",
+    "metal",
+    "plaster",
+    "glass",
+    "water",
+    "foliage",
+    "flesh"
+  ],
+  "collision": {
+    "triangles": 4332,
+    "boundaryTriangles": 48
+  },
+  "collisionSha256": "3eabfe4495f9cc19633ccfaf0e472eb28a81fe805ace33c08d6849d74dae2c2e",
+  "fixtures": {
+    "file": "fixtures/queries.bin",
+    "raycast": 2500,
+    "los": 2000,
+    "ground": 2000,
+    "fits": 1500,
+    "paths": 2000
+  },
+  "sourceCommit": "14d5266aa968d0c7d66ae855ceb97a74a924a02b"
+}
