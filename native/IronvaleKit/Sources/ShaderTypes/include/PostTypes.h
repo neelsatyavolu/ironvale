@@ -24,7 +24,7 @@ typedef struct {
     simd_float2 sceneSize;                      // scene pass size in pixels
     float far;
     float time;
-    simd_float2 jitterUV;                       // jitter of this frame in uv units (subtract to unjitter)
+    simd_float2 jitterUV;                       // the projection's sub-pixel offset this frame, in uv units
     uint32_t frameIndex;
     float _pad0;
 } IVPostView;
@@ -110,6 +110,16 @@ typedef struct {
     float ssrMips;                 // blur mip count - 1 (5)
     uint32_t flags;                // IV_POST_* bits
 } IVPostCompositeParams;
+
+/// TRAANode uniforms the frame view does not carry (Shaders/PostTRAA.metal).
+typedef struct {
+    simd_float4x4 previousCameraWorld;          // last frame's view -> world
+    simd_float4x4 previousInverseProjection;    // last frame's, as rendered (jittered)
+    uint32_t restart;                           // 1: no history yet (first frame, or a resize)
+    uint32_t subpixelCorrection;                // TRAANode.useSubpixelCorrection
+    float _pad0;
+    float _pad1;
+} IVTRAAParams;
 
 /// Final display pass: renderOutput (ACES Filmic + sRGB), vignette, film grain.
 typedef struct {

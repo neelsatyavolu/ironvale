@@ -7,8 +7,8 @@
 // milliseconds to stderr (the low percentiles are the useful ones on a GPU shared with other processes),
 // and the 99th percentile, which shows which pass the slow frames come from.
 // Work encoded outside the chain's passes is timed with markers (`mark`): "scene tail" is the part of the
-// scene pass still running when the chain starts, "MetalFX temporal" the scaler's own encoders. The
-// scene's full cost is the frame's GPU time (--gpu-log) minus the listed passes after "scene tail".
+// scene pass still running when the chain starts. The scene's full cost is the frame's GPU time
+// (--gpu-log) minus the listed passes after "scene tail".
 import Foundation
 import Metal
 import Synchronization
@@ -77,7 +77,7 @@ public final class PostProfiler {
         a.endOfEncoderSampleIndex = index + 1
     }
 
-    /// Ends a stretch of GPU work encoded outside the chain's own passes (the scene, MetalFX) under
+    /// Ends a stretch of GPU work encoded outside the chain's own passes (the scene) under
     /// `label`: a one-texel copy out of `after`, which therefore runs once the work writing it is done.
     func mark(_ commandBuffer: any MTLCommandBuffer, label: String, after texture: any MTLTexture) {
         serialize(commandBuffer)

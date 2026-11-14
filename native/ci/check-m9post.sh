@@ -5,8 +5,8 @@
 #   3. web reference captures of Railyard at the 5 poses with every post effect on
 #      (?autostart&pose=...&q=high&no=grain&freeze: GTAO, SSR, godrays, TRAA, bloom, ACES, vignette;
 #      ?freeze holds shader clocks, FX and map animations still so the captures are deterministic)
-#   4. native captures with the M9 post chain (--q high --no grain --freeze: MetalFX Temporal in place
-#      of TRAA) and SSIM against the web; gate: every pose >= 0.93
+#   4. native captures with the M9 post chain (--q high --no grain --freeze, with the TRAA port) and
+#      SSIM against the web; gate: every pose >= 0.93
 #   5. a 60 s offscreen flythrough with the High preset at the display's native resolution, with the
 #      player's Target FPS set to 120 and dynamic resolution on (--target-fps 120 --dynamic-resolution
 #      on; --q alone turns dynamic resolution off, as the web's ?q= does); gate: 1% low >= 120 fps.

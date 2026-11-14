@@ -1,7 +1,7 @@
 // Render targets of the M9 post chain at one scene size: the scene MRT (pipeline.ts mrt()), the
-// half- or full-resolution effect targets with three's sizes, the composite and camera motion the
-// temporal pass reads, and the bloom mip chain (sized from the scene size, as the web blooms before
-// the canvas is upscaled).
+// half- or full-resolution effect targets with three's sizes, the composite, TRAA's ping-ponged history
+// (colour and depth), and the bloom mip chain (sized from the scene size, as the web blooms before the
+// canvas is upscaled).
 import Metal
 
 @MainActor
@@ -23,9 +23,15 @@ final class PostTargets {
     let godrays: (any MTLTexture)?
     let shaftsH: (any MTLTexture)?
     let shaftsV: (any MTLTexture)?
-    /// The composite and camera motion without MetalFX Temporal (PostTemporal owns them otherwise).
-    let composite: (any MTLTexture)?
-    let motion: (any MTLTexture)?
+    /// The HDR composite (TRAA's beauty input, or the HDR colour without TRAA).
+    let composite: any MTLTexture
+    /// TRAA's history pairs (rgba16Float colour, r32Float reverse-Z depth): one is read while the other
+    /// is written, then they swap. Empty without TRAA.
+    private let traaColor: [any MTLTexture]
+    private let traaDepth: [any MTLTexture]
+    private var traaWrite = 0
+    /// The command buffer that cleared this set on another queue (`warm`); waited for before first use.
+    var warmedBy: (any MTLCommandBuffer)?
     private var bloomChain: (width: Int, height: Int, chain: BloomChain)?
     private let device: any MTLDevice
 
@@ -41,7 +47,7 @@ final class PostTargets {
     static let ssrBlock = 16
     static let ssrCoarse = 64
 
-    init(device: any MTLDevice, width: Int, height: Int, settings: PostSettings, composite: Bool) throws {
+    init(device: any MTLDevice, width: Int, height: Int, settings: PostSettings, traa: Bool) throws {
         self.device = device
         func make(_ format: MTLPixelFormat, _ w: Int, _ h: Int, _ label: String, levels: Int = 1) throws -> any MTLTexture {
             try Self.texture(device: device, format: format, width: w, height: h, label: label, levels: levels)
@@ -102,8 +108,23 @@ final class PostTargets {
             shaftsH = nil
             shaftsV = nil
         }
-        self.composite = composite ? try make(.rgba16Float, width, height, "post composite") : nil
-        motion = composite ? try make(.rg16Float, width, height, "camera motion") : nil
+        composite = try make(.rgba16Float, width, height, "post composite")
+        traaColor = traa ? try (0..<2).map { try make(.rgba16Float, width, height, "TRAA history \($0)") } : []
+        traaDepth = traa ? try (0..<2).map { try make(.r32Float, width, height, "TRAA depth \($0)") } : []
+    }
+
+    /// The history to read this frame and the one to write (which the next frame reads).
+    func nextTRAAHistory() -> (read: (color: any MTLTexture, depth: any MTLTexture),
+                               write: (color: any MTLTexture, depth: any MTLTexture)) {
+        let w = traaWrite, r = 1 - w
+        traaWrite = r
+        return ((traaColor[r], traaDepth[r]), (traaColor[w], traaDepth[w]))
+    }
+
+    /// Blocks until the clears of `warm` have finished, so the frame's queue never races them.
+    func waitForWarm() {
+        warmedBy?.waitUntilCompleted()
+        warmedBy = nil
     }
 
     func matches(width: Int, height: Int) -> Bool { scene.width == width && scene.height == height }
@@ -125,14 +146,17 @@ final class PostTargets {
         return chain
     }
 
-    /// Clears every render target of this set and of its bloom chain once, on `commandBuffer`, so their
-    /// memory is resident before a frame first draws into them (a dynamic resolution step to a new size
-    /// otherwise pays the first touch of ~100 MB inside a frame).
+    /// Clears every render target of this set and of its bloom chain once, on `commandBuffer` (of a queue
+    /// beside the frames'), so their memory is resident before a frame first draws into them (a dynamic
+    /// resolution step to a new size otherwise pays the first touch of ~100 MB inside a frame). The set
+    /// keeps `commandBuffer`; `waitForWarm` orders its first use after it.
     func warm(device: any MTLDevice, commandBuffer: any MTLCommandBuffer) throws {
         let chain = try bloom(device: device, width: scene.width, height: scene.height)
         let own: [(any MTLTexture)?] = [scene.color, scene.normal, scene.metalRough, scene.depth, ao, ssr, godrays, shaftsH,
-                                        shaftsV, composite, motion]
-        Self.touch(own.compactMap { $0 } + [chain.bright] + chain.horizontal + chain.vertical, commandBuffer: commandBuffer)
+                                        shaftsV, composite]
+        Self.touch(own.compactMap { $0 } + traaColor + traaDepth + [chain.bright] + chain.horizontal + chain.vertical,
+                   commandBuffer: commandBuffer)
+        warmedBy = commandBuffer
     }
 
     /// One clearing render pass per render-target texture in `textures`.

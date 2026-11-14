@@ -34,7 +34,7 @@ private struct DynResFixture: Decodable {
     #expect(PostSettings.parse(["--map", "railyard"]) == nil)
     let high = PostSettings.parse(["--q", "high", "--no", "grain"])!
     #expect(high.renderScale == 0.85 && high.reflections && high.ambientOcclusion && high.volumetricLight && high.bloom)
-    #expect(high.antiAliasing == .temporal && !high.filmGrain && !high.dynamicResolution)
+    #expect(high.antiAliasing == .traa && !high.filmGrain && !high.dynamicResolution)
     #expect(high.aoSamples == 12 && high.godraySteps == 48 && high.aoResolutionScale == 0.5)
     let medium = PostSettings.preset(.medium)
     #expect(medium.aoSamples == 8 && medium.godraySteps == 32 && !medium.reflections && medium.dynamicResolution)

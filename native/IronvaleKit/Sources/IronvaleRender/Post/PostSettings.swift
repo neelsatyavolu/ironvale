@@ -5,8 +5,8 @@ import Foundation
 
 public struct PostSettings: Sendable, Equatable {
     public enum Tier: String, Sendable, CaseIterable { case low, medium, high, ultra }
-    /// The web's 'traa' becomes MetalFX Temporal (PLAN.md 3.3); 'fxaa' is not ported yet.
-    public enum AntiAliasing: String, Sendable { case temporal, fxaa, none }
+    /// The web's choices; 'traa' is ported (PostTRAA), 'fxaa' is not ported yet.
+    public enum AntiAliasing: String, Sendable { case traa, fxaa, none }
 
     public var tier: Tier
     /// Scene pass size relative to the output (the web's renderScale x devicePixelRatio).
@@ -45,13 +45,13 @@ public struct PostSettings: Sendable, Equatable {
                          volumetricLight: false, bloom: false, antiAliasing: .fxaa, filmGrain: false)
         case .medium:
             PostSettings(tier: tier, renderScale: 0.75, shadowMapSize: 2048, ambientOcclusion: true, reflections: false,
-                         volumetricLight: true, bloom: true, antiAliasing: .temporal, filmGrain: true)
+                         volumetricLight: true, bloom: true, antiAliasing: .traa, filmGrain: true)
         case .high:
             PostSettings(tier: tier, renderScale: 0.85, shadowMapSize: 4096, ambientOcclusion: true, reflections: true,
-                         volumetricLight: true, bloom: true, antiAliasing: .temporal, filmGrain: true)
+                         volumetricLight: true, bloom: true, antiAliasing: .traa, filmGrain: true)
         case .ultra:
             PostSettings(tier: tier, renderScale: 1, shadowMapSize: 4096, ambientOcclusion: true, reflections: true,
-                         volumetricLight: true, bloom: true, antiAliasing: .temporal, filmGrain: true)
+                         volumetricLight: true, bloom: true, antiAliasing: .traa, filmGrain: true)
         }
     }
 

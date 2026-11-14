@@ -1,9 +1,8 @@
 // The frame graph glue of src/render/pipeline.ts (commit 1aca0b7), around the passes in the other
 // Post*.metal files:
 //   ivPostCompositeFragment: colour x GTAO, + SSR (roughness-selected blur mip) x its alpha, mixed
-//     toward the sun colour by the blurred shafts with the 110 - 320 m near-field fade; also writes
-//     the camera motion MetalFX Temporal needs (the web's velocity MRT, here reprojected from depth;
-//     the map is static).
+//     toward the sun colour by the blurred shafts with the 110 - 320 m near-field fade. It is TRAA's
+//     beauty input (PostTRAA.metal, which reprojects the camera motion itself).
 //   ivPostOutputFragment: + bloom, renderOutput (ACES Filmic with exposure, sRGB), vignette, then
 //     film grain (three r187 examples/jsm/tsl/display/FilmNode.js, intensity 0.055).
 #include <metal_stdlib>
@@ -11,24 +10,9 @@
 #include "PostCommon.h"
 using namespace metal;
 
-struct CompositeOut {
-    float4 color [[color(0)]];
-    float2 motion [[color(1)]];
-};
-
-/// With MetalFX Temporal on, the composite also copies the scene depth: the composite, motion and
-/// depth targets are then allocated once at the largest scene size and this pass draws into their
-/// top-left corner at the current (dynamic) scene size, so the scaler keeps one set of inputs and its
-/// history while the resolution changes.
-struct CompositeTemporalOut {
-    float4 color [[color(0)]];
-    float2 motion [[color(1)]];
-    float depth [[depth(any)]];
-};
-
-static CompositeOut composite(float2 uv, float depth, constant IVPostView &view, constant IVPostCompositeParams &params,
-                              texture2d<float> sceneColor, texture2d<float> metalRoughTex, texture2d<float> aoTex,
-                              texture2d<float> ssrTex, texture2d<float> shaftsTex) {
+static float4 composite(float2 uv, float depth, constant IVPostView &view, constant IVPostCompositeParams &params,
+                        texture2d<float> sceneColor, texture2d<float> metalRoughTex, texture2d<float> aoTex,
+                        texture2d<float> ssrTex, texture2d<float> shaftsTex) {
     constexpr sampler trilinear(filter::linear, mip_filter::linear, address::clamp_to_edge);
     float4 color = sceneColor.sample(ivPostNearest, uv);
 
@@ -45,48 +29,20 @@ static CompositeOut composite(float2 uv, float depth, constant IVPostView &view,
         float amount = shaftsTex.sample(ivPostLinear, uv).r * params.volumetric * nearField;
         color.rgb = mix(color.rgb, params.shaftColor, amount);
     }
-
-    // Camera motion in uv units, from this pixel to where its surface was last frame (jitter removed).
-    float3 viewPosition = ivViewPosition(uv, depth, view.inverseProjection);
-    float4 world = view.cameraWorld * float4(viewPosition, 1.0);
-    float2 current = ivScreenFromClip(view.viewProjectionNoJitter * world);
-    float2 previous = ivScreenFromClip(view.previousViewProjectionNoJitter * world);
-
-    CompositeOut out;
-    out.color = color;
-    out.motion = previous - current;
-    return out;
+    return color;
 }
 
-fragment CompositeOut ivPostCompositeFragment(PostVaryings in [[stage_in]],
-                                              constant IVPostView &view [[buffer(0)]],
-                                              constant IVPostCompositeParams &params [[buffer(1)]],
-                                              texture2d<float> sceneColor [[texture(0)]],
-                                              depth2d<float> depthTex [[texture(1)]],
-                                              texture2d<float> metalRoughTex [[texture(2)]],
-                                              texture2d<float> aoTex [[texture(3)]],
-                                              texture2d<float> ssrTex [[texture(4)]],
-                                              texture2d<float> shaftsTex [[texture(5)]]) {
+fragment float4 ivPostCompositeFragment(PostVaryings in [[stage_in]],
+                                        constant IVPostView &view [[buffer(0)]],
+                                        constant IVPostCompositeParams &params [[buffer(1)]],
+                                        texture2d<float> sceneColor [[texture(0)]],
+                                        depth2d<float> depthTex [[texture(1)]],
+                                        texture2d<float> metalRoughTex [[texture(2)]],
+                                        texture2d<float> aoTex [[texture(3)]],
+                                        texture2d<float> ssrTex [[texture(4)]],
+                                        texture2d<float> shaftsTex [[texture(5)]]) {
     return composite(in.uv, depthTex.sample(ivPostNearest, in.uv), view, params, sceneColor, metalRoughTex, aoTex,
                      ssrTex, shaftsTex);
-}
-
-fragment CompositeTemporalOut ivPostCompositeTemporalFragment(PostVaryings in [[stage_in]],
-                                                              constant IVPostView &view [[buffer(0)]],
-                                                              constant IVPostCompositeParams &params [[buffer(1)]],
-                                                              texture2d<float> sceneColor [[texture(0)]],
-                                                              depth2d<float> depthTex [[texture(1)]],
-                                                              texture2d<float> metalRoughTex [[texture(2)]],
-                                                              texture2d<float> aoTex [[texture(3)]],
-                                                              texture2d<float> ssrTex [[texture(4)]],
-                                                              texture2d<float> shaftsTex [[texture(5)]]) {
-    float depth = depthTex.sample(ivPostNearest, in.uv);
-    CompositeOut c = composite(in.uv, depth, view, params, sceneColor, metalRoughTex, aoTex, ssrTex, shaftsTex);
-    CompositeTemporalOut out;
-    out.color = c.color;
-    out.motion = c.motion;
-    out.depth = depth;
-    return out;
 }
 
 /// FilmNode: base + base x clamp(rand(fract(uv + time)) + 0.1, 0, 1), mixed by the intensity.

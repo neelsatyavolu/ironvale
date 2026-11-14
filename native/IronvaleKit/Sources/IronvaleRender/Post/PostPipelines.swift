@@ -14,9 +14,8 @@ struct PostPipelines {
     let godrays: any MTLRenderPipelineState
     let bilateral: any MTLRenderPipelineState
     let composite: any MTLRenderPipelineState
-    /// The composite into MetalFX Temporal's inputs, which also writes depth (PostTemporal).
-    let compositeTemporal: any MTLRenderPipelineState
-    let writeDepth: any MTLDepthStencilState
+    /// TRAA resolve into the history colour and depth (PostTRAA).
+    let traa: any MTLRenderPipelineState
     let bloomHighPass: any MTLRenderPipelineState
     let bloomBlur: any MTLRenderPipelineState
     let bloomComposite: any MTLRenderPipelineState
@@ -38,16 +37,8 @@ struct PostPipelines {
         ssrBlur = try Self.kernel(device: device, library: library, "ivSSRBlurKernel")
         godrays = try make("ivGodraysFragment", [.rgba8Unorm])
         bilateral = try make("ivBilateralBlurFragment", [.rgba8Unorm])
-        composite = try make("ivPostCompositeFragment", [.rgba16Float, .rg16Float])
-        compositeTemporal = try Self.pipeline(device: device, library: library, fragment: "ivPostCompositeTemporalFragment",
-                                              formats: [.rgba16Float, .rg16Float], depth: .depth32Float)
-        let depthState = MTLDepthStencilDescriptor()
-        depthState.depthCompareFunction = .always
-        depthState.isDepthWriteEnabled = true
-        guard let writeDepth = device.makeDepthStencilState(descriptor: depthState) else {
-            throw RenderError.allocation("post depth state")
-        }
-        self.writeDepth = writeDepth
+        composite = try make("ivPostCompositeFragment", [.rgba16Float])
+        traa = try make("ivTRAAFragment", [.rgba16Float, .r32Float])
         bloomHighPass = try make("ivBloomHighPassFragment", [.rgba16Float])
         bloomBlur = try make("ivBloomBlurFragment", [.rgba16Float])
         bloomComposite = try make("ivBloomCompositeFragment", [.rgba16Float])
@@ -67,7 +58,7 @@ struct PostPipelines {
     }
 
     private static func pipeline(device: any MTLDevice, library: any MTLLibrary, fragment: String,
-                                 formats: [MTLPixelFormat], depth: MTLPixelFormat = .invalid) throws -> any MTLRenderPipelineState {
+                                 formats: [MTLPixelFormat]) throws -> any MTLRenderPipelineState {
         guard let vertex = library.makeFunction(name: "ivPostVertex") else { throw RenderError.missingFunction("ivPostVertex") }
         guard let f = library.makeFunction(name: fragment) else { throw RenderError.missingFunction(fragment) }
         let d = MTLRenderPipelineDescriptor()
@@ -75,7 +66,6 @@ struct PostPipelines {
         d.vertexFunction = vertex
         d.fragmentFunction = f
         for (i, format) in formats.enumerated() { d.colorAttachments[i].pixelFormat = format }
-        d.depthAttachmentPixelFormat = depth
         return try device.makeRenderPipelineState(descriptor: d)
     }
 
@@ -147,7 +137,7 @@ enum PostKernels {
     static let temporalRotations: [Float] = [60, 300, 180, 240, 120, 0]
     static let spatialOffsets: [Float] = [0, 0.5, 0.25, 0.75]
 
-    /// Radical inverse in `base`, for the sub-pixel jitter sequence.
+    /// Radical inverse in `base` (TAAUtils halton), for TRAA's sub-pixel jitter sequence.
     static func halton(_ index: Int, _ base: Int) -> Float {
         var f: Float = 1, r: Float = 0, i = index
         while i > 0 {

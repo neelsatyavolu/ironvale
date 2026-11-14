@@ -1,7 +1,7 @@
 // The M9 post frame graph (PLAN.md 3.3), ported from src/render/pipeline.ts at commit 1aca0b7:
 //   scene MRT (colour, packed view normal, metal/rough, depth) -> GTAO -> SSR -> godrays + bilateral
-//   blur -> composite (+ camera motion) -> MetalFX Temporal (for TRAA, at the render-scale size) ->
-//   bloom -> ACES tone map, vignette, film grain, upscaled to the output.
+//   blur -> composite -> TRAA (at the render-scale x dynamic size, PostTRAA) -> bloom -> ACES tone map,
+//   vignette, film grain, upscaled to the output.
 // The chain owns the scene targets so it can resize them for the render scale and dynamic
 // resolution; the map renderer draws into `frame.targets` and then calls `encode`.
 import Metal
@@ -46,15 +46,15 @@ public final class PostChain {
     /// What the scene pass needs for one frame.
     public struct Frame {
         public let targets: SceneTargets
-        /// Sub-pixel jitter in scene pixels (x right, y down); zero without the temporal pass.
+        /// TRAA's sub-pixel view offset in scene pixels (x right, y down); zero without TRAA.
         public let jitterPixels: SIMD2<Float>
 
-        /// Shifts `projection` by the jitter (a perspective projection: clip.w = -z).
+        /// `projection` with the view offset, as three's camera.setViewOffset(w, h, jitter.x, jitter.y, w, h)
+        /// shifts its projection (a perspective projection: clip.w = -z).
         public func jittered(_ projection: simd_float4x4) -> simd_float4x4 {
             var p = projection
-            let ndc = SIMD2(2 * jitterPixels.x / Float(targets.width), -2 * jitterPixels.y / Float(targets.height))
-            p.columns.2.x -= ndc.x
-            p.columns.2.y -= ndc.y
+            p.columns.2.x += 2 * jitterPixels.x / Float(targets.width)
+            p.columns.2.y -= 2 * jitterPixels.y / Float(targets.height)
             return p
         }
     }
@@ -89,33 +89,30 @@ public final class PostChain {
     static let bloomMips = 5
     static let bloomKernels = [6, 10, 14, 18, 22]
     static let minRenderScale: Float = 0.5
-    /// Length of the sub-pixel jitter cycle of the temporal pass.
-    public static let jitterPhases = PostTemporal.phases
+    /// Length of TRAA's sub-pixel jitter cycle.
+    public static let jitterPhases = PostTRAA.phases
 
     public let settings: PostSettings
     public let lighting: Lighting
     public private(set) var dynamicResolution = DynamicResolution()
     private let device: any MTLDevice
     private var pipelines: PostPipelines
-    private let temporal: PostTemporal?
+    private let traa: PostTRAA?
     private var targets: PostTargets?
     /// Target sets of other scene sizes, most recently used first: the previous size (dynamic resolution
-    /// often probes one step up and comes back) and, with MetalFX, the sizes one step either side,
-    /// allocated and cleared ahead of a step so it neither reallocates nor first-touches ~100 MB of
+    /// often probes one step up and comes back) and, with dynamic resolution, the sizes one step either
+    /// side, allocated and cleared ahead of a step so it neither reallocates nor first-touches ~100 MB of
     /// targets in the middle of a run.
     private var keptTargets: [PostTargets] = []
     static let keptTargetSets = 3
-    /// Clears ahead-of-time target sets beside the frames.
+    /// Clears ahead-of-time target sets beside the frames; a set waits for its clear before first use
+    /// (PostTargets.waitForWarm), so the two queues never touch a set at the same time.
     private lazy var warmQueue: (any MTLCommandQueue)? = {
         let queue = device.makeCommandQueue()
         queue?.label = "post warm-up"
         return queue
     }()
     private var frameIndex = 0
-    /// Output size of the previous frame (dynamic resolution waits for a scaler only at a steady output size).
-    private var lastOutput: PostTemporal.Size?
-    /// The dynamic multiplier of the scene size being rendered (it lags the controller while a scaler builds).
-    private var renderedScale = 1.0
     private var previousViewProjection: simd_float4x4?
     /// Per-pass GPU timer (IV_POST_PROFILE=1); the map renderer shares it for the shadow and scene passes.
     public let profiler: PostProfiler?
@@ -126,8 +123,7 @@ public final class PostChain {
         self.settings = settings
         self.lighting = lighting
         pipelines = try PostPipelines(device: device, library: library)
-        // The output pass tone maps colour x exposure / 0.6 (PostCommon.h ivACESFilmic).
-        temporal = settings.antiAliasing == .temporal ? try PostTemporal(device: device, exposure: lighting.exposure / 0.6) : nil
+        traa = settings.antiAliasing == .traa ? PostTRAA() : nil
         self.profiler = profiler
     }
 
@@ -151,52 +147,35 @@ public final class PostChain {
 
     /// Starts a frame for an output of the given size: (re)allocates the scene targets and picks the jitter.
     public func beginFrame(outputWidth: Int, outputHeight: Int) throws -> Frame {
-        var size = sceneSize(outputWidth: outputWidth, outputHeight: outputHeight)
-        if let temporal, settings.dynamicResolution {
-            size = temporalSize(temporal, wanted: size, outputWidth: outputWidth, outputHeight: outputHeight)
-        }
+        let size = sceneSize(outputWidth: outputWidth, outputHeight: outputHeight)
         if targets?.matches(width: size.width, height: size.height) != true {
             let next = try takeTargets(width: size.width, height: size.height)
             if let current = targets { keep(current) }
             targets = next
+            // A kept set's history is from an earlier stretch at its size: start over, as TRAANode does on
+            // a resize.
+            traa?.restart()
         }
-        let jitter = temporal == nil ? .zero : PostTemporal.jitter(frame: frameIndex)
+        if settings.dynamicResolution {
+            // DynamicResolution's next steps from the current multiplier.
+            let scale = dynamicResolution.scale, step = DynamicResolution.resolutionStep
+            for neighbour in [max(dynamicFloor, scale - step), min(1, scale + step)] where neighbour != scale {
+                let n = Self.size(outputWidth, outputHeight, scale: Double(settings.renderScale) * neighbour)
+                prepareTargets(width: n.width, height: n.height)
+            }
+        }
+        let jitter = traa == nil ? .zero : PostTRAA.jitter(frame: frameIndex)
         return Frame(targets: targets!.scene, jitterPixels: jitter)
-    }
-
-    /// The scene size to render with dynamic resolution and MetalFX: `wanted` once its scaler is built,
-    /// until then the current size (PostTemporal builds scalers in the background). Also starts building
-    /// the sizes one dynamic step either side of the one rendered. An output resize switches at once.
-    private func temporalSize(_ temporal: PostTemporal, wanted: (width: Int, height: Int), outputWidth: Int,
-                              outputHeight: Int) -> (width: Int, height: Int) {
-        let output = PostTemporal.Size(width: outputWidth, height: outputHeight)
-        defer { lastOutput = output }
-        let wantedSize = PostTemporal.Size(width: wanted.width, height: wanted.height)
-        var size = wanted
-        if lastOutput == output, temporal.currentSize != nil, !temporal.isReady(wantedSize) {
-            temporal.prepare(wantedSize)
-            size = (temporal.currentSize!.width, temporal.currentSize!.height)
-        } else {
-            renderedScale = dynamicResolution.scale
-        }
-        // DynamicResolution's next steps from the rendered multiplier.
-        let step = DynamicResolution.resolutionStep
-        for neighbour in [max(dynamicFloor, renderedScale - step), min(1, renderedScale + step)] where neighbour != renderedScale {
-            let n = Self.size(outputWidth, outputHeight, scale: Double(settings.renderScale) * neighbour)
-            let neighbourSize = PostTemporal.Size(width: n.width, height: n.height)
-            temporal.prepare(neighbourSize)
-            // Once its scaler is ready, the step's targets too (the scaler can take most of a second).
-            if temporal.isReady(neighbourSize) { prepareTargets(width: n.width, height: n.height) }
-        }
-        return size
     }
 
     /// The kept target set of this size (removed from the kept list), or a new one.
     private func takeTargets(width: Int, height: Int) throws -> PostTargets {
         if let i = keptTargets.firstIndex(where: { $0.matches(width: width, height: height) }) {
-            return keptTargets.remove(at: i)
+            let set = keptTargets.remove(at: i)
+            set.waitForWarm()
+            return set
         }
-        return try PostTargets(device: device, width: width, height: height, settings: settings, composite: temporal == nil)
+        return try PostTargets(device: device, width: width, height: height, settings: settings, traa: traa != nil)
     }
 
     private func keep(_ set: PostTargets) {
@@ -208,8 +187,7 @@ public final class PostChain {
     private func prepareTargets(width: Int, height: Int) {
         guard targets?.matches(width: width, height: height) != true,
               !keptTargets.contains(where: { $0.matches(width: width, height: height) }),
-              let set = try? PostTargets(device: device, width: width, height: height, settings: settings,
-                                         composite: temporal == nil),
+              let set = try? PostTargets(device: device, width: width, height: height, settings: settings, traa: traa != nil),
               let commandBuffer = warmQueue?.makeCommandBuffer() else { return }
         commandBuffer.label = "post warm-up"
         guard (try? set.warm(device: device, commandBuffer: commandBuffer)) != nil else { return }
@@ -279,8 +257,8 @@ public final class PostChain {
             flags |= IV_POST_AO
             var params = IVGTAOParams(
                 resolution: SIMD2(Float(ao.width), Float(ao.height)), radius: 0.6, thickness: 1.2,
-                temporalDirection: temporal != nil ? PostKernels.temporalRotations[frameIndex % 6] / 360 : 0,
-                temporalOffset: temporal != nil ? PostKernels.spatialOffsets[frameIndex % 4] : 1,
+                temporalDirection: traa != nil ? PostKernels.temporalRotations[frameIndex % 6] / 360 : 0,
+                temporalOffset: traa != nil ? PostKernels.spatialOffsets[frameIndex % 4] : 1,
                 scale: 1, halfResolution: ao.width < scene.width ? 1 : 0, samples: settings.aoSamples,
                 _pad0: 0, _pad1: 0, _pad2: 0)
             PostPipelines.draw(commandBuffer, label: "GTAO", pipeline: pipelines.gtao, targets: [ao],
@@ -302,7 +280,7 @@ public final class PostChain {
                           rays: rays, blurH: blurH, blurV: blurV)
         }
 
-        // Composite at the scene size, with camera motion for the temporal pass.
+        // Composite at the scene size.
         let shaft = lighting.sunColor * (lighting.sunIntensity * 0.22)
         var composite = IVPostCompositeParams(shaftColor: shaft, volumetric: lighting.volumetric,
                                               shaftFadeStart: Self.shaftFadeStart, shaftFadeEnd: Self.shaftFadeEnd,
@@ -318,18 +296,13 @@ public final class PostChain {
             e.setFragmentTexture(t.shaftsV ?? scene.color, index: 5)
         }
 
-        var hdr: any MTLTexture
-        if let temporal {
-            // Resolved at the scene size; the output pass upscales to the display (PostTemporal).
-            let inputs = try temporal.inputs(width: scene.width, height: scene.height)
-            encodeTemporalComposite(commandBuffer, inputs: inputs, width: scene.width, height: scene.height, bind: bindComposite)
-            hdr = temporal.resolve(commandBuffer: commandBuffer, jitterPixels: frame.jitterPixels)
-            profiler?.mark(commandBuffer, label: "MetalFX temporal", after: hdr)
-        } else {
-            guard let color = t.composite, let motion = t.motion else { return }
-            PostPipelines.draw(commandBuffer, label: "post composite", pipeline: pipelines.composite, targets: [color, motion],
-                               bind: bindComposite)
-            hdr = color
+        PostPipelines.draw(commandBuffer, label: "post composite", pipeline: pipelines.composite, targets: [t.composite],
+                           bind: bindComposite)
+        var hdr = t.composite
+        if let traa {
+            // Resolved at the scene size; the output pass upscales to the display.
+            hdr = traa.encode(commandBuffer, pipeline: pipelines.traa, view: &view, beauty: t.composite, depth: scene.depth,
+                              targets: t)
         }
 
         var bloomTexture: (any MTLTexture)?
@@ -350,29 +323,6 @@ public final class PostChain {
     }
 
     // MARK: - Passes
-
-    /// The composite into the temporal inputs (`width` x `height`), copying the depth.
-    private func encodeTemporalComposite(_ commandBuffer: any MTLCommandBuffer, inputs: PostTemporal.Inputs, width: Int,
-                                         height: Int, bind: (any MTLRenderCommandEncoder) -> Void) {
-        let pass = MTLRenderPassDescriptor()
-        for (i, texture) in [inputs.color, inputs.motion].enumerated() {
-            pass.colorAttachments[i].texture = texture
-            pass.colorAttachments[i].loadAction = .dontCare
-            pass.colorAttachments[i].storeAction = .store
-        }
-        pass.depthAttachment.texture = inputs.depth
-        pass.depthAttachment.loadAction = .dontCare
-        pass.depthAttachment.storeAction = .store
-        profiler?.attach(pass, label: "post composite", commandBuffer: commandBuffer)
-        guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else { return }
-        encoder.label = "post composite"
-        encoder.setRenderPipelineState(pipelines.compositeTemporal)
-        encoder.setDepthStencilState(pipelines.writeDepth)
-        encoder.setViewport(MTLViewport(originX: 0, originY: 0, width: Double(width), height: Double(height), znear: 0, zfar: 1))
-        bind(encoder)
-        encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
-        encoder.endEncoding()
-    }
 
     private func encodeSSR(_ commandBuffer: any MTLCommandBuffer, view: inout IVPostView, scene: SceneTargets,
                            targets t: PostTargets, ssr: any MTLTexture, bounds: any MTLTexture) {
@@ -438,8 +388,7 @@ public final class PostChain {
         }
     }
 
-    /// The web blooms the TRAA output at the scene size, so the mip chain is sized from the scene, not
-    /// from the upscaled `input`.
+    /// The web blooms the TRAA output at the scene size, so the mip chain is sized from the scene.
     private func encodeBloom(_ commandBuffer: any MTLCommandBuffer, input: any MTLTexture, sceneWidth: Int,
                              sceneHeight: Int) throws -> any MTLTexture {
         let chain = try targets!.bloom(device: device, width: sceneWidth, height: sceneHeight)

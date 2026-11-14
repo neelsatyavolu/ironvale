@@ -51,7 +51,7 @@ public final class MapRenderer {
     /// map's own for the scene pass; kept within IV_MAX_LIGHTS.
     public var transientLights: [IVLight] = []
     /// The web's ?freeze dev switch (src/core/freeze.ts, `--freeze`): every shader clock reads 0, so
-    /// parity captures are deterministic. Frame intervals (dynamic resolution, MetalFX) still advance.
+    /// parity captures are deterministic. Frame intervals (dynamic resolution, TRAA) still advance.
     public var visualsFrozen = false
     /// M9 post chain (IronvaleRender/Post); when set, the scene pass writes its MRT at the chain's scene
     /// size and the chain replaces PostPass. Layer pipelines must then declare `sceneColorFormats`.
