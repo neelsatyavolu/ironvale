@@ -134,9 +134,7 @@ function addHandcart(kit: Kit, x: number, y: number, z: number, yaw: number): vo
 
 /** Dressing that fills the open ground: fish boxes, barrows, net heaps, canopies and paving bands. */
 export function addClutter(kit: Kit): void {
-  const { batch, colliders, mats, random, density } = kit;
-  const keep = <T>(list: readonly T[], min: number): readonly T[] =>
-    list.slice(0, Math.max(min, Math.round(list.length * Math.min(1, density + 0.15))));
+  const { batch, colliders, mats, random } = kit;
 
   for (const [x, z, yaw, y = 0] of FISH_BOXES) addFishBoxes(kit, x, y, z, yaw);
   for (const [x, z, yaw, y = 0] of HANDCARTS) addHandcart(kit, x, y, z, yaw);
@@ -160,7 +158,7 @@ export function addClutter(kit: Kit): void {
   const skin = heap.clone();
   skin.scale(1.03, 1.06, 1.03);
   const ball = new THREE.SphereGeometry(0.085, 8, 6);
-  for (const [x, z, yaw, y = 0] of keep(NET_HEAPS, 5)) {
+  for (const [x, z, yaw, y = 0] of NET_HEAPS) {
     const scale = 0.8 + random() * 0.5;
     batch.place(mats.netHeap, heap, x, y, z, yaw, scale);
     batch.place(mats.net, skin, x, y, z, yaw, scale, 0.3);

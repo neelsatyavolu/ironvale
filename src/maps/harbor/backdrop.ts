@@ -233,8 +233,14 @@ export function addBackdrop(kit: Kit, root: THREE.Object3D): { dispose(): void }
 
   // Scrub everywhere the ground is not too steep, pines in groves, cypresses in ones and twos.
   const grove2 = seededRandom(0x9147e);
-  const attempts = Math.round(6500 * Math.max(0.35, density));
-  for (let i = 0; i < attempts; i++) {
+  // Every attempt draws from the map's stream at every detail setting, so the colliders placed after the hill
+  // do not depend on it; lower settings only plant from the first share of attempts.
+  const allAttempts = 6500;
+  const attempts = Math.round(allAttempts * Math.max(0.35, density));
+  for (let i = 0; i < allAttempts; i++) {
+    const plant = <T>(list: T[], item: T): void => {
+      if (i < attempts) list.push(item);
+    };
     const x = -250 + random() * 500;
     const z = HILL_FOOT - 2 - random() * (HILL_FOOT - HILL_BACK - 8);
     const steep = slopeAt(x, z);
@@ -249,19 +255,19 @@ export function addBackdrop(kit: Kit, root: THREE.Object3D): { dispose(): void }
       const shade = 0.7 + random() * 0.5;
       // Each draw from the map's stream plants a pair of smaller pines, the second placed from the grove's own stream,
       // so the wood reads as many trees at their true size and nothing placed after the hill moves.
-      pines.push(tree(x, y - 0.4, z, size * spread * 0.6, size * 0.66, yaw, shade));
+      plant(pines, tree(x, y - 0.4, z, size * spread * 0.6, size * 0.66, yaw, shade));
       const nx = x + (grove2() - 0.5) * 16;
       const nz = z + (grove2() - 0.5) * 12;
       if (slopeAt(nx, nz) < 1.9) {
         const small = 4.6 + grove2() * 3.6;
-        pines.push(tree(nx, hillHeight(nx, nz) - 0.4, nz, small * (0.85 + grove2() * 0.4), small, grove2() * 6, 0.65 + grove2() * 0.5));
+        plant(pines, tree(nx, hillHeight(nx, nz) - 0.4, nz, small * (0.85 + grove2() * 0.4), small, grove2() * 6, 0.65 + grove2() * 0.5));
       }
     } else if (roll > 0.985) {
       const height = 9 + random() * 8;
-      cypresses.push(tree(x, y - 0.5, z, height * 0.8, height, random() * 6, 0.75 + random() * 0.4));
+      plant(cypresses, tree(x, y - 0.5, z, height * 0.8, height, random() * 6, 0.75 + random() * 0.4));
     } else if (fbm(x * 0.04, z * 0.04 + 20) > 0.42) {
       const size = 1.6 + random() * 3.2;
-      shrubs.push(tree(x, y - size * 0.25, z, size * (0.9 + random() * 0.6), size * (0.6 + random() * 0.4), random() * 6, 0.6 + random() * 0.6));
+      plant(shrubs, tree(x, y - size * 0.25, z, size * (0.9 + random() * 0.6), size * (0.6 + random() * 0.4), random() * 6, 0.6 + random() * 0.6));
     }
   }
 

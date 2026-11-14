@@ -58,13 +58,16 @@ function addStall(kit: Kit, x: number, z: number, yaw: number, awning: number, f
     box(mats.planks, 0.02, 0.13, 0.42, cx - 0.27, 0.965, cz);
     box(mats.planks, 0.02, 0.13, 0.42, cx + 0.27, 0.965, cz);
     const color = PRODUCE[Math.floor(random() * PRODUCE.length)]!;
+    // Every piece draws its random numbers so the detail setting does not move the colliders placed later.
     const count = 12 + Math.round(34 * density);
-    for (let n = 0; n < count; n++) {
+    for (let n = 0; n < 12 + 34; n++) {
       const [fx, fz] = at(cx + (random() - 0.5) * 0.46, cz + (random() - 0.5) * 0.32);
       const scale = 0.85 + random() * 0.4;
+      const fy = 0.955 + random() * 0.06;
+      if (n >= count) continue;
       fruit.push({
         matrix: new THREE.Matrix4().compose(
-          new THREE.Vector3(fx, 0.955 + random() * 0.06, fz),
+          new THREE.Vector3(fx, fy, fz),
           new THREE.Quaternion(),
           new THREE.Vector3(scale, scale, scale),
         ),
