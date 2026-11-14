@@ -50,8 +50,11 @@ signature="$(op --account "$ACCOUNT" read "$KEY_REF" | "$TOOLS/bin/sign_update" 
 
 tag="native-v$version-$build"
 notes="${NOTES:-Ironvale for Mac $version (build $build).}"
-gh release create "$tag" "$ZIP" -R "$GH_REPO" --title "Ironvale for Mac $version ($build)" --notes "$notes" --target "$(git -C "$REPO" rev-parse HEAD)"
-url="https://github.com/$GH_REPO/releases/download/$tag/$(basename "$ZIP")"
+# A fixed asset name, so the website's button can link to releases/latest/download/Ironvale-mac.zip.
+asset="$check/Ironvale-mac.zip"
+cp -c "$ZIP" "$asset" 2>/dev/null || cp "$ZIP" "$asset"
+gh release create "$tag" "$asset" -R "$GH_REPO" --latest --title "Ironvale for Mac $version ($build)" --notes "$notes" --target "$(git -C "$REPO" rev-parse HEAD)"
+url="https://github.com/$GH_REPO/releases/download/$tag/Ironvale-mac.zip"
 
 escaped_notes="$(python3 -c 'import html,sys; print(html.escape(sys.argv[1]))' "$notes")"
 item="    <item>
