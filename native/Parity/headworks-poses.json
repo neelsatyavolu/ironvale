@@ -1,0 +1,10 @@
+{
+  "note": "M9 parity poses for Headworks: [x, feet y, z, yaw degrees, pitch degrees], the ?pose= form. Picked from scripts/dev/map-headworks-poses.json: the spawn yard, the valve court, the terrace, the slot between the clarifiers toward the range, and the east yard.",
+  "poses": {
+    "spawn": [-45.2, 0, 0, -90, 0],
+    "court": [-36, 0, -11.8, -100, 0],
+    "terrace": [-14, 2.4, 18, 0, -5],
+    "slot": [6.5, 0, -8.5, 142, 10],
+    "east-yard": [38, 0, -17, 60, 2]
+  }
+}

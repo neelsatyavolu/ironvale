@@ -103,7 +103,6 @@ public final class PostChain {
     private var targets: PostTargets?
     private var frameIndex = 0
     private var previousViewProjection: simd_float4x4?
-    private var resetHistory = true
     private let profiler: PostProfiler?
 
     public init(device: any MTLDevice, library: any MTLLibrary, settings: PostSettings, lighting: Lighting) throws {
@@ -117,23 +116,28 @@ public final class PostChain {
 
     /// Scene size for an output size: the web's floor(css size x devicePixelRatio x renderScale x dynamic).
     public func sceneSize(outputWidth: Int, outputHeight: Int) -> (width: Int, height: Int) {
-        let scale = Double(settings.renderScale) * dynamicResolution.scale
-        return (max(1, Int((Double(outputWidth) * scale).rounded(.down))), max(1, Int((Double(outputHeight) * scale).rounded(.down))))
+        Self.size(outputWidth, outputHeight, scale: Double(settings.renderScale) * dynamicResolution.scale)
     }
+
+    private static func size(_ width: Int, _ height: Int, scale: Double) -> (width: Int, height: Int) {
+        (max(1, Int((Double(width) * scale).rounded(.down))), max(1, Int((Double(height) * scale).rounded(.down))))
+    }
+
+    /// Lowest dynamic resolution multiplier (engine.ts adaptResolution floor).
+    private var dynamicFloor: Double { min(1, Double(Self.minRenderScale / settings.renderScale)) }
 
     /// Feeds the real frame interval to dynamic resolution (engine.ts adaptResolution).
     public func recordFrameInterval(_ dt: Double) {
         guard settings.dynamicResolution else { return }
-        let floor = min(1, Double(Self.minRenderScale / settings.renderScale))
-        dynamicResolution.update(dt: dt, budget: 1 / settings.targetFps, floor: floor)
+        dynamicResolution.update(dt: dt, budget: 1 / settings.targetFps, floor: dynamicFloor)
     }
 
     /// Starts a frame for an output of the given size: (re)allocates the scene targets and picks the jitter.
     public func beginFrame(outputWidth: Int, outputHeight: Int) throws -> Frame {
         let size = sceneSize(outputWidth: outputWidth, outputHeight: outputHeight)
         if targets?.matches(width: size.width, height: size.height) != true {
-            targets = try PostTargets(device: device, width: size.width, height: size.height, settings: settings)
-            resetHistory = true
+            targets = try PostTargets(device: device, width: size.width, height: size.height, settings: settings,
+                                      composite: temporal == nil)
         }
         let jitter = temporal == nil ? .zero : PostTemporal.jitter(frame: frameIndex)
         return Frame(targets: targets!.scene, jitterPixels: jitter, outputWidth: outputWidth, outputHeight: outputHeight)
@@ -148,6 +152,7 @@ public final class PostChain {
             profiler?.endFrame(commandBuffer)
         }
         let scene = t.scene
+        profiler?.noteScene(width: scene.width)
         let jittered = frame.jittered(camera.projection)
         let viewProjection = camera.projection * camera.view
         var view = IVPostView(
@@ -170,10 +175,23 @@ public final class PostChain {
         let viewLength = MemoryLayout<IVPostView>.stride
 
         var flags: UInt32 = 0
-        // First, so that the profiler charges the end of the scene pass to this small pass, not to GTAO.
+        // Charges the end of the scene pass to "scene tail", not to the first post pass.
+        profiler?.mark(commandBuffer, label: "scene tail", after: scene.depth)
         if let bounds = t.ssrDepthBounds {
-            PostPipelines.draw(commandBuffer, label: "SSR depth bounds", pipeline: pipelines.ssrDepthBounds, targets: [bounds]) { e in
-                e.setFragmentTexture(scene.depth, index: 0)
+            let block = PostTargets.ssrBlock
+            PostPipelines.dispatch(commandBuffer, label: "SSR depth bounds", pipeline: pipelines.ssrDepthBounds,
+                                   threadgroups: MTLSize(width: bounds.width, height: bounds.height, depth: 1),
+                                   threadsPerGroup: MTLSize(width: block, height: block, depth: 1)) { e in
+                e.setTexture(scene.depth, index: 0)
+                e.setTexture(bounds, index: 1)
+            }
+            if let coarse = t.ssrCoarseBounds {
+                PostPipelines.dispatch(commandBuffer, label: "SSR coarse bounds", pipeline: pipelines.ssrCoarseBounds,
+                                       threadgroups: MTLSize(width: (coarse.width + 7) / 8, height: (coarse.height + 7) / 8, depth: 1),
+                                       threadsPerGroup: MTLSize(width: 8, height: 8, depth: 1)) { e in
+                    e.setTexture(bounds, index: 0)
+                    e.setTexture(coarse, index: 1)
+                }
             }
         }
         if let ao = t.ao {
@@ -192,9 +210,9 @@ public final class PostChain {
                 e.setFragmentTexture(scene.normal, index: 1)
             }
         }
-        if let ssr = t.ssr, let blur = t.ssrBlur, let bounds = t.ssrDepthBounds {
+        if let ssr = t.ssr, t.ssrBlur != nil, let bounds = t.ssrDepthBounds {
             flags |= IV_POST_SSR
-            encodeSSR(commandBuffer, view: &view, scene: scene, ssr: ssr, blur: blur, bounds: bounds)
+            encodeSSR(commandBuffer, view: &view, scene: scene, targets: t, ssr: ssr, bounds: bounds)
         }
         if let rays = t.godrays, let blurH = t.shaftsH, let blurV = t.shaftsV, let shadowMap = camera.shadowMap,
            settings.shadowMapSize > 0, lighting.volumetric > 0 {
@@ -208,25 +226,33 @@ public final class PostChain {
         var composite = IVPostCompositeParams(shaftColor: shaft, volumetric: lighting.volumetric,
                                               shaftFadeStart: Self.shaftFadeStart, shaftFadeEnd: Self.shaftFadeEnd,
                                               ssrMips: Float((t.ssrBlur?.mipmapLevelCount ?? 1) - 1), flags: flags)
-        PostPipelines.draw(commandBuffer, label: "post composite", pipeline: pipelines.composite,
-                           targets: [t.composite, t.motion]) { e in
+        let bindComposite = { (e: any MTLRenderCommandEncoder) in
             e.setFragmentBytes(&view, length: viewLength, index: 0)
             e.setFragmentBytes(&composite, length: MemoryLayout<IVPostCompositeParams>.stride, index: 1)
             e.setFragmentTexture(scene.color, index: 0)
             e.setFragmentTexture(scene.depth, index: 1)
             e.setFragmentTexture(scene.metalRough, index: 2)
-            e.setFragmentTexture(t.ao ?? t.composite, index: 3)
-            e.setFragmentTexture(t.ssrBlur ?? t.composite, index: 4)
-            e.setFragmentTexture(t.shaftsV ?? t.composite, index: 5)
+            e.setFragmentTexture(t.ao ?? scene.color, index: 3)
+            e.setFragmentTexture(t.ssrBlur ?? scene.color, index: 4)
+            e.setFragmentTexture(t.shaftsV ?? scene.color, index: 5)
         }
 
-        var hdr: any MTLTexture = t.composite
+        var hdr: any MTLTexture
         if let temporal {
-            hdr = try temporal.resolve(commandBuffer: commandBuffer, color: t.composite, depth: scene.depth, motion: t.motion,
-                                       outputWidth: frame.outputWidth, outputHeight: frame.outputHeight,
-                                       jitterPixels: frame.jitterPixels, reset: resetHistory)
+            let largest = Self.size(frame.outputWidth, frame.outputHeight, scale: Double(settings.renderScale))
+            let inputs = try temporal.inputs(maxWidth: largest.width, maxHeight: largest.height, outputWidth: frame.outputWidth,
+                                             outputHeight: frame.outputHeight,
+                                             minScale: settings.dynamicResolution ? dynamicFloor : 1)
+            encodeTemporalComposite(commandBuffer, inputs: inputs, width: scene.width, height: scene.height, bind: bindComposite)
+            hdr = temporal.resolve(commandBuffer: commandBuffer, contentWidth: scene.width, contentHeight: scene.height,
+                                   jitterPixels: frame.jitterPixels)
+            profiler?.mark(commandBuffer, label: "MetalFX temporal", after: hdr)
+        } else {
+            guard let color = t.composite, let motion = t.motion else { return }
+            PostPipelines.draw(commandBuffer, label: "post composite", pipeline: pipelines.composite, targets: [color, motion],
+                               bind: bindComposite)
+            hdr = color
         }
-        resetHistory = false
 
         var bloomTexture: (any MTLTexture)?
         if settings.bloom {
@@ -247,8 +273,31 @@ public final class PostChain {
 
     // MARK: - Passes
 
+    /// The composite into the top-left `width` x `height` of the temporal inputs, copying the depth.
+    private func encodeTemporalComposite(_ commandBuffer: any MTLCommandBuffer, inputs: PostTemporal.Inputs, width: Int,
+                                         height: Int, bind: (any MTLRenderCommandEncoder) -> Void) {
+        let pass = MTLRenderPassDescriptor()
+        for (i, texture) in [inputs.color, inputs.motion].enumerated() {
+            pass.colorAttachments[i].texture = texture
+            pass.colorAttachments[i].loadAction = .dontCare
+            pass.colorAttachments[i].storeAction = .store
+        }
+        pass.depthAttachment.texture = inputs.depth
+        pass.depthAttachment.loadAction = .dontCare
+        pass.depthAttachment.storeAction = .store
+        profiler?.attach(pass, label: "post composite")
+        guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else { return }
+        encoder.label = "post composite"
+        encoder.setRenderPipelineState(pipelines.compositeTemporal)
+        encoder.setDepthStencilState(pipelines.writeDepth)
+        encoder.setViewport(MTLViewport(originX: 0, originY: 0, width: Double(width), height: Double(height), znear: 0, zfar: 1))
+        bind(encoder)
+        encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
+        encoder.endEncoding()
+    }
+
     private func encodeSSR(_ commandBuffer: any MTLCommandBuffer, view: inout IVPostView, scene: SceneTargets,
-                           ssr: any MTLTexture, blur: any MTLTexture, bounds: any MTLTexture) {
+                           targets t: PostTargets, ssr: any MTLTexture, bounds: any MTLTexture) {
         var params = IVSSRParams(resolution: SIMD2(Float(ssr.width), Float(ssr.height)), maxDistance: 14, thickness: 0.35,
                                  intensity: 0.8, maxLuminance: 10, quality: 0.5, _pad0: 0)
         PostPipelines.draw(commandBuffer, label: "SSR", pipeline: pipelines.ssr, targets: [ssr],
@@ -260,15 +309,18 @@ public final class PostChain {
             e.setFragmentTexture(scene.normal, index: 2)
             e.setFragmentTexture(scene.metalRough, index: 3)
             e.setFragmentTexture(bounds, index: 4)
+            e.setFragmentTexture(t.ssrCoarseBounds, index: 5)
         }
-        // Mip 0 is a copy; mip i a box blur of the SSR target with taps i texels apart.
-        for level in 0..<blur.mipmapLevelCount {
-            var box = IVBoxBlurParams(separation: Float(level), size: 2, _pad0: 0, _pad1: 0)
-            PostPipelines.draw(commandBuffer, label: "SSR blur \(level)", pipeline: level == 0 ? pipelines.copy : pipelines.boxBlur,
-                               targets: [blur], level: level) { e in
-                e.setFragmentBytes(&box, length: MemoryLayout<IVBoxBlurParams>.stride, index: 0)
-                e.setFragmentTexture(ssr, index: 0)
-            }
+        // Mip 0 is a copy; mip i a box blur of the SSR target with taps i texels apart (one dispatch).
+        let views = t.ssrBlurLevels
+        var levels = UInt32(views.count)
+        let w = views[0].width, h = views[0].height
+        PostPipelines.dispatch(commandBuffer, label: "SSR blur", pipeline: pipelines.ssrBlur,
+                               threadgroups: MTLSize(width: (w + 15) / 16, height: (h + 15) / 16, depth: 1),
+                               threadsPerGroup: MTLSize(width: 16, height: 16, depth: 1)) { e in
+            e.setTexture(ssr, index: 0)
+            for (i, view) in views.enumerated() { e.setTexture(view, index: 1 + i) }
+            e.setBytes(&levels, length: MemoryLayout<UInt32>.stride, index: 0)
         }
     }
 

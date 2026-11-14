@@ -7,12 +7,15 @@ import ShaderTypes
 struct PostPipelines {
     let gtao: any MTLRenderPipelineState
     let ssr: any MTLRenderPipelineState
-    let ssrDepthBounds: any MTLRenderPipelineState
-    let copy: any MTLRenderPipelineState
-    let boxBlur: any MTLRenderPipelineState
+    let ssrDepthBounds: any MTLComputePipelineState
+    let ssrCoarseBounds: any MTLComputePipelineState
+    let ssrBlur: any MTLComputePipelineState
     let godrays: any MTLRenderPipelineState
     let bilateral: any MTLRenderPipelineState
     let composite: any MTLRenderPipelineState
+    /// The composite into MetalFX Temporal's inputs, which also writes depth (PostTemporal).
+    let compositeTemporal: any MTLRenderPipelineState
+    let writeDepth: any MTLDepthStencilState
     let bloomHighPass: any MTLRenderPipelineState
     let bloomBlur: any MTLRenderPipelineState
     let bloomComposite: any MTLRenderPipelineState
@@ -28,12 +31,21 @@ struct PostPipelines {
         }
         gtao = try make("ivGTAOFragment", [.r8Unorm])
         ssr = try make("ivSSRFragment", [.rgba16Float])
-        ssrDepthBounds = try make("ivSSRDepthBoundsFragment", [.r32Float])
-        copy = try make("ivPostCopyFragment", [.rgba16Float])
-        boxBlur = try make("ivBoxBlurFragment", [.rgba16Float])
+        ssrDepthBounds = try Self.kernel(device: device, library: library, "ivSSRDepthBoundsKernel")
+        ssrCoarseBounds = try Self.kernel(device: device, library: library, "ivSSRCoarseBoundsKernel")
+        ssrBlur = try Self.kernel(device: device, library: library, "ivSSRBlurKernel")
         godrays = try make("ivGodraysFragment", [.rgba8Unorm])
         bilateral = try make("ivBilateralBlurFragment", [.rgba8Unorm])
         composite = try make("ivPostCompositeFragment", [.rgba16Float, .rg16Float])
+        compositeTemporal = try Self.pipeline(device: device, library: library, fragment: "ivPostCompositeTemporalFragment",
+                                              formats: [.rgba16Float, .rg16Float], depth: .depth32Float)
+        let depthState = MTLDepthStencilDescriptor()
+        depthState.depthCompareFunction = .always
+        depthState.isDepthWriteEnabled = true
+        guard let writeDepth = device.makeDepthStencilState(descriptor: depthState) else {
+            throw RenderError.allocation("post depth state")
+        }
+        self.writeDepth = writeDepth
         bloomHighPass = try make("ivBloomHighPassFragment", [.rgba16Float])
         bloomBlur = try make("ivBloomBlurFragment", [.rgba16Float])
         bloomComposite = try make("ivBloomCompositeFragment", [.rgba16Float])
@@ -47,8 +59,13 @@ struct PostPipelines {
         return p
     }
 
+    private static func kernel(device: any MTLDevice, library: any MTLLibrary, _ name: String) throws -> any MTLComputePipelineState {
+        guard let f = library.makeFunction(name: name) else { throw RenderError.missingFunction(name) }
+        return try device.makeComputePipelineState(function: f)
+    }
+
     private static func pipeline(device: any MTLDevice, library: any MTLLibrary, fragment: String,
-                                 formats: [MTLPixelFormat]) throws -> any MTLRenderPipelineState {
+                                 formats: [MTLPixelFormat], depth: MTLPixelFormat = .invalid) throws -> any MTLRenderPipelineState {
         guard let vertex = library.makeFunction(name: "ivPostVertex") else { throw RenderError.missingFunction("ivPostVertex") }
         guard let f = library.makeFunction(name: fragment) else { throw RenderError.missingFunction(fragment) }
         let d = MTLRenderPipelineDescriptor()
@@ -56,6 +73,7 @@ struct PostPipelines {
         d.vertexFunction = vertex
         d.fragmentFunction = f
         for (i, format) in formats.enumerated() { d.colorAttachments[i].pixelFormat = format }
+        d.depthAttachmentPixelFormat = depth
         return try device.makeRenderPipelineState(descriptor: d)
     }
 
@@ -81,6 +99,21 @@ struct PostPipelines {
         encoder.setRenderPipelineState(pipeline)
         bind(encoder)
         encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
+        encoder.endEncoding()
+    }
+}
+
+extension PostPipelines {
+    /// One compute dispatch of `threadgroups` groups of `threadsPerGroup` threads.
+    static func dispatch(_ commandBuffer: any MTLCommandBuffer, label: String, pipeline: any MTLComputePipelineState,
+                         threadgroups: MTLSize, threadsPerGroup: MTLSize, bind: (any MTLComputeCommandEncoder) -> Void) {
+        let pass = MTLComputePassDescriptor()
+        profiler?.attach(pass, label: label)
+        guard let encoder = commandBuffer.makeComputeCommandEncoder(descriptor: pass) else { return }
+        encoder.label = label
+        encoder.setComputePipelineState(pipeline)
+        bind(encoder)
+        encoder.dispatchThreadgroups(threadgroups, threadsPerThreadgroup: threadsPerGroup)
         encoder.endEncoding()
     }
 }

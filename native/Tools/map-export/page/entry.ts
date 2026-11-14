@@ -14,13 +14,14 @@ import { COUNTS, recordQueries } from './queries';
 import { programTable } from './programs';
 import { exportRender } from './render';
 
-/** Every package is exported at full detail (PLAN.md 3.7, owner decision Q3). */
+/** Every package is exported at full detail (PLAN.md 3.7, owner decision Q3). Other densities are
+ *  exported only to check that collision does not depend on detail (M11, W1). */
 const DETAIL_DENSITY = 1;
 
 const box = (b: Box3) => ({ min: [b.min.x, b.min.y, b.min.z], max: [b.max.x, b.max.y, b.max.z] });
 const v3 = (v: Vector3) => [v.x, v.y, v.z];
 
-function metaJson(id: string, name: string, tagline: string, assets: readonly string[], map: MapInstance, world: CollisionWorld, extra: Record<string, unknown>) {
+function metaJson(id: string, name: string, tagline: string, assets: readonly string[], map: MapInstance, world: CollisionWorld, detailDensity: number, extra: Record<string, unknown>) {
   const l = map.lighting;
   return {
     format: 'ironvale-map-package',
@@ -29,7 +30,7 @@ function metaJson(id: string, name: string, tagline: string, assets: readonly st
     name,
     tagline,
     playable: PLAYABLE_MAPS.some((m) => m.id === id),
-    detailDensity: DETAIL_DENSITY,
+    detailDensity,
     assets: [...assets],
     bounds: box(map.bounds),
     collisionBounds: box(world.bounds),
@@ -71,12 +72,13 @@ function settle(map: MapInstance): void {
   for (let i = 0; i < 64; i++) map.update(0, 0, viewer);
 }
 
-async function exportMap(id: string, options: { sourceCommit: string; render: boolean }) {
+async function exportMap(id: string, options: { sourceCommit: string; render: boolean; detailDensity?: number }) {
+  const detailDensity = options.detailDensity ?? DETAIL_DENSITY;
   const module = await loadMapModule(id);
   const assets = new Assets('2k', 1);
   await assets.preload(module.meta.assets);
   const world = new CollisionWorld();
-  const map = await module.build({ assets, world, detailDensity: DETAIL_DENSITY, random: seededRandom(hashString(id)) });
+  const map = await module.build({ assets, world, detailDensity, random: seededRandom(hashString(id)) });
   world.build();
 
   const files = captureCollision(world);
@@ -86,7 +88,7 @@ async function exportMap(id: string, options: { sourceCommit: string; render: bo
   const collisionSha256 = await sha256Hex(both);
   const queries = recordQueries(world, map, id);
 
-  const meta = metaJson(id, module.meta.name, module.meta.tagline, module.meta.assets, map, world, {
+  const meta = metaJson(id, module.meta.name, module.meta.tagline, module.meta.assets, map, world, detailDensity, {
     collision: { triangles: files.triangleCount, boundaryTriangles: files.boundaryTriangleCount },
     collisionSha256,
     fixtures: { file: 'fixtures/queries.bin', ...COUNTS },
@@ -104,7 +106,7 @@ async function exportMap(id: string, options: { sourceCommit: string; render: bo
   if (options.render) {
     settle(map);
     // Reference materials are built on a fresh seeded stream so they never shift the map's own.
-    const programs = programTable(id, { assets, world: new CollisionWorld(), detailDensity: DETAIL_DENSITY, random: seededRandom(hashString(id)) });
+    const programs = programTable(id, { assets, world: new CollisionWorld(), detailDensity, random: seededRandom(hashString(id)) });
     render = await exportRender(map.root, id, `${id}/render`, programs);
   }
   map.dispose();

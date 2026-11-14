@@ -1,0 +1,93 @@
+{
+ "bots": 8,
+ "difficulty": "veteran",
+ "seconds": 90,
+ "player": "stands at the first player spawn, never fires",
+ "maps": {
+  "railyard": {
+   "matches": 16,
+   "botsThatFired": {
+    "min": 4,
+    "max": 7,
+    "perMatch": [
+     5,
+     4,
+     6,
+     4,
+     6,
+     6,
+     7,
+     5,
+     4,
+     5,
+     6,
+     4,
+     5,
+     5,
+     4,
+     5
+    ]
+   },
+   "firstShotSeconds": {
+    "min": 29.55,
+    "max": 38.52
+   },
+   "endSeconds": {
+    "min": 47.82,
+    "max": 61.48
+   },
+   "hitsOnPlayer": {
+    "min": 12,
+    "max": 21
+   },
+   "rolesFired": {
+    "rusher": 30,
+    "breacher": 16,
+    "rifleman": 31,
+    "gunner": 4
+   }
+  },
+  "headworks": {
+   "matches": 16,
+   "botsThatFired": {
+    "min": 2,
+    "max": 6,
+    "perMatch": [
+     4,
+     4,
+     5,
+     3,
+     5,
+     4,
+     3,
+     5,
+     4,
+     4,
+     4,
+     2,
+     4,
+     6,
+     5,
+     5
+    ]
+   },
+   "firstShotSeconds": {
+    "min": 39.68,
+    "max": 50.4
+   },
+   "endSeconds": {
+    "min": 56.59,
+    "max": 70.63
+   },
+   "hitsOnPlayer": {
+    "min": 16,
+    "max": 21
+   },
+   "rolesFired": {
+    "rusher": 27,
+    "rifleman": 24,
+    "breacher": 16
+   }
+  }
+ }
+}

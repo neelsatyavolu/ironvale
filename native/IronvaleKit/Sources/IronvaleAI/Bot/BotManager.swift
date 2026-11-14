@@ -49,7 +49,7 @@ public final class BotManager: BotSystem {
     /// Squad callouts that passed the squad's rate limit (`botCallout`; the audio lane voices them).
     public var onCallout: ((Bot, CalloutKind) -> Void)?
 
-    private var rng = SeededRandom(seed: hashString("ironvale-bots"))
+    private var rng: SeededRandom
     private var nav: NavGrid?
     private var queue: PathQueue?
     private var map: MapPackage?
@@ -62,8 +62,10 @@ public final class BotManager: BotSystem {
     private var scaled: [String: WeaponDef] = [:]
     private var unsubscribe: (() -> Void)?
 
-    public init(game: Game) {
+    /// `seed` replaces the web's fixed squad dice (`hashString("ironvale-bots")`) to play a different match.
+    public init(game: Game, seed: UInt32? = nil) {
         self.game = game
+        rng = SeededRandom(seed: seed ?? hashString("ironvale-bots"))
         unsubscribe = game.events.on { [weak self] event in self?.hearing(event) }
     }
 

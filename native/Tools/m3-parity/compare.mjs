@@ -2,7 +2,8 @@
 // Native side of the M3 parity check: renders each pose in native/Parity/railyard-poses.json with
 // the app's --capture switch and scores it against the web captures with SSIM (ssim.mjs).
 //
-// Usage: node native/Tools/m3-parity/compare.mjs --app PATH/Ironvale.app [--web DIR]... [--out DIR] [--app-args "..."]
+// Usage: node native/Tools/m3-parity/compare.mjs --app PATH/Ironvale.app [--web DIR]... [--out DIR] [--app-args "..."] [--map ID]
+//   --map picks native/Parity/<ID>-poses.json and the <ID>-<pose>.png names (default railyard).
 //   --web may repeat; each directory is scored separately (the first one is the gate).
 //   --app-args passes extra launch arguments, e.g. "--q high --no grain" for the M9 post chain.
 // Prints one line per pose and the mean; writes <out>/ssim.json.
@@ -22,16 +23,17 @@ const webDirs = values('web').length ? values('web').map((d) => resolve(d)) : [j
 const out = resolve(values('out')[0] ?? join(repo, 'native/Parity/native'));
 const binary = join(app, 'Contents/MacOS/Ironvale');
 const appArgs = (values('app-args')[0] ?? '').split(/\s+/).filter(Boolean);
-const { poses } = JSON.parse(readFileSync(join(repo, 'native/Parity/railyard-poses.json'), 'utf8'));
+const mapId = values('map')[0] ?? 'railyard';
+const { poses } = JSON.parse(readFileSync(join(repo, `native/Parity/${mapId}-poses.json`), 'utf8'));
 
 mkdirSync(out, { recursive: true });
 const results = {};
 for (const [name, pose] of Object.entries(poses)) {
-  const file = join(out, `railyard-${name}.png`);
-  execFileSync(binary, ['--map', 'railyard', '--pose', pose.join(','), '--capture', file, '--repo', repo, ...appArgs], { stdio: 'inherit' });
+  const file = join(out, `${mapId}-${name}.png`);
+  execFileSync(binary, ['--map', mapId, '--pose', pose.join(','), '--capture', file, '--repo', repo, ...appArgs], { stdio: 'inherit' });
   results[name] = {};
   for (const dir of webDirs) {
-    const reference = join(dir, `railyard-${name}.png`);
+    const reference = join(dir, `${mapId}-${name}.png`);
     if (!existsSync(reference)) throw new Error(`missing web capture ${reference} (run capture-web.mjs)`);
     results[name][basename(dir)] = await ssim(reference, file);
   }

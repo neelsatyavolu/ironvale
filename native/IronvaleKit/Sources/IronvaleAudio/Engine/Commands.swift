@@ -90,7 +90,7 @@ public enum MixCommand: Sendable, BitwiseCopyable {
     case startBed(bed: Int32, SourceStart, BedDestination)
     case stopBed(bed: Int32, when: Double)
     case listener(ListenerPose)
-    /// Convolver slot 0 or 1 takes this preset's impulse (nil: emptied). Convolution itself is M8b.
+    /// Convolver slot 0 or 1 takes this preset's impulse (nil: emptied); MixCore convolves (Convolver.swift).
     case reverbImpulse(slot: Int32, ReverbPreset?)
     /// Brackets one VoicePool.play call; MixCore ignores them, the trace uses them for attribution.
     case playBegin

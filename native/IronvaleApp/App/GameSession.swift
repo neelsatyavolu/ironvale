@@ -37,6 +37,7 @@ final class GameSession {
     let viewModel: ViewModelRenderer
     let hud = HUDModel()
     let interface: InterfaceModel
+    let lobbyLaunch: LobbyLaunch
     private var renderer: MapRenderer?
     private var frameLoop: FrameLoop?
     private var runner: AutopilotRunner?
@@ -61,7 +62,10 @@ final class GameSession {
         let simInput = data.constants.input
         deviceInput = DeviceInput(options: .init(lookSpike: simInput.LOOK_SPIKE_PX, wheelThreshold: simInput.WHEEL_THRESHOLD,
                                                  wheelQuietSeconds: simInput.WHEEL_QUIET_MS / 1000))
-        interface = InterfaceModel(settings: SettingsStore(storage: DefaultsStringStore()), lobby: MockLobby(), storage: DefaultsStringStore())
+        // M10: the friend screen and invite links run on the real session (LobbyLaunch.swift).
+        lobbyLaunch = LobbyLaunch(arguments: CommandLine.arguments.dropFirst(),
+                                  knownMaps: Set(data.contract.maps.playable + data.contract.maps.developer))
+        interface = InterfaceModel(settings: SettingsStore(storage: DefaultsStringStore()), lobby: lobbyLaunch.lobby, storage: DefaultsStringStore())
         let settings = Self.playerSettings(interface.settings.value)
         input = BoundInput(settings: settings, data: data)
         game = Game(input: input, settings: settings, data: data)
@@ -376,7 +380,10 @@ final class GameSession {
         var missing = failure.map { [$0] } ?? AutopilotRunner.missing(in: runner.recorder.log.lines, weapons: data.contract.weapons.weaponIds)
         if let botMonitor, failure == nil {
             let report = botMonitor.report
-            missing = report.failures(expectEnemies: options.botCount)
+            // The web's own range of bots that fire on this map (native/Contract/nav/skirmish.json).
+            let reference = try? SkirmishReference.load(contractRoot: repositoryRoot.appending(path: "native/Contract"))
+            let webFired = game.config.flatMap { reference?.firedRange(mapId: $0.mapId, bots: options.botCount) }
+            missing = report.failures(expectEnemies: options.botCount, webFired: webFired)
             runner.recorder.log.write(time: game.time, kind: "botScenario", fields: [
                 "spawned": "\(report.spawned)", "botShots": "\(report.botShots)", "botsThatFired": "\(report.botsThatFired)",
                 "hitsOnPlayer": "\(report.hitsOnPlayer)", "playerDeaths": "\(report.playerDeaths)", "botKills": "\(report.botKills)",
@@ -411,6 +418,8 @@ final class GameFrameEncoder: FrameEncoder {
 @MainActor
 enum GameLauncher {
     private static var session: GameSession?
+    /// URLs opened before the session exists (a launch by `ironvale://join`).
+    private static var pendingURLs: [URL] = []
 
     /// Starts the game when the arguments ask for it; returns false to leave the launch to the M3 paths.
     static func launchIfRequested(arguments: some Sequence<String>, launch: LaunchOptions, repositoryRoot: String?,
@@ -424,6 +433,11 @@ enum GameLauncher {
         let created = try GameSession(options: options, launch: launch, device: device, library: library, repositoryRoot: repo)
         session = created
         try created.start()
+        created.lobbyLaunch.attach(created.interface)
+        // An invite URL that launched the app arrives before the session exists.
+        let early = pendingURLs
+        pendingURLs = []
+        open(early)
         return true
     }
 
@@ -431,6 +445,13 @@ enum GameLauncher {
 
     /// `ironvale://join?code=` (or a web invite link) opened by macOS: show the invite in the menu.
     static func open(_ urls: [URL]) {
-        for url in urls where session?.interface.openInviteURL(url) == true { return }
+        guard let session else {
+            pendingURLs += urls
+            return
+        }
+        for url in urls where session.interface.openInviteURL(url) {
+            session.lobbyLaunch.inviteOpened(url)
+            return
+        }
     }
 }

@@ -109,6 +109,16 @@ const duelConfig = (mapId: string, duelBot: 'host' | 'guest'): NetMatchConfig =>
 });
 /** Native host in a duel with a bot: run until the bot has scored (or 100 s), then end. */
 const UNTIL_SCORED = ['--until-score', '1', '--duration', '100'];
+/**
+ * Where the native host stands while the guest's bot hunts it. At the host's duel spawn the web's own
+ * bot often never finishes a player who stands still: the real src/ai BotManager, one elite bot, on
+ * Railyard's first player spawn left the player alive for 100 s in 3 of 6 matches (Headworks: 3 of 16),
+ * since a few hits a minute heal back. At these spots the web's bot killed in every one of 128 matches
+ * (32 seeds at frame steps 1/120, 1/30, 1/15 and 1/10 s), first kill at most 64 s (Railyard) and 84 s
+ * (Headworks) after go. Measured with native/Tools/nav-fixtures/skirmish.test.ts:
+ *   SKIRMISH_STAND=x,y,z SKIRMISH_BOTS=1 SKIRMISH_DIFFICULTY=elite SKIRMISH_SEEDS=32 SKIRMISH_SECONDS=100 SKIRMISH_DT=...
+ */
+const HUNTED_STAND: Readonly<Record<string, Vec3>> = { railyard: [20, 0.05, -40], headworks: [31.5, 0.05, 6.5] };
 
 function expectClean(run: Run): void {
   expect(run.web.rejections, 'web side rejected messages').toEqual([]);
@@ -196,10 +206,12 @@ describe.runIf(SIGNAL && IVPEER).each(MAPS)('duel bot on %s', (mapId) => {
   }, 130_000);
 
   test("native host with the guest's bot: the bot hunts the host, its kills are the guest's points", async () => {
+    const hunted = HUNTED_STAND[mapId];
     const run = await play(`${mapId}-duelbot-native-host-guest`, 'host', duelConfig(mapId, 'guest'), {
       stand: player[1] ?? enemy[0]!, durationMs: 105_000,
-    }, UNTIL_SCORED);
+    }, [...UNTIL_SCORED, ...(hunted ? ['--stand', hunted.join(',')] : [])]);
     expectClean(run);
+    if (hunted) expect(run.native.some((line) => line.kind === 'stood'), 'the native host stood where the bot is sure to find it').toBe(true);
     expect(nativeDeaths(run, 'bot'), 'the bot killed the native host').toBeGreaterThan(0);
     expect(run.native.find((line) => line.kind === 'botSpawned')).toMatchObject({ team: 'bravo', uniform: 'bravo' });
     expect(Number(run.final.deaths)).toBe(run.web.peerDeaths);

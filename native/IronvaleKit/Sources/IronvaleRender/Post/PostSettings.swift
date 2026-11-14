@@ -76,19 +76,37 @@ public struct PostSettings: Sendable, Equatable {
     /// pipeline.ts: 32 shaft steps on medium, 48 otherwise.
     var godraySteps: UInt32 { tier == .medium ? 32 : 48 }
 
-    /// Parses `--q TIER` and `--no a,b,c` the way main.ts reads ?q= and ?no=. Nil when neither is given.
+    /// The web's GraphicsSettings.targetFps choices (settings.ts GRAPHICS_CHOICES).
+    public static let targetFpsChoices: [Double] = [30, 60, 120]
+
+    /// Parses `--q TIER` and `--no a,b,c` the way main.ts reads ?q= and ?no= (which turn dynamic
+    /// resolution off), plus two of the player's own graphics settings that are not part of a tier:
+    /// `--target-fps N` (Target FPS, 30, 60 or 120: the dynamic resolution budget) and
+    /// `--dynamic-resolution on|off`. Nil when neither --q nor --no is given.
     public static func parse(_ arguments: some Sequence<String>) -> PostSettings? {
         var tier: Tier?
         var off: Set<String> = []
+        var targetFps: Double?
+        var dynamic: Bool?
         var iterator = arguments.makeIterator()
         while let arg = iterator.next() {
             switch arg {
             case "--q": tier = iterator.next().flatMap(Tier.init(rawValue:))
             case "--no": off = Set((iterator.next() ?? "").split(separator: ",").map(String.init))
+            case "--target-fps": targetFps = iterator.next().flatMap(Double.init).flatMap { targetFpsChoices.contains($0) ? $0 : nil }
+            case "--dynamic-resolution":
+                switch iterator.next() {
+                case "on": dynamic = true
+                case "off": dynamic = false
+                default: break
+                }
             default: continue
             }
         }
         guard tier != nil || !off.isEmpty else { return nil }
-        return preset(tier ?? .high).disabling(off)
+        var settings = preset(tier ?? .high).disabling(off)
+        if let targetFps { settings.targetFps = targetFps }
+        if let dynamic { settings.dynamicResolution = dynamic }
+        return settings
     }
 }

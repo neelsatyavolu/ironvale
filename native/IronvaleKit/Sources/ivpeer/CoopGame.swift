@@ -14,6 +14,7 @@
 //   --leave-after SECONDS         leave the match (bye) this long after go
 //   --duration SECONDS            end the run this long after go (default 30)
 //   --until-score N               end the run 2 s after kills + deaths here reach N (before --duration)
+//   --stand X,Y,Z                 put the local player here (feet) each time it spawns, instead of where the rules spawn it
 //   --timeout SECONDS             give up (default 120)
 import Foundation
 import IronvaleAI
@@ -24,6 +25,7 @@ import IronvaleNet
 import IronvaleSim
 import IronvaleTransportWebRTC
 import IronvaleWire
+import IronvaleWorld
 
 struct CoopGameOptions {
     var mapId = "railyard"
@@ -42,6 +44,7 @@ struct CoopGameOptions {
     var leaveAfter: Double?
     var duration = 30.0
     var untilScore: Int?
+    var stand: IronvaleWorld.Vec3?
     var timeout = 120.0
 
     /// nil unless the arguments ask for a game (`--game`).
@@ -85,6 +88,10 @@ struct CoopGameOptions {
             case "--leave-after": options.leaveAfter = try number(flag)
             case "--duration": options.duration = try number(flag)
             case "--until-score": options.untilScore = Int(try number(flag))
+            case "--stand":
+                let parts = try value(flag).split(separator: ",").compactMap { Double($0) }
+                guard parts.count == 3 else { throw OptionError("--stand takes X,Y,Z") }
+                options.stand = IronvaleWorld.Vec3(parts[0], parts[1], parts[2])
             case "--timeout": options.timeout = try number(flag)
             default: throw OptionError("unknown argument \(flag)")
             }
@@ -263,6 +270,11 @@ final class CoopGame {
             write("died", [("victim", .string(name(victimId))), ("killer", .string(name(killerId))), ("weapon", .string(weaponId)),
                            ("kills", .number(Double(game.kills))), ("deaths", .number(Double(game.deaths)))])
         case let .spawned(id):
+            if id == game.player.id, let stand = options.stand, game.player.position.distance(to: stand) > 0.01 {
+                // Moved in the same frame as the spawn, before any state is sent: the other side only sees the stand.
+                game.player.respawn(position: stand, yaw: game.player.yaw)
+                write("stood", [("x", .number(stand.x)), ("y", .number(stand.y)), ("z", .number(stand.z))])
+            }
             if let bot = bots.bots.first(where: { $0.id == id }) {
                 write("botSpawned", [("id", .number(Double(id))), ("team", .string(bot.team.rawValue)),
                                      ("uniform", .string(bot.uniform.rawValue)), ("weapon", .string(bot.weaponDef.id))])

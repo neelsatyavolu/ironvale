@@ -3,7 +3,9 @@
 // native/MapPackages/<id>/ (meta.json, collision.bin, boundary.bin, bvh.bin, fixtures/queries.bin,
 // and the git-ignored render/), plus the gun-export GLBs in native/MapPackages/guns/ (git-ignored).
 //
-// Usage: node native/Tools/map-export/run.mjs [--out DIR] [--maps a,b] [--no-render] [--no-guns] [--check]
+// Usage: node native/Tools/map-export/run.mjs [--out DIR] [--maps a,b] [--no-render] [--no-guns] [--check] [--density D]
+//   --density D  build the maps at detail density D instead of 1 (packages are committed at 1; other
+//            densities exist for the M11 check that collision does not depend on detail).
 //   --check  exports collision data to a temporary directory and fails when it differs from the
 //            committed packages, or when a playable map has no package.
 import { execFileSync } from 'node:child_process';
@@ -25,7 +27,7 @@ const DEFAULT_MAPS = ['range', 'railyard', 'headworks', 'harbor'];
 const COMMITTED = ['meta.json', 'collision.bin', 'boundary.bin', 'bvh.bin', 'fixtures/queries.bin'];
 
 function parseArgs(argv) {
-  const args = { out: packages, maps: DEFAULT_MAPS, render: true, guns: true, check: false };
+  const args = { out: packages, maps: DEFAULT_MAPS, render: true, guns: true, check: false, density: 1 };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--out') args.out = resolve(argv[++i]);
@@ -33,8 +35,11 @@ function parseArgs(argv) {
     else if (a === '--no-render') args.render = false;
     else if (a === '--no-guns') args.guns = false;
     else if (a === '--check') args.check = true;
+    else if (a === '--density') args.density = Number(argv[++i]);
     else throw new Error(`unknown argument ${a}`);
   }
+  if (!(args.density > 0 && args.density <= 1)) throw new Error('--density must be in (0, 1]');
+  if (args.check && args.density !== 1) throw new Error('--check compares the committed density-1 packages; drop --density');
   if (args.check) {
     args.out = mkdtempSync(join(tmpdir(), 'map-export-'));
     args.render = false;
@@ -147,7 +152,7 @@ async function main() {
       playable = await page.evaluate(() => window.__mapExport.playable);
       const result = await page.evaluate(
         ([mapId, options]) => window.__mapExport.exportMap(mapId, options),
-        [id, { sourceCommit: commit, render: args.render }],
+        [id, { sourceCommit: commit, render: args.render, detailDensity: args.density }],
       );
       await page.close();
       const render = result.render ? `, render ${result.render.meshes} meshes ${(result.render.bytes / 1e6).toFixed(1)} MB` : '';

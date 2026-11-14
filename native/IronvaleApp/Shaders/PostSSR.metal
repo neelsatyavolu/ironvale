@@ -4,37 +4,78 @@
 // no environment, no history; half resolution, maxDistance 14, thickness 0.35, intensity 0.8.
 // The output alpha is the world distance to the hit, as SSRNode writes it; pipeline.ts adds
 // reflection.rgb * reflection.a. Background pixels are discarded (target cleared to 0).
-// Speed-up with the same result: ivSSRDepthBoundsFragment keeps the nearest depth of each
+// Speed-up with the same result: ivSSRDepthBoundsKernel keeps the nearest depth of each
 // IV_SSR_BLOCK^2 block of depth texels, and the march jumps over the steps that stay inside a block
 // while the ray is in front of that nearest surface (or the block is all background), since none of
-// those steps can pass the hit test.
+// those steps can pass the hit test. A second level (ivSSRCoarseBoundsKernel, IV_SSR_COARSE^2 texels)
+// lets long rays over open ground jump four blocks at a time.
 #include <metal_stdlib>
 #include "ShaderTypes.h"
 #include "PostCommon.h"
 using namespace metal;
 
 #define IV_SSR_BLOCK 16
+#define IV_SSR_COARSE 64
 
-/// Nearest (reverse-Z: largest) depth of each IV_SSR_BLOCK x IV_SSR_BLOCK block of the scene depth.
-fragment float ivSSRDepthBoundsFragment(PostVaryings in [[stage_in]], depth2d<float> depthTex [[texture(0)]]) {
-    // 2 x 2 gathers; past the right and bottom edges clamp_to_edge repeats texels of this block.
-    float2 origin = floor(in.position.xy) * IV_SSR_BLOCK;
-    float2 invSize = 1.0 / float2(depthTex.get_width(), depthTex.get_height());
-    float4 nearest = 0.0;
-    for (int y = 0; y < IV_SSR_BLOCK; y += 2) {
-        for (int x = 0; x < IV_SSR_BLOCK; x += 2) {
-            nearest = max(nearest, depthTex.gather(ivPostNearest, (origin + float2(x, y) + 1.0) * invSize));
-        }
+/// Nearest (reverse-Z: largest) depth of each IV_SSR_BLOCK x IV_SSR_BLOCK block of the scene depth:
+/// one threadgroup per block, one thread per texel (clamped at the right and bottom edges), reduced
+/// across SIMD groups.
+kernel void ivSSRDepthBoundsKernel(depth2d<float, access::read> depthTex [[texture(0)]],
+                                   texture2d<float, access::write> bounds [[texture(1)]],
+                                   uint2 block [[threadgroup_position_in_grid]],
+                                   uint2 local [[thread_position_in_threadgroup]],
+                                   uint lane [[thread_index_in_simdgroup]],
+                                   uint simdIndex [[simdgroup_index_in_threadgroup]],
+                                   uint simdCount [[simdgroups_per_threadgroup]]) {
+    threadgroup float partial[32];
+    uint2 last = uint2(depthTex.get_width(), depthTex.get_height()) - 1;
+    float nearest = simd_max(depthTex.read(min(block * IV_SSR_BLOCK + local, last)));
+    if (lane == 0) partial[simdIndex] = nearest;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (simdIndex == 0) {
+        nearest = simd_max(lane < simdCount ? partial[lane] : 0.0);
+        if (lane == 0) bounds.write(float4(nearest), block);
     }
-    return max(max(nearest.x, nearest.y), max(nearest.z, nearest.w));
 }
 
-/// Last step index j >= i whose depth texel (nearest sampling) stays in block `block` along one axis,
-/// for texel coordinate a + b j; conservative (may undershoot by one step, never overshoots).
-static float lastStepInBlock(float a, float b, float block) {
-    if (b > 0.0) return floor((block * IV_SSR_BLOCK + IV_SSR_BLOCK - a) / b - 0.01);
-    if (b < 0.0) return floor((block * IV_SSR_BLOCK - a) / b - 0.01);
+/// Nearest depth of each IV_SSR_COARSE^2 block: the largest of the 4 x 4 IV_SSR_BLOCK blocks under it.
+kernel void ivSSRCoarseBoundsKernel(texture2d<float, access::read> bounds [[texture(0)]],
+                                    texture2d<float, access::write> coarse [[texture(1)]],
+                                    uint2 gid [[thread_position_in_grid]]) {
+    if (gid.x >= coarse.get_width() || gid.y >= coarse.get_height()) return;
+    const uint ratio = IV_SSR_COARSE / IV_SSR_BLOCK;
+    uint2 last = uint2(bounds.get_width(), bounds.get_height()) - 1;
+    float nearest = 0.0;
+    for (uint y = 0; y < ratio; y++) {
+        for (uint x = 0; x < ratio; x++) nearest = max(nearest, bounds.read(min(gid * ratio + uint2(x, y), last)).r);
+    }
+    coarse.write(float4(nearest), gid);
+}
+
+/// Last step index j >= i whose depth texel (nearest sampling) stays in block `block` (of `size`
+/// texels) along one axis, for texel coordinate a + b j; conservative (may undershoot by one step,
+/// never overshoots).
+static float lastStepInBlock(float a, float b, float block, float size) {
+    if (b > 0.0) return floor((block * size + size - a) / b - 0.01);
+    if (b < 0.0) return floor((block * size - a) / b - 0.01);
     return INFINITY;
+}
+
+/// Whether the march can jump from step i to `last` (the last step inside the `size`-texel block of
+/// `texel`) because the ray stays in front of the block's nearest surface or the block is background.
+static bool canSkip(texture2d<float> bounds, float size, float2 texel, float i, float totalStep, float2 texelBase,
+                    float2 texelStep, float recipVPZ, float recipD1VPZ, constant IVPostView &view, thread float &last) {
+    float2 block = floor(texel / size);
+    last = min(min(lastStepInBlock(texelBase.x, texelStep.x, block.x, size),
+                   lastStepInBlock(texelBase.y, texelStep.y, block.y, size)), totalStep - 1.0);
+    if (last <= i) return false;
+    float nearest = bounds.read(uint2(block)).r;
+    if (ivIsBackground(nearest)) return true;
+    float nearestZ = ivViewZ(nearest, view.near, view.far);
+    float rayZi = 1.0 / (recipVPZ + (i / totalStep) * (recipD1VPZ - recipVPZ));
+    float rayZl = 1.0 / (recipVPZ + (last / totalStep) * (recipD1VPZ - recipVPZ));
+    // A relative margin keeps the skip conservative under fast-math rounding.
+    return min(rayZi, rayZl) > nearestZ + 1e-3 * abs(nearestZ);
 }
 
 static float pointToLineDistance(float3 p, float3 a, float3 b) {
@@ -57,7 +98,8 @@ fragment float4 ivSSRFragment(PostVaryings in [[stage_in]],
                               depth2d<float> depthTex [[texture(1)]],
                               texture2d<float> normalTex [[texture(2)]],
                               texture2d<float> metalRoughTex [[texture(3)]],
-                              texture2d<float> boundsTex [[texture(4)]]) {
+                              texture2d<float> boundsTex [[texture(4)]],
+                              texture2d<float> coarseTex [[texture(5)]]) {
     float2 resolution = params.resolution;
     float2 depthSize = float2(depthTex.get_width(), depthTex.get_height());
     float2 uvPos = (floor(in.uv * depthSize) + 0.5) / depthSize;
@@ -115,23 +157,13 @@ fragment float4 ivSSRFragment(PostVaryings in [[stage_in]],
 
         float2 texel = floor(uvS * depthSize);
         if (all(texel >= 0.0) && all(texel < depthSize)) {
-            float2 block = floor(texel / IV_SSR_BLOCK);
-            float last = min(min(lastStepInBlock(texelBase.x, texelStep.x, block.x),
-                                 lastStepInBlock(texelBase.y, texelStep.y, block.y)), float(totalStep - 1));
-            if (last > float(i)) {
-                float nearest = boundsTex.read(uint2(block)).r;
-                bool skip = ivIsBackground(nearest);
-                if (!skip) {
-                    float nearestZ = ivViewZ(nearest, view.near, view.far);
-                    float rayZi = 1.0 / (recipVPZ + s * (recipD1VPZ - recipVPZ));
-                    float rayZl = 1.0 / (recipVPZ + (last / float(totalStep)) * (recipD1VPZ - recipVPZ));
-                    // A relative margin keeps the skip conservative under fast-math rounding.
-                    skip = min(rayZi, rayZl) > nearestZ + 1e-3 * abs(nearestZ);
-                }
-                if (skip) {
-                    i = int(last);
-                    continue;
-                }
+            float last;
+            if (canSkip(coarseTex, IV_SSR_COARSE, texel, float(i), float(totalStep), texelBase, texelStep, recipVPZ,
+                        recipD1VPZ, view, last)
+                || canSkip(boundsTex, IV_SSR_BLOCK, texel, float(i), float(totalStep), texelBase, texelStep, recipVPZ,
+                           recipD1VPZ, view, last)) {
+                i = int(last);
+                continue;
             }
         }
 

@@ -176,11 +176,22 @@ try {
     const { maxHitDamage } = await import('/src/net/limits.ts');
     const { WEAPON_DEFS } = await import('/src/weapons/defs.ts');
     const sync = window.__ironvale.game.net.sync;
-    const tally = { shots: 0, hits: 0, rejectedShots: 0, rejectedHits: 0, cappedHits: 0, reasons: [] };
+    const tally = { shots: 0, hits: 0, rejectedShots: 0, rejectedHits: 0, cappedHits: 0, reasons: [], maxFrameGapMs: 0, rejectAtMs: [] };
     window.__duel = tally;
+    // Diagnostics, not a gate: the longest gap between the page's frames (a stalled page receives the
+    // peer's backlog at once, which the WeaponGate rate-limits) and when each rejection happened.
+    const t0 = performance.now();
+    let last = t0;
+    const watch = (now) => {
+      tally.maxFrameGapMs = Math.max(tally.maxFrameGapMs, Math.round(now - last));
+      last = now;
+      requestAnimationFrame(watch);
+    };
+    requestAnimationFrame(watch);
     const reject = (kind, why) => {
       tally[kind]++;
       if (tally.reasons.length < 50) tally.reasons.push(why);
+      if (tally.rejectAtMs.length < 50) tally.rejectAtMs.push(Math.round(performance.now() - t0));
     };
     const gate = sync.gate.bind(sync);
     const wrapped = new Set();

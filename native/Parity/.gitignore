@@ -3,3 +3,5 @@
 *.csv
 *.json
 !railyard-poses.json
+# Parity pose sets are sources (capture-web.mjs, compare.mjs).
+!*-poses.json

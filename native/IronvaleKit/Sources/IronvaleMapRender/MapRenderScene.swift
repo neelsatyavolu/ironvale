@@ -32,9 +32,14 @@ public struct MapRenderScene: Decodable, Sendable {
         public let repeatUV: [Double]
         public let offset: [Double]
         public let rotation: Double
+        /// Raw data textures (kind "raw"): size, element type and whether three mipmaps them.
+        public let width: Int?
+        public let height: Int?
+        public let dataType: String?
+        public let generateMipmaps: Bool?
 
         enum CodingKeys: String, CodingKey {
-            case kind, uri, colorSpace, flipY, offset, rotation
+            case kind, uri, colorSpace, flipY, offset, rotation, width, height, dataType, generateMipmaps
             case repeatUV = "repeat"
         }
     }
@@ -70,6 +75,12 @@ public struct MapRenderScene: Decodable, Sendable {
         public let program: String?
         /// Hand-ported occlusion program of the material's aoNode, if any.
         public let aoProgram: String?
+        /// Hand-ported emission program of the material's emissiveNode, if any (maps after Railyard).
+        public let emissiveProgram: String?
+        /// three's blending mode (1 normal, 2 additive).
+        public let blending: Int?
+        /// Arguments of a parameterised factory's program (Harbor), in programs-harbor.ts order.
+        public let programArgs: [Double]?
         /// Texture index each node slot samples, for textures not in a material slot.
         public let nodeMaps: [String: Int]?
     }
@@ -131,6 +142,10 @@ public struct MapRenderScene: Decodable, Sendable {
     public let lights: [Light]
     /// Plan numbers the map's surface programs read (see RailyardProgramParams).
     public let programParams: ProgramParams?
+    /// The maps after Railyard: plan numbers as float4 rows (Shaders/MapSurface.h IV_HW_*, IV_RG_*).
+    public let programRows: [[Double]]?
+    /// Map-wide textures the programs sample, by name.
+    public let programTextures: [String: Int]?
 
     public struct ProgramParams: Decodable, Sendable {
         public struct Warehouse: Decodable, Sendable {

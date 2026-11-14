@@ -16,22 +16,28 @@ final class PostTargets {
     let ao: (any MTLTexture)?
     let ssr: (any MTLTexture)?
     let ssrBlur: (any MTLTexture)?
+    /// One view per mip of `ssrBlur`, for the blur kernel's writes.
+    let ssrBlurLevels: [any MTLTexture]
     /// Nearest depth per 16 x 16 block of scene depth texels (PostSSR.metal IV_SSR_BLOCK).
     let ssrDepthBounds: (any MTLTexture)?
     let godrays: (any MTLTexture)?
     let shaftsH: (any MTLTexture)?
     let shaftsV: (any MTLTexture)?
-    let composite: any MTLTexture
-    let motion: any MTLTexture
+    /// The composite and camera motion without MetalFX Temporal (PostTemporal owns them otherwise).
+    let composite: (any MTLTexture)?
+    let motion: (any MTLTexture)?
     private var bloomChain: (width: Int, height: Int, chain: BloomChain)?
     private let device: any MTLDevice
 
     /// SSRNode's blur target: base level plus the four pushed mipmaps.
     static let ssrBlurLevels = 5
-    /// PostSSR.metal IV_SSR_BLOCK.
+    /// Nearest depth per 64 x 64 block (PostSSR.metal IV_SSR_COARSE), from `ssrDepthBounds`.
+    let ssrCoarseBounds: (any MTLTexture)?
+    /// PostSSR.metal IV_SSR_BLOCK and IV_SSR_COARSE.
     static let ssrBlock = 16
+    static let ssrCoarse = 64
 
-    init(device: any MTLDevice, width: Int, height: Int, settings: PostSettings) throws {
+    init(device: any MTLDevice, width: Int, height: Int, settings: PostSettings, composite: Bool) throws {
         self.device = device
         func make(_ format: MTLPixelFormat, _ w: Int, _ h: Int, _ label: String, levels: Int = 1) throws -> any MTLTexture {
             try Self.texture(device: device, format: format, width: w, height: h, label: label, levels: levels)
@@ -52,13 +58,26 @@ final class PostTargets {
             // SSRNode.setSize: round(width x 0.5) for the march and the blur chain.
             let w = Self.round(width, 0.5), h = Self.round(height, 0.5)
             ssr = try make(.rgba16Float, w, h, "SSR")
-            ssrBlur = try make(.rgba16Float, w, h, "SSR blur", levels: min(Self.ssrBlurLevels, Self.maxLevels(w, h)))
-            ssrDepthBounds = try make(.r32Float, (width + Self.ssrBlock - 1) / Self.ssrBlock,
-                                      (height + Self.ssrBlock - 1) / Self.ssrBlock, "SSR depth bounds")
+            let blur = try Self.texture(device: device, format: .rgba16Float, width: w, height: h, label: "SSR blur",
+                                        levels: min(Self.ssrBlurLevels, Self.maxLevels(w, h)), usage: [.shaderRead, .shaderWrite])
+            ssrBlur = blur
+            ssrBlurLevels = try (0..<blur.mipmapLevelCount).map { level in
+                guard let view = blur.makeTextureView(pixelFormat: .rgba16Float, textureType: .type2D, levels: level..<level + 1,
+                                                      slices: 0..<1) else { throw RenderError.allocation("SSR blur mip \(level)") }
+                return view
+            }
+            ssrDepthBounds = try Self.texture(device: device, format: .r32Float, width: (width + Self.ssrBlock - 1) / Self.ssrBlock,
+                                              height: (height + Self.ssrBlock - 1) / Self.ssrBlock, label: "SSR depth bounds",
+                                              usage: [.shaderWrite, .shaderRead])
+            ssrCoarseBounds = try Self.texture(device: device, format: .r32Float, width: (width + Self.ssrCoarse - 1) / Self.ssrCoarse,
+                                               height: (height + Self.ssrCoarse - 1) / Self.ssrCoarse, label: "SSR coarse bounds",
+                                               usage: [.shaderWrite, .shaderRead])
         } else {
             ssr = nil
             ssrBlur = nil
+            ssrBlurLevels = []
             ssrDepthBounds = nil
+            ssrCoarseBounds = nil
         }
         if settings.volumetricLight && settings.shadowMapSize > 0 {
             // GodraysNode resolutionScale 0.5 (floor), the bilateral blur at the same scale.
@@ -71,8 +90,8 @@ final class PostTargets {
             shaftsH = nil
             shaftsV = nil
         }
-        composite = try make(.rgba16Float, width, height, "post composite")
-        motion = try make(.rg16Float, width, height, "camera motion")
+        self.composite = composite ? try make(.rgba16Float, width, height, "post composite") : nil
+        motion = composite ? try make(.rg16Float, width, height, "camera motion") : nil
     }
 
     func matches(width: Int, height: Int) -> Bool { scene.width == width && scene.height == height }
@@ -99,10 +118,10 @@ final class PostTargets {
     private static func maxLevels(_ w: Int, _ h: Int) -> Int { Int(log2(Double(max(w, h)))) + 1 }
 
     private static func texture(device: any MTLDevice, format: MTLPixelFormat, width: Int, height: Int, label: String,
-                                levels: Int = 1) throws -> any MTLTexture {
+                                levels: Int = 1, usage: MTLTextureUsage = [.renderTarget, .shaderRead]) throws -> any MTLTexture {
         let d = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: format, width: width, height: height, mipmapped: false)
         d.mipmapLevelCount = levels
-        d.usage = [.renderTarget, .shaderRead]
+        d.usage = usage
         d.storageMode = .private
         guard let t = device.makeTexture(descriptor: d) else { throw RenderError.allocation(label) }
         t.label = label

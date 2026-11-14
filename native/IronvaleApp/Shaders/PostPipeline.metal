@@ -16,19 +16,21 @@ struct CompositeOut {
     float2 motion [[color(1)]];
 };
 
-fragment CompositeOut ivPostCompositeFragment(PostVaryings in [[stage_in]],
-                                              constant IVPostView &view [[buffer(0)]],
-                                              constant IVPostCompositeParams &params [[buffer(1)]],
-                                              texture2d<float> sceneColor [[texture(0)]],
-                                              depth2d<float> depthTex [[texture(1)]],
-                                              texture2d<float> metalRoughTex [[texture(2)]],
-                                              texture2d<float> aoTex [[texture(3)]],
-                                              texture2d<float> ssrTex [[texture(4)]],
-                                              texture2d<float> shaftsTex [[texture(5)]]) {
+/// With MetalFX Temporal on, the composite also copies the scene depth: the composite, motion and
+/// depth targets are then allocated once at the largest scene size and this pass draws into their
+/// top-left corner at the current (dynamic) scene size, so the scaler keeps one set of inputs and its
+/// history while the resolution changes.
+struct CompositeTemporalOut {
+    float4 color [[color(0)]];
+    float2 motion [[color(1)]];
+    float depth [[depth(any)]];
+};
+
+static CompositeOut composite(float2 uv, float depth, constant IVPostView &view, constant IVPostCompositeParams &params,
+                              texture2d<float> sceneColor, texture2d<float> metalRoughTex, texture2d<float> aoTex,
+                              texture2d<float> ssrTex, texture2d<float> shaftsTex) {
     constexpr sampler trilinear(filter::linear, mip_filter::linear, address::clamp_to_edge);
-    float2 uv = in.uv;
     float4 color = sceneColor.sample(ivPostNearest, uv);
-    float depth = depthTex.sample(ivPostNearest, uv);
 
     if ((params.flags & IV_POST_AO) != 0) color.rgb *= aoTex.sample(ivPostLinear, uv).r;
     if ((params.flags & IV_POST_SSR) != 0) {
@@ -53,6 +55,37 @@ fragment CompositeOut ivPostCompositeFragment(PostVaryings in [[stage_in]],
     CompositeOut out;
     out.color = color;
     out.motion = previous - current;
+    return out;
+}
+
+fragment CompositeOut ivPostCompositeFragment(PostVaryings in [[stage_in]],
+                                              constant IVPostView &view [[buffer(0)]],
+                                              constant IVPostCompositeParams &params [[buffer(1)]],
+                                              texture2d<float> sceneColor [[texture(0)]],
+                                              depth2d<float> depthTex [[texture(1)]],
+                                              texture2d<float> metalRoughTex [[texture(2)]],
+                                              texture2d<float> aoTex [[texture(3)]],
+                                              texture2d<float> ssrTex [[texture(4)]],
+                                              texture2d<float> shaftsTex [[texture(5)]]) {
+    return composite(in.uv, depthTex.sample(ivPostNearest, in.uv), view, params, sceneColor, metalRoughTex, aoTex,
+                     ssrTex, shaftsTex);
+}
+
+fragment CompositeTemporalOut ivPostCompositeTemporalFragment(PostVaryings in [[stage_in]],
+                                                              constant IVPostView &view [[buffer(0)]],
+                                                              constant IVPostCompositeParams &params [[buffer(1)]],
+                                                              texture2d<float> sceneColor [[texture(0)]],
+                                                              depth2d<float> depthTex [[texture(1)]],
+                                                              texture2d<float> metalRoughTex [[texture(2)]],
+                                                              texture2d<float> aoTex [[texture(3)]],
+                                                              texture2d<float> ssrTex [[texture(4)]],
+                                                              texture2d<float> shaftsTex [[texture(5)]]) {
+    float depth = depthTex.sample(ivPostNearest, in.uv);
+    CompositeOut c = composite(in.uv, depth, view, params, sceneColor, metalRoughTex, aoTex, ssrTex, shaftsTex);
+    CompositeTemporalOut out;
+    out.color = c.color;
+    out.motion = c.motion;
+    out.depth = depth;
     return out;
 }
 

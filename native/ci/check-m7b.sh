@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # M7b exit check (PLAN.md section 7, M7b row): bots and co-op cross-play.
 #   1. nav-fixtures --check: native/Contract/nav matches what src/ai produces now (nav grids per map,
-#      and the bot logic fixtures: roles, spawns, perception, aim, gun timing, paths, cover)
+#      the bot logic fixtures: roles, spawns, perception, aim, gun timing, paths, cover, and the web's
+#      headless 8-bot skirmish per map, skirmish.json, the range native skirmishes are held to)
 #   2. Swift tests, IronvaleAITests (built per target and run with xctest, so another lane's test
 #      target cannot fail this check): nav grid node counts, edge masks, edge layers, cover masks equal
 #      the web's per map; the logic fixtures above; the headless 8-bot skirmish on Railyard and Headworks
@@ -64,10 +65,12 @@ for map in "${MAPS[@]}"; do
     echo "FAIL: the app's bot scenario failed on $map" >&2
     FAILED=1
   fi
-  # Independent reading of the log: 8 bots spawned, they moved (footsteps), fired and hit the player.
-  node - "$LOG" "$map" <<'JS' || FAILED=1
+  # Independent reading of the log: 8 bots spawned, they moved (footsteps), as many fired as in the web's
+  # own matches on this map (native/Contract/nav/skirmish.json, from src/ai), and they hit the player.
+  node - "$LOG" "$map" "$NATIVE/Contract/nav/skirmish.json" <<'JS' || FAILED=1
 const fs = require('fs');
-const [log, map] = process.argv.slice(2);
+const [log, map, referencePath] = process.argv.slice(2);
+const web = JSON.parse(fs.readFileSync(referencePath, 'utf8')).maps[map].botsThatFired;
 const lines = fs.readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const spawned = lines.filter((e) => e.event === 'spawned');
 const player = spawned[0]?.combatant;
@@ -75,10 +78,11 @@ const botIds = new Set(spawned.map((e) => e.combatant).filter((id) => id !== pla
 const shots = lines.filter((e) => e.event === 'shotFired' && botIds.has(e.shooter));
 const hits = lines.filter((e) => e.event === 'combatantHit' && e.target === player && botIds.has(e.attacker));
 const summary = lines.find((e) => e.event === 'botScenario');
-console.log(`${map}: ${botIds.size} bots, ${shots.length} bot shots, ${hits.length} hits on the player; app: ${JSON.stringify(summary)}`);
+const shooters = new Set(shots.map((e) => e.shooter)).size;
+console.log(`${map}: ${botIds.size} bots, ${shots.length} bot shots by ${shooters} bots (web ${web.min} to ${web.max}), ${hits.length} hits on the player; app: ${JSON.stringify(summary)}`);
 const problems = [];
 if (botIds.size !== 8) problems.push(`${botIds.size} bots spawned, want 8`);
-if (shots.length === 0) problems.push('no bot fired');
+if (shooters < web.min || shooters > web.max) problems.push(`${shooters} bots fired, the web's matches have ${web.min} to ${web.max}`);
 if (hits.length === 0) problems.push('no bot hit the player');
 if (!summary) problems.push('no botScenario line');
 if (!lines.some((e) => e.event === 'autopilotPassed')) problems.push('no autopilotPassed');

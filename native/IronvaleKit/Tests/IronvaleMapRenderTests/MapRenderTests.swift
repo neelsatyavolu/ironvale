@@ -89,7 +89,7 @@ func railyardRenderExportDecodes() throws {
         .railyardWood: "IV_PROGRAM_RY_WOOD", .railyardMatte: "IV_PROGRAM_RY_MATTE", .railyardCarton: "IV_PROGRAM_RY_CARTON",
         .railyardWrap: "IV_PROGRAM_RY_WRAP", .railyardPaint: "IV_PROGRAM_RY_PAINT", .railyardStain: "IV_PROGRAM_RY_STAIN",
         .railyardChainlink: "IV_PROGRAM_RY_CHAINLINK", .railyardWater: "IV_PROGRAM_RY_WATER",
-    ]
+    ].merging(mapProgramDefines) { a, _ in a }
     for (program, name) in expected { #expect(defines[name] == program.rawValue, "\(name)") }
     #expect(defines.count == expected.count)
 }

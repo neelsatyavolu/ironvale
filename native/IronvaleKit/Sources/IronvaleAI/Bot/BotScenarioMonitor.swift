@@ -1,6 +1,7 @@
 // The M7b skirmish gate, read from the game as it runs (used by IronvaleAITests and by the app's
 // `--autopilot --bots N` run, native/ci/check-m7b.sh): every bot spawned, each one moved off its
-// spawn, the squad fired and hit, nobody left the map, and no bot fired faster than its gun allows
+// spawn, as many of them fired as fire in the web's own matches (SkirmishReference), the squad hit the
+// player, nobody left the map, and no bot fired faster than its gun allows
 // (a web guest's WeaponGate would reject such a shot).
 import Foundation
 import IronvaleSim
@@ -34,12 +35,17 @@ public struct BotScenarioReport: Sendable, Equatable {
     }
 
     /// What is wrong for a skirmish against `expectEnemies` bots; empty when the gate passes.
-    public func failures(expectEnemies: Int) -> [String] {
+    /// `webFired` is how many distinct bots fire in the web's own matches on this map (`SkirmishReference`);
+    /// without one (a squad size or map the reference does not cover) at least one bot must fire.
+    public func failures(expectEnemies: Int, webFired: ClosedRange<Int>?) -> [String] {
         var failed: [String] = []
         if spawned < expectEnemies { failed.append("only \(spawned) of \(expectEnemies) bots spawned") }
         if leastTravel < 2 { failed.append("a bot never moved 2 m from its spawn (least travel \(String(format: "%.2f", leastTravel)) m)") }
         if botFootsteps == 0 { failed.append("no bot footsteps") }
-        if botsThatFired * 2 < expectEnemies { failed.append("only \(botsThatFired) of \(expectEnemies) bots fired") }
+        let fired = webFired ?? 1 ... expectEnemies
+        if !fired.contains(botsThatFired) {
+            failed.append("\(botsThatFired) of \(expectEnemies) bots fired, the web's matches have \(fired.lowerBound) to \(fired.upperBound)")
+        }
         if hitsOnPlayer == 0 { failed.append("no bot hit the player") }
         if outOfWorld > 0 { failed.append("\(outOfWorld) bot positions outside the map") }
         if rateViolations > 0 { failed.append("\(rateViolations) bot shots faster than the gun's rate of fire") }
@@ -54,7 +60,8 @@ public final class BotScenarioMonitor {
     private var origins: [Int: Vec3] = [:]
     private var travel: [Int: Double] = [:]
     private var lastShot: [Int: Double] = [:]
-    private var fired: Set<Int> = []
+    /// Bots that fired at least once.
+    public private(set) var firedIds: Set<Int> = []
     private var time = 0.0
     private var frameDt = 0.0
     private var unsubscribe: (() -> Void)?
@@ -79,7 +86,7 @@ public final class BotScenarioMonitor {
         case let .shotFired(shooterId, weapon, _, _, _):
             guard let bot = bots.bots.first(where: { $0.id == shooterId }) else { return }
             report.botShots += 1
-            fired.insert(shooterId)
+            firedIds.insert(shooterId)
             // The bot's cooldown carries the overshoot, so two rounds may come one frame closer than the nominal interval.
             let interval = 60 / (game.data.def(weapon)?.roundsPerMinute ?? bot.weaponDef.roundsPerMinute)
             if let last = lastShot[shooterId], time - last < interval - frameDt - 1e-6 { report.rateViolations += 1 }
@@ -107,7 +114,7 @@ public final class BotScenarioMonitor {
             if let origin = origins[bot.id] { travel[bot.id] = max(travel[bot.id] ?? 0, bot.position.distance(to: origin)) }
             if let bounds, !inside(bot.position, bounds) { report.outOfWorld += 1 }
         }
-        report.botsThatFired = fired.count
+        report.botsThatFired = firedIds.count
         report.leastTravel = travel.values.min() ?? 0
     }
 

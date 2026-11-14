@@ -13,6 +13,7 @@ enum Presentation {
         "--frames", "--frame-log", "--autopilot", "--flythrough", "--capture",
         "--offscreen", "--autohost", "--autojoin", "--duel-map", "--duel-shot",
         "--duel-hide", "--event-log", "--match-log", "--code-out", "--soldier-bench",
+        "--lobby-log", "--accept-invite", "--paste-join",
     ]
 
     static let background: Bool = {

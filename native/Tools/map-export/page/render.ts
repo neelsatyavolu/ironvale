@@ -8,7 +8,7 @@
 // render/textures/    canvas and image textures as PNG (t<index>.png), data textures as raw bytes
 import * as THREE from 'three/webgpu';
 import { ByteWriter, json, writeFile } from './io';
-import { aoProgramOf, instanceAttributeOf, nodeTexturesOf, programOf, type ProgramTable } from './programs';
+import { aoProgramOf, emissiveProgramOf, instanceAttributeOf, nodeTexturesOf, programArgsOf, programOf, type ProgramTable } from './programs';
 
 type Vec = number[];
 
@@ -36,6 +36,10 @@ interface RenderScene {
   skipped: { type: string; name: string; path: string }[];
   /** Plan numbers the map's surface programs read (programs.ts); absent for maps without programs. */
   programParams?: Record<string, unknown>;
+  /** The same for maps after Railyard, as float4 rows (programs.ts ProgramTable.rows). */
+  programRows?: number[][];
+  /** Map-wide textures the programs sample, by name: texture indices. */
+  programTextures?: Record<string, number>;
 }
 
 const TEXTURE_SLOTS = [
@@ -120,7 +124,8 @@ export async function exportRender(root: THREE.Object3D, mapId: string, dir: str
     meshes: [],
     lights: [],
     skipped: [],
-    ...(programs ? { programParams: programs.params } : {}),
+    ...(programs?.params ? { programParams: programs.params } : {}),
+    ...(programs?.rows ? { programRows: programs.rows } : {}),
   };
   const geometryIds = new Map<THREE.BufferGeometry, number>();
   const materialIds = new Map<THREE.Material, number>();
@@ -243,6 +248,9 @@ export async function exportRender(root: THREE.Object3D, mapId: string, dir: str
     if (programs) {
       record.program = programOf(programs, m);
       record.aoProgram = aoProgramOf(programs, m);
+      record.emissiveProgram = emissiveProgramOf(programs, m);
+      const args = programArgsOf(programs, m);
+      if (args) record.programArgs = args;
       const nodeMaps: Record<string, number> = {};
       for (const [slot, t] of Object.entries(nodeTexturesOf(m))) nodeMaps[slot] = texture(t);
       record.nodeMaps = nodeMaps;
@@ -252,6 +260,10 @@ export async function exportRender(root: THREE.Object3D, mapId: string, dir: str
     materialIds.set(m, scene.materials.length - 1);
     return scene.materials.length - 1;
   };
+
+  if (programs?.textures) {
+    scene.programTextures = Object.fromEntries(Object.entries(programs.textures(root)).map(([name, t]) => [name, texture(t)]));
+  }
 
   root.traverse((object) => {
     if (!object.visible) return;

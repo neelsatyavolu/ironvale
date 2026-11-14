@@ -41,6 +41,11 @@ private struct DynResFixture: Decodable {
     let flat = PostSettings.parse(["--no", "ssr,ao,godrays,bloom,aa,grain,shadows"])!
     #expect(flat.tier == .high && !flat.reflections && !flat.ambientOcclusion && !flat.bloom && flat.antiAliasing == .none)
     #expect(flat.shadowMapSize == 0)
+    #expect(high.targetFps == 60)
+    let fast = PostSettings.parse(["--q", "high", "--target-fps", "120", "--dynamic-resolution", "on"])!
+    #expect(fast.targetFps == 120 && fast.dynamicResolution && fast.renderScale == 0.85)
+    #expect(!PostSettings.parse(["--q", "high", "--target-fps", "120"])!.dynamicResolution)
+    #expect(PostSettings.parse(["--q", "high", "--target-fps", "90"])!.targetFps == 60)
 }
 
 @MainActor @Test func bloomTapsSumToTheGaussian() {

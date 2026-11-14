@@ -24,7 +24,7 @@ public final class StubFirefight: AudioHost {
             .init(sound: "snd-loop-water-lap", volume: 0.6, position: Vec3(2, -1.5, 30), radius: 30),
             .init(sound: "snd-loop-metal-creak", volume: 0.5, position: Vec3(12, 11, 6), radius: 28),
         ],
-        interiors: [.init(min: Vec3(-20, 0, -10), max: Vec3(0, 9, 10), reverb: .industrial)]
+        interiors: [.init(min: Vec3(-30, 0, -10), max: Vec3(0, 9, 10), reverb: .interior)]
     )
 
     static let weapons = [
@@ -64,7 +64,7 @@ public final class StubFirefight: AudioHost {
         time += dt
         heading += dt * 0.15
         position = Vec3(cos(heading) * 25, 0, sin(heading) * 25)
-        playerIndoors = position.x <= 0 && position.x >= -20 && abs(position.z) <= 10
+        playerIndoors = position.x <= 0 && position.x >= -30 && abs(position.z) <= 10
         playerCrouching = Int(time / 7) % 4 == 3
         let yaw = heading + .pi / 2
         let (c, s) = (cos(yaw), sin(yaw))

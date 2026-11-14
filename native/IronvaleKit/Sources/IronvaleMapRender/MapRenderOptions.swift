@@ -10,6 +10,7 @@ import IronvaleRender
 ///   --gpu-log PATH        write per-frame GPU times (frame,gpu_ms) on quit
 ///   --internal WxH        internal render size (default 2560x1600)
 ///   --repo PATH           repository root holding native/MapPackages, assets/ and public/
+///   --freeze              shader clocks read 0 (the web's ?freeze dev switch, for parity captures)
 public struct MapRenderOptions: Sendable, Equatable {
     public var mapId: String?
     public var pose: CameraPose?
@@ -20,6 +21,7 @@ public struct MapRenderOptions: Sendable, Equatable {
     public var internalWidth = 2560
     public var internalHeight = 1600
     public var repositoryRoot: String?
+    public var freeze = false
 
     public init() {}
 
@@ -56,6 +58,7 @@ public struct MapRenderOptions: Sendable, Equatable {
             case "--capture": options.capturePath = try value(arg)
             case "--gpu-log": options.gpuLogPath = try value(arg)
             case "--offscreen": options.offscreen = true
+            case "--freeze": options.freeze = true
             case "--repo": options.repositoryRoot = try value(arg)
             case "--internal":
                 let v = try value(arg)

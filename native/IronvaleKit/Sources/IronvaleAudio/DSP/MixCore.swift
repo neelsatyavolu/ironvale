@@ -3,7 +3,8 @@
 //
 //   44 voices: source (resampling read head, loop points, sample-accurate start and stop)
 //              -> biquad low-pass -> gain -> equal-power / stereo pan -> effects | ambience | interface
-//                                       \-> send -> reverb input (convolution arrives in M8b)
+//                 (HRTF voices: -> mono lane -> spatial mixer (HRTFHQ) -> their bus; SpatialLanes.swift)
+//                                       \-> send -> reverb input -> 2 crossfading convolvers -> effects
 //   beds:      source -> gain -> bed filter | ambience loops
 //   bed filter + ambience loops -> duck -> ambience -> world;  effects -> world
 //   world -> narrow low-pass -> master;  interface -> master
@@ -47,6 +48,11 @@ public final class MixCore: @unchecked Sendable {
     private var limiter: Limiter
     private let clip = SoftClip()
     private var listener = (position: (0.0, 0.0, 0.0), forward: (0.0, 0.0, -1.0), up: (0.0, 1.0, 0.0))
+    /// The two reverb slots (graph.ts convolvers), M8b.
+    let convolver: Convolver
+    /// HRTF lanes, M8b. `laneVoice[k]` is the voice slot lane k carries, or -1.
+    let lanes: SpatialLanes
+    private let laneVoice: UnsafeMutablePointer<Int32>
 
     /// Frames rendered so far; the audio clock is this over the sample rate.
     private let rendered = Atomic<Int64>(0)
@@ -55,6 +61,8 @@ public final class MixCore: @unchecked Sendable {
     /// Longest render call, in nanoseconds.
     public let longestRenderNanos = Atomic<Int>(0)
     public let renderCalls = Atomic<Int>(0)
+    /// Total time spent inside `render`, in nanoseconds (for the M8b CPU budget).
+    public let renderNanos = Atomic<Int>(0)
 
     public struct EndedVoice: Sendable, BitwiseCopyable {
         public let slot: Int32
@@ -88,6 +96,8 @@ public final class MixCore: @unchecked Sendable {
         var cutoff: RenderParam
         var send: RenderParam
         var filter = Biquad()
+        /// HRTF lane carrying this voice, or -1 (equal-power).
+        var lane = -1
     }
 
     // Scratch layout (Float32, maxFrames each).
@@ -121,6 +131,10 @@ public final class MixCore: @unchecked Sendable {
         bedFilter.setLowpass(frequency: 20000, qDB: 0.5, sampleRate: sampleRate)
         narrow.setLowpass(frequency: 20000, qDB: 0.5, sampleRate: sampleRate)
         limiter = Limiter(sampleRate: sampleRate)
+        convolver = Convolver(bank: ImpulseBank.shared(sampleRate: sampleRate))
+        lanes = SpatialLanes(sampleRate: sampleRate, maxFrames: MixCore.maxFrames)
+        laneVoice = .allocate(capacity: SpatialLanes.count)
+        laneVoice.initialize(repeating: -1, count: SpatialLanes.count)
     }
 
     deinit {
@@ -134,6 +148,7 @@ public final class MixCore: @unchecked Sendable {
         sounds.deallocate()
         scratch.deallocate()
         busBuffers.deallocate()
+        laneVoice.deallocate()
         clip.free()
     }
 
@@ -166,6 +181,7 @@ public final class MixCore: @unchecked Sendable {
         }
         let took = Int(DispatchTime.now().uptimeNanoseconds - began)
         renderCalls.add(1, ordering: .relaxed)
+        renderNanos.add(took, ordering: .relaxed)
         if Double(took) > Double(total) / sampleRate * 1e9 { overruns.add(1, ordering: .relaxed) }
         var longest = longestRenderNanos.load(ordering: .relaxed)
         while took > longest {
@@ -194,9 +210,12 @@ public final class MixCore: @unchecked Sendable {
         let dt = 1 / sampleRate
         let soundsReady = soundCount.load(ordering: .acquiring)
 
+        lanes.clear(frames: frames, maxFrames: MixCore.maxFrames)
         for i in 0..<MixCore.voiceCount {
             renderVoice(voices + i, slot: i, isBed: false, frames: frames, blockStart: blockStart, t0: t0, dt: dt, soundsReady: soundsReady)
         }
+        aimLanes()
+        lanes.render(frames: frames, effects: bus(.effects), ambience: bus(.ambienceLoops))
         for i in 0..<MixCore.bedCount {
             renderVoice(beds + i, slot: i, isBed: true, frames: frames, blockStart: blockStart, t0: t0, dt: dt, soundsReady: soundsReady)
         }
@@ -254,6 +273,7 @@ public final class MixCore: @unchecked Sendable {
             (monoL, monoR) = Panning.monoGains(azimuth: panValue * 90)
         }
         let law = Panning.stereoLaw(panValue)
+        let laneBuffer: UnsafeMutablePointer<Float>? = !isBed && v.pointee.lane >= 0 ? lanes.buffers + v.pointee.lane * MixCore.maxFrames : nil
         let channelStride = row.frames
         let frameCount = Double(row.frames)
         var position = v.pointee.position
@@ -292,7 +312,9 @@ public final class MixCore: @unchecked Sendable {
                 reverb.0[i] += l * s
                 reverb.1[i] += r * s
             }
-            if stereo {
+            if let laneBuffer {
+                laneBuffer[i] += stereo ? (l + r) * 0.5 : l
+            } else if stereo {
                 if law.toLeft {
                     target.0[i] += l + r * law.cosine
                     target.1[i] += r * law.sine
@@ -313,6 +335,7 @@ public final class MixCore: @unchecked Sendable {
 
     private func finish(_ v: UnsafeMutablePointer<Voice>, slot: Int, isBed: Bool) {
         v.pointee.playing = false
+        if !isBed { releaseLane(v) }
         if !isBed { ended.push(EndedVoice(slot: Int32(slot), generation: v.pointee.generation)) }
     }
 
@@ -320,6 +343,19 @@ public final class MixCore: @unchecked Sendable {
         let a = lane(.busA), b = lane(.busB), c = lane(.busC), d = lane(.busD)
         let effects = bus(.effects), loops = bus(.ambienceLoops), beds = bus(.bedFilterIn), interface = bus(.interface)
         let world = bus(.world), master = bus(.master)
+        // Reverb: send bus -> reverbIn gain -> the two convolver slots, each times its crossfade gain -> effects.
+        let reverb = bus(.reverbIn)
+        busParams[BusParam.reverbIn.rawValue].render(a, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
+        busParams[BusParam.reverb0.rawValue].render(b, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
+        busParams[BusParam.reverb1.rawValue].render(c, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
+        if convolver.isActive(0) || convolver.isActive(1) {
+            for i in 0..<frames {
+                reverb.0[i] *= a[i]
+                reverb.1[i] *= a[i]
+            }
+            convolver.process(slot: 0, frames: frames, inL: reverb.0, inR: reverb.1, gain: b, outL: effects.0, outR: effects.1)
+            convolver.process(slot: 1, frames: frames, inL: reverb.0, inR: reverb.1, gain: c, outL: effects.0, outR: effects.1)
+        }
         // Beds through the indoor low-pass, plus loops, ducked, then the ambience level.
         busParams[BusParam.bedFilter.rawValue].render(a, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
         busParams[BusParam.ambienceLoops.rawValue].render(b, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
@@ -342,10 +378,6 @@ public final class MixCore: @unchecked Sendable {
             master.0[i] = narrow.left(wl) + interface.0[i] * d[i]
             master.1[i] = narrow.right(wr) + interface.1[i] * d[i]
         }
-        // Reverb slot gains and the send bus keep time; convolution itself is M8b.
-        busParams[BusParam.reverbIn.rawValue].render(a, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
-        busParams[BusParam.reverb0.rawValue].render(a, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
-        busParams[BusParam.reverb1.rawValue].render(a, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
         busParams[BusParam.master.rawValue].render(b, frames: frames, t0: t0, dt: dt, sampleRate: sampleRate)
         let out = Float(bitPattern: outputGain.load(ordering: .relaxed))
         let trim = Float(AudioGraph.limiterTrim)
@@ -383,13 +415,15 @@ public final class MixCore: @unchecked Sendable {
         case let .route(slot, bus, positional):
             voices[Int(slot)].bus = bus
             voices[Int(slot)].positional = positional
+            let lane = voices[Int(slot)].lane
+            if lane >= 0 { lanes.laneMixer[lane] = bus == .ambience ? 1 : 0 }
         case let .position(slot, x, y, z):
             voices[Int(slot)].source = (x, y, z)
         case let .stereoPan(slot, pan):
             voices[Int(slot)].pan = pan
-        case .panningModel:
-            // HRTF lanes are M8b; every voice pans equal-power until then.
-            break
+        case let .panningModel(slot, hrtf):
+            let v = voices + Int(slot)
+            if hrtf { assignLane(v, slot: Int(slot)) } else { releaseLane(v) }
         case let .startBed(bed, start, destination):
             let v = beds + Int(bed) % MixCore.bedCount
             v.pointee.bedDestination = destination
@@ -398,7 +432,9 @@ public final class MixCore: @unchecked Sendable {
             beds[Int(bed) % MixCore.bedCount].stopSample = Int64((when * sampleRate).rounded())
         case let .listener(pose):
             listener = ((pose.px, pose.py, pose.pz), (pose.fx, pose.fy, pose.fz), (pose.ux, pose.uy, pose.uz))
-        case .reverbImpulse, .playBegin, .playEnd:
+        case let .reverbImpulse(slot, preset):
+            convolver.setImpulse(slot: Int(slot), response: preset.map(ImpulseBank.index(of:)) ?? -1)
+        case .playBegin, .playEnd:
             break
         }
     }
@@ -406,6 +442,8 @@ public final class MixCore: @unchecked Sendable {
     private func begin(_ v: UnsafeMutablePointer<Voice>, _ start: SourceStart) {
         let row = Int(start.sound)
         let rate = row >= 0 && row < MixCore.soundCapacity ? sounds[row].sampleRate : sampleRate
+        // A new source starts equal-power; the pool asks for HRTF again right after (pool.ts).
+        releaseLane(v)
         v.pointee.playing = true
         v.pointee.generation = start.generation
         v.pointee.sound = start.sound
@@ -416,5 +454,52 @@ public final class MixCore: @unchecked Sendable {
         v.pointee.loop = start.loop
         v.pointee.loopStart = start.loopStart * rate
         v.pointee.loopEnd = start.loopEnd * rate
+    }
+
+    // ---------------------------------------------------------------- HRTF lanes
+
+    /// Give a voice an HRTF lane: a free one, else one held by a voice that is fading out or silent.
+    /// With all 8 carrying live voices (the book never asks for more), it stays equal-power.
+    private func assignLane(_ v: UnsafeMutablePointer<Voice>, slot: Int) {
+        guard lanes.available, v.pointee.lane < 0, v.pointee.bus != .interface else { return }
+        var chosen = -1
+        for k in 0..<SpatialLanes.count where laneVoice[k] < 0 {
+            chosen = k
+            break
+        }
+        if chosen < 0 {
+            var soonest = Int64.max
+            for k in 0..<SpatialLanes.count {
+                let other = voices + Int(laneVoice[k])
+                let ends = other.pointee.playing ? other.pointee.stopSample : Int64.min
+                if ends < soonest {
+                    soonest = ends
+                    chosen = k
+                }
+            }
+            if chosen < 0 { return }
+            releaseLane(voices + Int(laneVoice[chosen]))
+        }
+        laneVoice[chosen] = Int32(slot)
+        v.pointee.lane = chosen
+        lanes.laneMixer[chosen] = v.pointee.bus == .ambience ? 1 : 0
+    }
+
+    private func releaseLane(_ v: UnsafeMutablePointer<Voice>) {
+        let lane = v.pointee.lane
+        if lane < 0 { return }
+        laneVoice[lane] = -1
+        lanes.laneMixer[lane] = -1
+        v.pointee.lane = -1
+    }
+
+    /// Point each lane at its voice, in the listener's frame (PannerNode azimuth and elevation).
+    private func aimLanes() {
+        let (p, f, u) = listener
+        for k in 0..<SpatialLanes.count where laneVoice[k] >= 0 {
+            let s = voices[Int(laneVoice[k])].source
+            let (azimuth, elevation) = Panning.direction(listener: p, forward: f, up: u, source: s)
+            lanes.aim(lane: k, azimuth: Float(azimuth), elevation: Float(elevation))
+        }
     }
 }

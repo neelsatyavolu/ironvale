@@ -1,0 +1,10 @@
+{
+  "note": "M9 parity poses for Harbor: [x, feet y, z, yaw degrees, pitch degrees], the ?pose= form; feet y is the ground under the pose, where the web's debugPose puts the player. Picked from scripts/dev/map-harbor-poses.json: the street, the boats in the basin, the square, the sea toward the sun, and the alley.",
+  "poses": {
+    "street": [44, 0, -1, 90, 2],
+    "boats": [4.2, 0, 23, 150, -14],
+    "square": [0, 0, 0.5, 0, 6],
+    "sea-sun": [-12, 0, 18.5, 138, -2],
+    "alley": [-30.75, 0, -4.5, 0, 10]
+  }
+}

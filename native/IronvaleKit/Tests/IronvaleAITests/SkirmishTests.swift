@@ -8,13 +8,13 @@ import IronvaleMapData
 import IronvaleSim
 import Testing
 
-private func play(_ mapId: String, enemies: Int, allies: Int, seconds: Double, difficulty: String = "veteran")
+private func play(_ mapId: String, enemies: Int, allies: Int, seconds: Double, difficulty: String = "veteran", seed: UInt32? = nil)
     throws -> (game: Game, bots: BotManager, monitor: BotScenarioMonitor) {
     let package = try MapPackage.load(directory: packagesRoot.appending(path: mapId))
     let settings = PlayerSettings.defaults("mouse")
     let input = BoundInput(settings: settings)
-    let game = Game(input: input, settings: settings, random: SeededRandomSource(seed: 11))
-    let bots = BotManager(game: game)
+    let game = Game(input: input, settings: settings, random: SeededRandomSource(seed: seed.map { $0 * 31 + 11 } ?? 11))
+    let bots = BotManager(game: game, seed: seed)
     game.bots = bots
     let monitor = BotScenarioMonitor(game: game, bots: bots)
     game.start(map: package, config: MatchConfig(mapId: mapId, mode: .skirmish, difficulty: difficulty, botCount: enemies))
@@ -30,14 +30,40 @@ private func play(_ mapId: String, enemies: Int, allies: Int, seconds: Double, d
     return (game, bots, monitor)
 }
 
+private let reference = try! SkirmishReference.load(contractRoot: nativeRoot.appending(path: "Contract"))
+
 @Test(arguments: ["railyard", "headworks"])
 func eightBotsHuntThePlayer(_ mapId: String) throws {
     let (game, bots, monitor) = try play(mapId, enemies: 8, allies: 0, seconds: 90)
     let report = monitor.report
     print("skirmish \(mapId): \(report.summary) phase \(game.phase.rawValue) deaths \(game.deaths) nav \(bots.stats.navNodes) nodes, update mean \(String(format: "%.3f", bots.stats.updateMs)) ms max \(String(format: "%.3f", bots.stats.updateMaxMs)) ms")
+    let failures = report.failures(expectEnemies: 8, webFired: reference.firedRange(mapId: mapId, bots: 8))
     #expect(report.spawned == 8)
-    #expect(report.failures(expectEnemies: 8).isEmpty, "\(report.failures(expectEnemies: 8))")
+    #expect(failures.isEmpty, "\(failures)")
     #expect(report.hitsOnPlayer > 0, "no bot ever hit the player")
+}
+
+/// Several native matches, each with its own squad and bullet dice, against the web's 16
+/// (native/Contract/nav/skirmish.json): every match inside the web's range of bots that fired, the
+/// mean inside it too, and the roles that fire are the web's (its marksman never got a shot off).
+@Test(arguments: ["railyard", "headworks"])
+func skirmishMatchesTheWebsRange(_ mapId: String) throws {
+    let web = try #require(reference.maps[mapId])
+    var fired: [Int] = []
+    var roles: [String: Int] = [:]
+    for seed in UInt32(1) ... 8 {
+        let (_, bots, monitor) = try play(mapId, enemies: 8, allies: 0, seconds: 90, seed: seed)
+        let report = monitor.report
+        fired.append(report.botsThatFired)
+        for id in monitor.firedIds { if let bot = bots.bots.first(where: { $0.id == id }) { roles[bot.role.rawValue, default: 0] += 1 } }
+        let failures = report.failures(expectEnemies: 8, webFired: web.firedRange)
+        #expect(failures.isEmpty, "seed \(seed): \(failures)")
+    }
+    let mean = Double(fired.reduce(0, +)) / Double(fired.count)
+    let webMean = Double(web.botsThatFired.min + web.botsThatFired.max) / 2
+    print("skirmish range \(mapId): native fired per match \(fired) mean \(String(format: "%.2f", mean)), roles \(roles); web \(web.firedRange) roles \(web.rolesFired)")
+    #expect(web.firedRange.contains(Int(mean.rounded())), "native mean \(mean) outside the web's \(web.firedRange) (web midpoint \(webMean))")
+    for role in roles.keys { #expect(web.rolesFired[role] != nil, "native \(role)s fired; the web's never did on \(mapId)") }
 }
 
 @Test(arguments: ["railyard", "headworks"])

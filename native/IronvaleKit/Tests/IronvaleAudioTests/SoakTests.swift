@@ -34,6 +34,8 @@ import Testing
         let start = DispatchTime.now().uptimeNanoseconds
         var frames = 0
         var maxVoices = 0
+        var maxLanes = 0
+        var crossfadeFrames = 0
         var events = 0
         while true {
             let elapsed = Double(DispatchTime.now().uptimeNanoseconds - start) / 1e9
@@ -44,6 +46,8 @@ import Testing
             events += batch.count
             session.frame(dt: dt, events: batch)
             maxVoices = max(maxVoices, session.engine.voicePool?.playing ?? 0)
+            maxLanes = max(maxLanes, (0..<SpatialLanes.count).filter { session.core.lanes.laneMixer[$0] >= 0 }.count)
+            if session.core.convolver.isActive(0) && session.core.convolver.isActive(1) { crossfadeFrames += 1 }
             frames += 1
         }
         session.output?.stop()
@@ -58,6 +62,9 @@ import Testing
             "deviceOverloads": session.output?.overloads ?? -1,
             "renderOverBudget": core.overruns.load(ordering: .relaxed),
             "longestRenderMicros": Double(core.longestRenderNanos.load(ordering: .relaxed)) / 1000,
+            "renderPercentOfCore": Double(core.renderNanos.load(ordering: .relaxed)) / 1e9 / SoakTests.seconds * 100,
+            "maxHrtfLanes": maxLanes,
+            "reverbCrossfadeFrames": crossfadeFrames,
             "budgetMicros": 128 / rate * 1e6,
             "renderThreadAllocations": mallocs,
             "droppedCommands": core.commands.droppedCount,

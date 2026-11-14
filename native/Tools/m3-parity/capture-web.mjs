@@ -8,10 +8,14 @@
 //
 // Weather is switched off by removing the FX root ('fx') from the scene, and the first-person
 // rig (the camera's children) and the DOM HUD are hidden: M3 renders static level geometry only.
-// The web clock, water and lamp flicker still run; freezing them is W5 (PLAN.md 13, Q4), which
-// needs a change under src/ and is pending the owner's approval.
+// Without --freeze the web clock, water and lamp flicker still run (W5, PLAN.md 13 Q4, is the
+// ?freeze switch below).
 //
-// Usage: node native/Tools/m3-parity/capture-web.mjs [--out DIR] [--no grain,aa] [--settle MS]
+// M9 map parity (check-m9maps.sh) adds --map ID (poses from native/Parity/<ID>-poses.json, files
+// named <ID>-<pose>.png) and --freeze, the web's ?freeze dev switch (src/core/freeze.ts): shader
+// clocks, FX, map animations and gun sway hold at time 0 so captures are deterministic.
+//
+// Usage: node native/Tools/m3-parity/capture-web.mjs [--out DIR] [--no grain,aa] [--settle MS] [--map ID] [--freeze]
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +32,9 @@ const option = (name, fallback) => {
 const out = resolve(option('out', join(repo, 'native/Parity/web')));
 const off = option('no', 'grain,aa');
 const settle = Number(option('settle', '2500'));
-const { poses } = JSON.parse(readFileSync(join(repo, 'native/Parity/railyard-poses.json'), 'utf8'));
+const mapId = option('map', 'railyard');
+const freeze = args.includes('--freeze');
+const { poses } = JSON.parse(readFileSync(join(repo, `native/Parity/${mapId}-poses.json`), 'utf8'));
 const names = Object.keys(poses);
 
 async function launch() {
@@ -54,7 +60,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 2 });
   page.on('pageerror', (e) => console.error(`[page error] ${e.message}`));
   const first = poses[names[0]].join(',');
-  const query = `autostart&map=railyard&bots=0&pose=${first}&q=high${off ? `&no=${off}` : ''}`;
+  const query = `autostart&map=${mapId}&bots=0&pose=${first}&q=high${off ? `&no=${off}` : ''}${freeze ? '&freeze' : ''}`;
   await page.goto(`${base}?${query}`, { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() => window.__ironvale?.ready || window.__ironvale?.error, null, { timeout: 300000 });
   const error = await page.evaluate(() => window.__ironvale?.error ?? null);
@@ -76,7 +82,7 @@ try {
       [x, y, z, yaw, pitch],
     );
     await page.waitForTimeout(settle);
-    const file = join(out, `railyard-${name}.png`);
+    const file = join(out, `${mapId}-${name}.png`);
     await page.locator('canvas#view').screenshot({ path: file, timeout: 120000 });
     const camera = await page.evaluate(() => {
       const c = window.__ironvale.game.engine.camera;

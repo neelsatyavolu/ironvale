@@ -141,6 +141,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // M9: --q TIER / --no LIST (the web's ?q= / ?no=) turn on the post chain at that preset.
         let post = PostSettings.parse(CommandLine.arguments.dropFirst())
         let renderer = try MapRenderer(assets: assets, device: device, library: library, settings: settings, post: post)
+        renderer.visualsFrozen = options.freeze
         let skipped = renderer.skipped.map { "\($0.path) (\($0.reason.rawValue))" }.joined(separator: ", ")
         Self.logger.info("Loaded \(mapId, privacy: .public) in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s: \(renderer.drawCount) draws, \(renderer.triangleCount) triangles; skipped: \(skipped, privacy: .public)")
         return renderer

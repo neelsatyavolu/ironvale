@@ -18,6 +18,8 @@ NATIVE="$(cd "$(dirname "$0")/.." && pwd)"
 ROOT="$(cd "$NATIVE/.." && pwd)"
 INTEROP="$NATIVE/Tools/interop"
 SCRATCH="${SCRATCH:-$NATIVE/IronvaleKit/.build-m6}"
+# swift runs from native/IronvaleKit: a relative SCRATCH is taken from the caller's directory.
+[[ "$SCRATCH" = /* ]] || SCRATCH="$PWD/$SCRATCH"
 export DERIVED_DATA="${DERIVED_DATA:-$NATIVE/DerivedData-m6}"
 MAPS="${M6_MAPS:-railyard headworks}"
 RUNS="${M6_RUNS:-5}"
@@ -56,8 +58,12 @@ step "dependencies"
 step "duel-rules fixtures --check"
 (cd "$ROOT" && NET_FIXTURES_CHECK=1 npx vitest run --config native/Tools/vitest.config.ts native/Tools/interop/duel-fixtures.test.ts)
 
-step "swift test (IronvaleNet)"
-(cd "$NATIVE/IronvaleKit" && swift test --scratch-path "$SCRATCH" --filter 'IronvaleNetTests')
+step "swift test (IronvaleNetTests)"
+# Built per target and run with xctest, so another lane's test target cannot fail this check.
+(cd "$NATIVE/IronvaleKit" && swift build --scratch-path "$SCRATCH" --target IronvaleNetTests)
+TEST_LOG="$SCRATCH/net-tests-m6.log"
+xcrun xctest "$(cd "$NATIVE/IronvaleKit" && swift build --scratch-path "$SCRATCH" --show-bin-path)/IronvaleNetTests.xctest" 2>&1 | tee "$TEST_LOG" | grep -E '✘|Test run' || true
+grep -q '✔ Test run with .* passed' "$TEST_LOG" || { echo "FAIL: IronvaleNetTests (see $TEST_LOG)" >&2; exit 1; }
 
 if [[ -n "${M6_APP:-}" ]]; then
   APP="$M6_APP"
