@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sparkle update feed for Ironvale for Mac (SUFeedURL). native/ci/publish-update.sh adds items;
+     the archives live on GitHub Releases (tags native-v<version>-<build>). -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Ironvale for Mac</title>
+    <link>https://ironvale.n3el.dev/native/appcast.xml</link>
+    <description>Updates for the native macOS build of Ironvale.</description>
+    <language>en</language>
+    <!-- items: newest first -->
+  </channel>
+</rss>
