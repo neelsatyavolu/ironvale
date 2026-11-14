@@ -39,6 +39,12 @@
 			</array>
 		</dict>
 	</array>
+	<key>SUFeedURL</key>
+	<string>https://ironvale.n3el.dev/native/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>XOP0aBeOxYn1M5KDUVu38u2m/ohBVnrl3DdcVVjObXI=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
 	<key>IVSignalURL</key>
 	<string>wss://ironvale-signal.n3el.dev</string>
 </dict>

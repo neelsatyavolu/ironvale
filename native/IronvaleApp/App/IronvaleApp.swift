@@ -29,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var frameLoop: FrameLoop?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Updater.start()
         do {
             let arguments = CommandLine.arguments.dropFirst()
             try launch(options: LaunchOptions.parse(arguments), map: MapRenderOptions.parse(arguments))
@@ -180,7 +181,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let output = device.makeTexture(descriptor: descriptor), let queue = device.makeCommandQueue() else {
             throw AppError.noMetalDevice
         }
-        // With the post chain, enough frames for MetalFX Temporal to converge (two jitter cycles), as
+        // With the post chain, enough frames for TRAA to converge (two jitter cycles), as
         // the web capture lets TRAA settle.
         let frames = renderer.postChain == nil ? 3 : 2 * PostChain.jitterPhases
         for frame in 0..<frames {

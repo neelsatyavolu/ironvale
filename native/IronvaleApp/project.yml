@@ -16,6 +16,10 @@ settings:
 packages:
   IronvaleKit:
     path: ../IronvaleKit
+  # Updates (docs/native-port/RELEASE.md). Exact version; release.sh signs its helpers.
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
 targets:
   Ironvale:
     type: application
@@ -32,6 +36,7 @@ targets:
     dependencies:
       - package: IronvaleKit
         product: IronvaleKit
+      - package: Sparkle
     settings:
       base:
         PRODUCT_NAME: Ironvale

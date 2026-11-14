@@ -38,6 +38,13 @@ ditto "$BUILT" "$APP"
 
 step "sign inside out with the hardened runtime"
 sign() { codesign --force --timestamp --options runtime --sign "$IDENTITY" "$@"; }
+# Sparkle's helpers first (Sparkle "Sandboxing and code signing" guide); the framework loop below signs the framework.
+SPARKLE="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
+[[ -d "$SPARKLE" ]] || fail "Sparkle.framework missing from the app"
+sign "$SPARKLE/XPCServices/Installer.xpc"
+sign --preserve-metadata=entitlements "$SPARKLE/XPCServices/Downloader.xpc"
+sign "$SPARKLE/Autoupdate"
+sign "$SPARKLE/Updater.app"
 while IFS= read -r -d '' framework; do sign "$framework"; done \
   < <(find "$APP/Contents/Frameworks" -maxdepth 1 -name '*.framework' -print0 2>/dev/null)
 while IFS= read -r -d '' dylib; do sign "$dylib"; done \

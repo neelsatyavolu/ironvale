@@ -10,3 +10,4 @@ xcuserdata/
 .build-app.lock/
 .wrangler/
 dist/
+.sparkle-tools/
