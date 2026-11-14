@@ -6,7 +6,16 @@ This covers M12 (PLAN.md section 7): a Developer ID signed, notarized, Sparkle-u
 
 `native/ci/release.sh` builds Release, re-signs it inside out with the Developer ID Application identity and the hardened runtime, runs it once, notarizes it with the `ironvale-notary` keychain profile, staples it and zips it into `native/dist/` (gitignored). The first run (build 38) came back Accepted, and `spctl` reports `source=Notarized Developer ID`.
 
-The identity and the profile came from 1Password: the "Apple Developer ID Certificate" item (.p12) and the App Store Connect API key in "Xanom Apple Dev Creds" (same team, VTQW687WBQ). Both are in this Mac's login keychain. `project.yml` stays ad-hoc so the check scripts can re-sign their test copies. Sections 1 to 3 below describe the same steps by hand. Sparkle (item 3 and step 4) is still open.
+The identity and the profile came from 1Password: the "Apple Developer ID Certificate" item (.p12) and the App Store Connect API key in "Xanom Apple Dev Creds" (same team, VTQW687WBQ). Both are in this Mac's login keychain. `project.yml` stays ad-hoc so the check scripts can re-sign their test copies. Sections 1 to 3 below describe the same steps by hand.
+
+## Sparkle updates: wired
+
+- **App side.** Sparkle 2.10.0 is added (`project.yml`). `App/Updater.swift` starts an `SPUStandardUpdaterController` and adds the app menu with "Check for Updates…". Background test runs never start it. `Info.plist` sets `SUFeedURL` = `https://ironvale.n3el.dev/native/appcast.xml`, `SUPublicEDKey` and automatic checks. `release.sh` signs Sparkle's Installer.xpc, Downloader.xpc, Autoupdate and Updater.app before the framework. Build 40 with Sparkle was notarized and Accepted.
+- **Key.** The EdDSA private key lives only in the 1Password item "Ironvale Sparkle Update Key" (Proton account, Private vault). The public key is in the same item. The key is not in any keychain or file; `publish-update.sh` pipes it from `op read` into `sign_update --ed-key-file -`.
+- **Feed and archives.** The feed is `site/native/appcast.xml` on `main`. The Vercel site build copies `site/` to the web root. Archives are about 290 MB, too big for the site, so each one is a GitHub Release asset (tag `native-v<version>-<build>`).
+- **Publishing a build.** Run `native/ci/release.sh`. Then, from this branch, run `APPCAST=<main checkout>/site/native/appcast.xml native/ci/publish-update.sh native/dist/Ironvale-<version>-<build>.zip`, and commit and push the appcast on `main`.
+
+The rest of this file is the original hand-written plan.
 
 ## Ready now
 

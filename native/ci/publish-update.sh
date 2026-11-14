@@ -2,11 +2,11 @@
 # Publishes a notarized build from native/ci/release.sh as a Sparkle update (docs/native-port/RELEASE.md):
 #   1. signs the zip with the Ironvale Sparkle EdDSA key, read from 1Password and passed on stdin (never written);
 #   2. uploads the zip to a GitHub release tagged native-v<version>-<build>;
-#   3. adds an <item> to public/native/appcast.xml. Commit that file on main and the web deploy serves it at
+#   3. adds an <item> to site/native/appcast.xml. Commit that file on main and the web deploy serves it at
 #      https://ironvale.n3el.dev/native/appcast.xml (SUFeedURL).
 # Usage: native/ci/publish-update.sh native/dist/Ironvale-<version>-<build>.zip
 #   OP_ACCOUNT=id          1Password account (default: the Proton account)
-#   APPCAST=path           appcast file to update (default public/native/appcast.xml in this checkout)
+#   APPCAST=path           appcast file to update (default site/native/appcast.xml in this checkout)
 #   NOTES="text"           release notes (plain text) for the update window and the GitHub release
 set -euo pipefail
 NATIVE="$(cd "$(dirname "$0")/.." && pwd)"
@@ -14,7 +14,7 @@ REPO="$(cd "$NATIVE/.." && pwd)"
 ZIP="${1:?usage: publish-update.sh path/to/Ironvale-VERSION-BUILD.zip}"
 ACCOUNT="${OP_ACCOUNT:-E3OXZANXQRDOBNXQMPXZ6YBHTY}"
 KEY_REF="op://Private/Ironvale Sparkle Update Key/password"
-APPCAST="${APPCAST:-$REPO/public/native/appcast.xml}"
+APPCAST="${APPCAST:-$REPO/site/native/appcast.xml}"
 SPARKLE_VERSION=2.10.0
 TOOLS="$NATIVE/.sparkle-tools/$SPARKLE_VERSION"
 GH_REPO="neelsatyavolu/ironvale"
