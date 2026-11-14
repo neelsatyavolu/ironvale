@@ -3,13 +3,40 @@
 // lights, image-based light from the prefiltered equirect chain, and the engine's fog.
 // Ported from three r180 (node_modules/three/src/nodes/functions/PhysicalLightingModel.js,
 // BSDF/*.js, lighting/*.js) and src/render/engine.ts (fog) at commit cbe0add.
-// Map-specific surface programs (colorNode, roughnessNode, ...) are M9 and not here.
+// Map surface programs (colorNode, roughnessNode, opacityNode, normalNode, aoNode, emissiveNode)
+// are chosen by the kProgram function constant and live in MapRailyard*.metal (MapSurface.h).
 #include <metal_stdlib>
 #include "ShaderTypes.h"
 #include "Common.h"
+#include "MapSurface.h"
+#include "MapRailyardShelter.metal"
+#include "MapRailyardLamps.metal"
+#include "MapRailyardGround.metal"
+#include "MapRailyardMaterials.metal"
+#include "MapRailyardSurfaces.metal"
+#include "MapRailyardContainerPaint.metal"
 using namespace metal;
 
 constant bool kAlphaTest [[function_constant(0)]];
+/// IV_PROGRAM_* of MapSurface.h; IV_PROGRAM_NONE is the generic material.
+constant uint kProgram [[function_constant(1)]];
+/// aoNode is the Railyard sky visibility (shelter.ts), times the aoMap occlusion when there is one.
+constant bool kSkyVisibility [[function_constant(2)]];
+/// emissiveNode is diffuseColor x the Railyard lamp glow (lamps.ts lampLit).
+constant bool kLampLit [[function_constant(3)]];
+/// The mesh carries a per-instance livery colour (container paint).
+constant bool kLivery [[function_constant(4)]];
+
+constant bool kNormalProgram = kProgram == IV_PROGRAM_RY_ASPHALT || kProgram == IV_PROGRAM_RY_QUAY || kProgram == IV_PROGRAM_RY_WATER;
+/// Programs whose colour node samples the colour texture (`texture(maps.color, uv())`) bound at IV_TEXTURE_PROGRAM.
+constant bool kProgramColorTexture = kProgram == IV_PROGRAM_RY_CLADDING || kProgram == IV_PROGRAM_RY_CONTAINER;
+/// Programs whose normal node normal-maps the texture bound at IV_TEXTURE_PROGRAM.
+constant bool kProgramNormalTexture = kProgram == IV_PROGRAM_RY_ASPHALT || kProgram == IV_PROGRAM_RY_QUAY;
+/// Programs that replace the albedo (three's colorNode); vertex colours still multiply in.
+constant bool kOpacityProgram = kProgram == IV_PROGRAM_RY_PAINT || kProgram == IV_PROGRAM_RY_STAIN || kProgram == IV_PROGRAM_RY_CHAINLINK;
+constant bool kProgramParams = kSkyVisibility || kLampLit;
+constant bool kColorProgram = kProgram != IV_PROGRAM_NONE && kProgram != IV_PROGRAM_RY_WATER
+    && kProgram != IV_PROGRAM_RY_STAIN && kProgram != IV_PROGRAM_RY_CHAINLINK;
 
 struct MapVaryings {
     float4 position [[position]];
@@ -18,6 +45,9 @@ struct MapVaryings {
     float2 uv;
     float3 color;
     float viewZ;
+    float3 localPosition;
+    float3 localNormal;
+    float3 livery;
 };
 
 static float4x4 instanceMatrix(constant IVDrawUniforms &draw, device const float4x4 *instances, uint iid) {
@@ -31,6 +61,7 @@ vertex MapVaryings ivMapVertex(uint vid [[vertex_id]],
                                device const packed_float2 *uvs [[buffer(IV_BUFFER_UV)]],
                                device const packed_float3 *colors [[buffer(IV_BUFFER_COLOR)]],
                                device const float4x4 *instances [[buffer(IV_BUFFER_INSTANCES)]],
+                               device const packed_float3 *liveries [[buffer(IV_BUFFER_LIVERY), function_constant(kLivery)]],
                                constant IVDrawUniforms &draw [[buffer(IV_BUFFER_DRAW)]],
                                constant IVFrameUniforms &frame [[buffer(IV_BUFFER_FRAME)]]) {
     float4x4 inst = instanceMatrix(draw, instances, iid);
@@ -50,6 +81,9 @@ vertex MapVaryings ivMapVertex(uint vid [[vertex_id]],
     out.uv = float2(uvs[vid]);
     out.color = draw.hasColor != 0 ? float3(colors[vid]) : float3(1.0);
     out.viewZ = (frame.view * world).z;
+    out.localPosition = local;
+    out.localNormal = float3(normals[vid]);
+    out.livery = kLivery ? float3(liveries[iid]) : float3(1.0);
     return out;
 }
 
@@ -112,7 +146,8 @@ static float distanceAttenuation(float d, float cutoff, float decay) {
     return falloff;
 }
 
-// three's perturbNormal2Arb (cotangent frame from screen derivatives). Metal's dfdy runs down
+// three's tangent frame from screen derivatives (accessors/TangentUtils.js), built on the raw uv():
+// three uploads flipY textures flipped, so its frame never sees the v flip our sampling applies. Metal's dfdy runs down
 // the screen, the opposite of GL's, so both y derivatives are negated to keep the frame's hand.
 static float3 perturbNormal(float3 p, float3 n, float2 uv, float3 mapN, float faceDirection) {
     float3 q0 = dfdx(p);
@@ -148,11 +183,44 @@ static float sunShadow(constant IVFrameUniforms &frame, depth2d<float> shadowMap
     return sum / 9.0;
 }
 
+// Runs the surface program's normal stage (geometry normal in, final normal out).
+static void runNormalProgram(thread IVSurface &s) {
+    switch (kProgram) {
+    case IV_PROGRAM_RY_ASPHALT: ivRailyardAsphalt(s, true); break;
+    case IV_PROGRAM_RY_QUAY: ivRailyardQuay(s, true); break;
+    case IV_PROGRAM_RY_WATER: ivRailyardSeaWaterNormal(s); break;
+    default: break;
+    }
+}
+
+// Runs the colour, roughness and opacity stage (final normal in s.n).
+static void runSurfaceProgram(thread IVSurface &s) {
+    switch (kProgram) {
+    case IV_PROGRAM_RY_ASPHALT: ivRailyardAsphalt(s, false); break;
+    case IV_PROGRAM_RY_QUAY: ivRailyardQuay(s, false); break;
+    case IV_PROGRAM_RY_FLOOR: ivRailyardFloor(s); break;
+    case IV_PROGRAM_RY_WALL: ivRailyardWall(s); break;
+    case IV_PROGRAM_RY_CLADDING: ivRailyardCladding(s); break;
+    case IV_PROGRAM_RY_CONTAINER: ivRailyardContainerPaint(s); break;
+    case IV_PROGRAM_RY_STEEL: ivRailyardSteel(s); break;
+    case IV_PROGRAM_RY_HAZARD: ivRailyardHazard(s); break;
+    case IV_PROGRAM_RY_WOOD: ivRailyardTimber(s); break;
+    case IV_PROGRAM_RY_MATTE: ivRailyardMatte(s); break;
+    case IV_PROGRAM_RY_CARTON: ivRailyardCardboard(s); break;
+    case IV_PROGRAM_RY_WRAP: ivRailyardShrinkWrap(s); break;
+    case IV_PROGRAM_RY_PAINT: ivRailyardRoadPaint(s); break;
+    case IV_PROGRAM_RY_STAIN: ivRailyardOilStain(s); break;
+    case IV_PROGRAM_RY_CHAINLINK: ivRailyardChainlink(s); break;
+    default: break;
+    }
+}
+
 fragment float4 ivMapFragment(MapVaryings in [[stage_in]],
                               bool frontFacing [[front_facing]],
                               constant IVFrameUniforms &frame [[buffer(IV_BUFFER_FRAME)]],
                               constant IVMaterialUniforms &mat [[buffer(IV_BUFFER_MATERIAL)]],
                               constant IVLight *lights [[buffer(IV_BUFFER_LIGHTS)]],
+                              constant float4 *programParams [[buffer(IV_BUFFER_PROGRAM_PARAMS), function_constant(kProgramParams)]],
                               texture2d<float> mapTex [[texture(IV_TEXTURE_MAP)]],
                               texture2d<float> normalTex [[texture(IV_TEXTURE_NORMAL)]],
                               texture2d<float> roughTex [[texture(IV_TEXTURE_ROUGHNESS)]],
@@ -160,13 +228,60 @@ fragment float4 ivMapFragment(MapVaryings in [[stage_in]],
                               texture2d<float> aoTex [[texture(IV_TEXTURE_AO)]],
                               texture2d<float> emissiveTex [[texture(IV_TEXTURE_EMISSIVE)]],
                               texture2d<float> environment [[texture(IV_TEXTURE_ENVIRONMENT)]],
-                              depth2d<float> shadowMap [[texture(IV_TEXTURE_SHADOW)]]) {
+                              depth2d<float> shadowMap [[texture(IV_TEXTURE_SHADOW)]],
+                              texture2d<float> programTex [[texture(IV_TEXTURE_PROGRAM)]]) {
     constexpr sampler material(filter::linear, mip_filter::linear, address::repeat, max_anisotropy(16));
     uint flags = mat.flags;
     float2 uv = (flags & IV_MAT_FLIP_Y) != 0 ? float2(in.uv.x, 1.0 - in.uv.y) : in.uv;
+    float faceDirection = frontFacing ? 1.0 : -1.0;
+    float3 geometryNormal = normalize(in.worldNormal) * faceDirection;
 
+    // three: diffuseColor = (colorNode ?? color x map) x vertex colour; alpha x (opacityNode ?? opacity).
     float4 base = mat.baseColor;
     if ((flags & IV_MAT_MAP) != 0) base *= mapTex.sample(material, uv);
+
+    IVSurface s;
+    s.p = in.worldPosition;
+    s.n = geometryNormal;
+    s.localP = in.localPosition;
+    s.localN = in.localNormal;
+    s.uv = in.uv;
+    s.uvDiagonalWidth = float2(fwidth(in.uv.x + in.uv.y), fwidth(in.uv.x - in.uv.y));
+    s.viewDepth = -in.viewZ;
+    s.time = frame.time;
+    s.livery = in.livery;
+    s.programTexel = kProgramColorTexture ? programTex.sample(material, uv) : float4(1.0);
+    s.programNormal = geometryNormal;
+    if (kProgramNormalTexture) {
+        float3 mapN = programTex.sample(material, uv).xyz * 2.0 - 1.0;
+        s.programNormal = perturbNormal(in.worldPosition, geometryNormal, in.uv, mapN, faceDirection);
+    }
+    s.materialColor = base.rgb;
+    float roughness = mat.roughness;
+    if ((flags & IV_MAT_ROUGHNESS_MAP) != 0) roughness *= roughTex.sample(material, uv).g;
+    s.materialRoughness = roughness;
+    s.color = base.rgb;
+    s.opacity = base.a;
+    s.roughness = roughness;
+
+    // Final normal: the program's normal node, else the normal map, else the geometry normal.
+    float3 n = geometryNormal;
+    if (kNormalProgram) {
+        s.normal = geometryNormal;
+        runNormalProgram(s);
+        n = s.normal;
+    } else if ((flags & IV_MAT_NORMAL_MAP) != 0 && (flags & IV_MAT_UNLIT) == 0) {
+        float3 mapN = normalTex.sample(material, uv).xyz * 2.0 - 1.0;
+        mapN.xy *= mat.normalScale;
+        n = perturbNormal(in.worldPosition, geometryNormal, in.uv, mapN, faceDirection);
+    }
+    s.n = n;
+    s.normal = n;
+    if (kProgram != IV_PROGRAM_NONE) runSurfaceProgram(s);
+    // A vec3 colour node has alpha 1, so the map's alpha drops out; an opacity node replaces opacity.
+    if (kColorProgram) base = float4(s.color, mat.baseColor.a);
+    if (kOpacityProgram) base.a = (kColorProgram ? 1.0 : base.a / max(mat.baseColor.a, 1e-6)) * s.opacity;
+    roughness = s.roughness;
     if ((flags & IV_MAT_VERTEX_COLORS) != 0) base.rgb *= in.color;
     if (kAlphaTest && base.a < mat.alphaTest) discard_fragment();
 
@@ -175,18 +290,8 @@ fragment float4 ivMapFragment(MapVaryings in [[stage_in]],
     if ((flags & IV_MAT_UNLIT) != 0) {
         color = base.rgb;
     } else {
-        float faceDirection = frontFacing ? 1.0 : -1.0;
-        float3 geometryNormal = normalize(in.worldNormal) * faceDirection;
-        float3 n = geometryNormal;
-        if ((flags & IV_MAT_NORMAL_MAP) != 0) {
-            float3 mapN = normalTex.sample(material, uv).xyz * 2.0 - 1.0;
-            mapN.xy *= mat.normalScale;
-            n = perturbNormal(in.worldPosition, geometryNormal, uv, mapN, faceDirection);
-        }
         float3 v = normalize(toCamera);
 
-        float roughness = mat.roughness;
-        if ((flags & IV_MAT_ROUGHNESS_MAP) != 0) roughness *= roughTex.sample(material, uv).g;
         float metalness = mat.metalness;
         if ((flags & IV_MAT_METALNESS_MAP) != 0) metalness *= metalTex.sample(material, uv).b;
         // three: max(roughness, 0.0525) + geometryRoughness, capped at 1.
@@ -251,14 +356,18 @@ fragment float4 ivMapFragment(MapVaryings in [[stage_in]],
         float3 indirectSpecular = radiance * singleScattering + multiScattering * cosineWeightedIrradiance;
         indirectDiffuse += diffuse * cosineWeightedIrradiance;
 
-        if ((flags & IV_MAT_AO_MAP) != 0) {
-            float ao = (aoTex.sample(material, uv).r - 1.0) * mat.aoMapIntensity + 1.0;
+        // three: aoNode (or aoMap) scales indirect diffuse and, through specular occlusion, indirect specular.
+        bool hasAO = (flags & IV_MAT_AO_MAP) != 0 || kSkyVisibility;
+        if (hasAO) {
+            float ao = (flags & IV_MAT_AO_MAP) != 0 ? (aoTex.sample(material, uv).r - 1.0) * mat.aoMapIntensity + 1.0 : 1.0;
+            if (kSkyVisibility) ao *= ivRailyardSkyVisibility(in.worldPosition, programParams);
             indirectDiffuse *= ao;
             indirectSpecular *= saturate(pow(dotNV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao);
         }
 
         float3 emissive = mat.emissive;
         if ((flags & IV_MAT_EMISSIVE_MAP) != 0) emissive *= emissiveTex.sample(material, uv).rgb;
+        if (kLampLit) emissive = base.rgb * ivRailyardLampGlow(in.worldPosition, n, programParams);
         color = directDiffuse + indirectDiffuse + directSpecular + indirectSpecular + emissive;
     }
 

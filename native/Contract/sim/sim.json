@@ -1,0 +1,251 @@
+{
+ "aim": {
+  "LOWER_SPEEDUP": 1.25
+ },
+ "ballistics": {
+  "BOLT_EJECT_DELAY": 0.6,
+  "CASING_BEHIND_MUZZLE": 0.45,
+  "CASING_SIDE_SPEED": 2.2,
+  "CASING_UP_SPEED": 1.5,
+  "INSTANT_RANGE": 80,
+  "NEAR_MISS_RADIUS": 1.2
+ },
+ "controller": {
+  "AIM_SPEED_FACTOR": 0.55,
+  "AIR_ACCEL": 6,
+  "COYOTE_TIME": 0.1,
+  "CROUCH_EYE": 1.08,
+  "CROUCH_HEIGHT": 1.2,
+  "CROUCH_SPEED": 2.1,
+  "FRICTION": 9.5,
+  "GRAVITY": 17.5,
+  "GROUND_ACCEL": 48,
+  "JUMP_SPEED": 5.1,
+  "MAX_PITCH": 1.5009831567151235,
+  "RADIUS": 0.34,
+  "REGEN_DELAY": 5,
+  "REGEN_PER_SECOND": 18,
+  "SPRINT_SPEED": 6.4,
+  "STAND_EYE": 1.64,
+  "STAND_HEIGHT": 1.8,
+  "STRIDE_RUN": 2.1,
+  "STRIDE_WALK": 1.55,
+  "WALK_SPEED": 4.2
+ },
+ "engine": {
+  "MAX_FRAME_DT": 0.05
+ },
+ "game": {
+  "DEFAULT_KILL_TARGET": 10,
+  "KILL_FEED_SECONDS": 6,
+  "PLAYER_LIVES": 3,
+  "RESPAWN_SECONDS": 3,
+  "SNAPSHOT_INTERVAL": 0.05,
+  "SURVIVAL_SOLO_LIVES": 2,
+  "SURVIVAL_WAVE_GROWTH": 2,
+  "SURVIVAL_WAVE_PAUSE": 5,
+  "WIN_DELAY_SECONDS": 3.5
+ },
+ "grenadeHand": {
+  "FOLLOW_THROUGH_SECONDS": 0.3,
+  "GRENADES_PER_MATCH": 1,
+  "LOWER_SECONDS": 0.16,
+  "RAISE_SECONDS": 0.28
+ },
+ "grenadeMath": {
+  "BLAST_LIFT": 0.25,
+  "CONTACTS_PER_STEP": 2,
+  "LOOKAHEAD_RADII": 4,
+  "REST_NORMAL_Y": 0.7
+ },
+ "grenadeThrow": {
+  "HAND_OFFSET": [0.2,-0.16,-0.3]
+ },
+ "grenades": {
+  "BOUNCE_GAP_SECONDS": 0.09,
+  "CHEST_SHARE": 0.75,
+  "DETONATE_GRACE_SECONDS": 1.5,
+  "DETONATE_TOLERANCE": 6,
+  "MAX_STEPS_PER_FRAME": 8,
+  "POOL_SIZE": 4
+ },
+ "handling": {
+  "SPRINT_HOLD_OFF_SECONDS": 0.35,
+  "SPRINT_IN_SECONDS": 0.22,
+  "SPRINT_OUT_SECONDS": 0.16,
+  "SPRINT_READY_BLEND": 0.3,
+  "classes": {
+   "carbine": {
+    "hip": [0.125,-0.2,-0.3],
+    "hipTilt": [0.08,0.066,-0.04],
+    "lowerTime": 0.28,
+    "raiseTime": 0.35
+   },
+   "lmg": {
+    "hip": [0.135,-0.21,-0.3],
+    "hipTilt": [0.07,0.066,-0.05],
+    "lowerTime": 0.45,
+    "raiseTime": 0.65
+   },
+   "pistol": {
+    "hip": [0.11,-0.115,-0.42],
+    "hipTilt": [0.04,0.06,-0.03],
+    "lowerTime": 0.2,
+    "raiseTime": 0.25
+   },
+   "rifle": {
+    "hip": [0.125,-0.19,-0.28],
+    "hipTilt": [0.08,0.066,-0.04],
+    "lowerTime": 0.3,
+    "raiseTime": 0.4
+   },
+   "shotgun": {
+    "hip": [0.125,-0.19,-0.28],
+    "hipTilt": [0.08,0.066,-0.04],
+    "lowerTime": 0.3,
+    "raiseTime": 0.4
+   },
+   "smg": {
+    "hip": [0.12,-0.19,-0.3],
+    "hipTilt": [0.08,0.066,-0.04],
+    "lowerTime": 0.25,
+    "raiseTime": 0.3
+   },
+   "sniper": {
+    "hip": [0.125,-0.2,-0.28],
+    "hipTilt": [0.08,0.066,-0.04],
+    "lowerTime": 0.35,
+    "raiseTime": 0.5
+   }
+  }
+ },
+ "input": {
+  "LOOK_SPIKE_PX": 600,
+  "WHEEL_QUIET_MS": 180,
+  "WHEEL_THRESHOLD": 50,
+  "bindings": {
+   "mouse": {
+    "aim": ["Mouse2"],
+    "crouch": ["KeyC","ControlLeft"],
+    "fire": ["Mouse0"],
+    "grenade": ["KeyG"],
+    "holdBreath": ["ShiftLeft"],
+    "jump": ["Space"],
+    "moveBack": ["KeyS","ArrowDown"],
+    "moveForward": ["KeyW","ArrowUp"],
+    "moveLeft": ["KeyA","ArrowLeft"],
+    "moveRight": ["KeyD","ArrowRight"],
+    "pause": ["Escape","KeyP"],
+    "reload": ["KeyR"],
+    "scores": ["KeyE","Tab"],
+    "slot1": ["Digit1"],
+    "slot2": ["Digit2"],
+    "slot3": ["Digit3"],
+    "slot4": ["Digit4"],
+    "slot5": ["Digit5"],
+    "slot6": ["Digit6"],
+    "sprint": ["ShiftLeft"],
+    "weaponNext": ["WheelDown","BracketRight"],
+    "weaponPrev": ["WheelUp","BracketLeft"]
+   },
+   "trackpad": {
+    "aim": ["KeyQ","Mouse2"],
+    "crouch": ["KeyC"],
+    "fire": ["Mouse0"],
+    "grenade": ["KeyG"],
+    "holdBreath": ["ShiftLeft"],
+    "jump": ["Space"],
+    "moveBack": ["KeyS","ArrowDown"],
+    "moveForward": ["KeyW","ArrowUp"],
+    "moveLeft": ["KeyA","ArrowLeft"],
+    "moveRight": ["KeyD","ArrowRight"],
+    "pause": ["Escape","KeyP"],
+    "reload": ["KeyR"],
+    "scores": ["KeyE","Tab"],
+    "slot1": ["Digit1"],
+    "slot2": ["Digit2"],
+    "slot3": ["Digit3"],
+    "slot4": ["Digit4"],
+    "slot5": ["Digit5"],
+    "slot6": ["Digit6"],
+    "sprint": ["ShiftLeft"],
+    "weaponNext": ["WheelDown","BracketRight"],
+    "weaponPrev": ["WheelUp","BracketLeft"]
+   }
+  },
+  "controlPresets": {
+   "mouse": {
+    "adsSensitivity": 0.7,
+    "adsToggle": false,
+    "aimAssist": 0,
+    "invertY": false,
+    "lookSmoothing": 0,
+    "preset": "mouse",
+    "rawInput": true,
+    "sensitivity": 70
+   },
+   "trackpad": {
+    "adsSensitivity": 0.6,
+    "adsToggle": true,
+    "aimAssist": 0.6,
+    "invertY": false,
+    "lookSmoothing": 0.35,
+    "preset": "trackpad",
+    "rawInput": false,
+    "sensitivity": 130
+   }
+  },
+  "defaultGameplay": {
+   "fov": 78,
+   "headBob": 1
+  }
+ },
+ "loadout": {
+  "RESERVED": {
+   "m7": ["veteran","elite"],
+   "scarh": ["veteran","elite"]
+  }
+ },
+ "machine": {
+  "PRESS_BUFFER": 0.2
+ },
+ "plans": {
+  "BOLT_CYCLE": [
+   [0.2,"boltLift"],
+   [0.36,"boltBack","eject"],
+   [0.62,"boltForward"],
+   [0.8,"boltClose","chamber"]
+  ],
+  "BOLT_TOP_UP_FACTOR": 0.62,
+  "CHARGE_SECONDS": 0.45,
+  "HANDS_LEAD": 0.1,
+  "HANDS_TAIL": 0.08,
+  "TACTICAL_FACTOR": 0.78
+ },
+ "playerWeapons": {
+  "DEFAULT_SWITCH_TIMES": {
+   "lowerTime": 0.3,
+   "raiseTime": 0.4
+  },
+  "GRENADE_READY": 0.3,
+  "SCOPED_AT": 0.9
+ },
+ "recoil": {
+  "AIMED_BLOOM": 0.2,
+  "AIMED_KICK": 0.75,
+  "AIMED_MOVE": 0.35,
+  "AIR_SPREAD_FACTOR": 0.6,
+  "AIR_SPREAD_MIN": 1,
+  "BLOOM_PER_SHOT": 0.16,
+  "BLOOM_RECOVERY": 5,
+  "CROUCHED": 0.8,
+  "FULL_MOVE_SPEED": 5,
+  "GROWTH_PER_SHOT": 0.045,
+  "HEAT_DRAIN_PER_SECOND": 14,
+  "HEAT_HOLD_SECONDS": 0.14,
+  "KICK_APPLY_RATE": 38,
+  "KICK_RETURN_RATE": 6.5,
+  "MAX_BLOOM": 1,
+  "MAX_HEAT": 9
+ }
+}

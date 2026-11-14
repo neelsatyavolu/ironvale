@@ -1,0 +1,275 @@
+{
+  "DROP_SPEED": -0.6,
+  "FINGER_CURL": {
+    "Left": [
+      1.25,
+      0.9,
+      0.5
+    ],
+    "Right": [
+      0.95,
+      1.2,
+      0.8
+    ]
+  },
+  "FLINCH_RISE": 0.065,
+  "FOREARM_TWIST_SHARE": 0.55,
+  "GRAVITY": 9.8,
+  "MAX_CADENCE": 2.4,
+  "MAX_HIP_YAW": 0.9599310885968813,
+  "MAX_REACH": 0.995,
+  "PALM_DEPTH": 0.028,
+  "PALM_FORWARD": 0.085,
+  "RECOIL_DECAY": 24,
+  "REST_HEIGHT": 0.035,
+  "REVERSE_ANGLE": 1.8325957145940461,
+  "REVERSE_HYSTERESIS": 0.20943951023931953,
+  "SHOT_INTERVAL": 0.095,
+  "SPINE_SHARE": {
+    "Spine": 0.3,
+    "Spine1": 0.35,
+    "Spine2": 0.35
+  },
+  "TEAM_TINT": {
+    "alpha": {
+      "amount": 0.7,
+      "color": 9403742,
+      "gain": 1.75
+    },
+    "bravo": {
+      "amount": 0.92,
+      "color": 5200436,
+      "gain": 2
+    }
+  },
+  "THUMB_FOLD": {
+    "Left": [
+      0.25,
+      0.2,
+      0.2
+    ],
+    "Right": [
+      0.5,
+      0.35,
+      0.3
+    ]
+  },
+  "TUNING": {
+    "aimHold": 0.6,
+    "aimLean": -0.2,
+    "aimShrug": 0.2,
+    "aimTime": 0.18,
+    "bladeAimed": -0.62,
+    "bladeReady": -0.3,
+    "carryHold": 0.6,
+    "carryLean": -0.42,
+    "carrySpeed": 4.4,
+    "carryTime": 0.3,
+    "cheekRoll": -0.28,
+    "chestHold": 0.82,
+    "chestPitchShare": 0.55,
+    "collarSettle": 0.8,
+    "crouchLean": -0.36,
+    "crouchMoveLean": -0.22,
+    "crouchTime": 0.22,
+    "headHold": 1,
+    "headingRate": 9,
+    "maxPaceLean": 0.3,
+    "maxPitch": 1.2,
+    "minHeadingSpeed": 0.35,
+    "paceLean": 0.075,
+    "readyLean": -0.12,
+    "reloadSeconds": 2.3,
+    "sightNod": -0.2
+  },
+  "ankleHeight": 0.1015,
+  "carbine": {
+    "butt": [
+      0,
+      0.0923,
+      0.2892
+    ],
+    "magazine": {
+      "fingers": [
+        0.85,
+        0.3,
+        -0.3
+      ],
+      "position": [
+        -0.012,
+        -0.07,
+        -0.15
+      ],
+      "thumb": [
+        -0.3,
+        0.2,
+        -0.9
+      ]
+    },
+    "muzzle": [
+      0,
+      0.0969,
+      -0.5508
+    ],
+    "support": {
+      "fingers": [
+        0.85,
+        0.25,
+        -0.45
+      ],
+      "position": [
+        -0.06,
+        0.045,
+        -0.26
+      ],
+      "thumb": [
+        -0.45,
+        0.25,
+        -0.85
+      ]
+    },
+    "trigger": {
+      "fingers": [
+        0,
+        -0.35,
+        -1
+      ],
+      "position": [
+        0.012,
+        0,
+        0.006
+      ],
+      "thumb": [
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "carbinePoints": {
+    "butt": [
+      0,
+      0.0923,
+      0.2892
+    ],
+    "muzzle": [
+      0,
+      0.0969,
+      -0.5508
+    ]
+  },
+  "clipBones": [
+    "Hips",
+    "Spine",
+    "Spine1",
+    "Spine2",
+    "Neck",
+    "Head",
+    "LeftShoulder",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftUpLeg",
+    "LeftLeg",
+    "LeftFoot",
+    "LeftToeBase",
+    "RightShoulder",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightUpLeg",
+    "RightLeg",
+    "RightFoot",
+    "RightToeBase"
+  ],
+  "clipFps": 30,
+  "clipMeta": {
+    "crouchIdle": {
+      "duration": 2.9333,
+      "frames": 88,
+      "loop": true
+    },
+    "crouchJog": {
+      "duration": 1.3333,
+      "frames": 40,
+      "loop": true,
+      "speed": 1.085,
+      "strike": 0
+    },
+    "crouchWalk": {
+      "duration": 2,
+      "frames": 60,
+      "loop": true,
+      "speed": 1.036,
+      "strike": 0.967
+    },
+    "death": {
+      "duration": 2.4,
+      "frames": 73,
+      "loop": false
+    },
+    "deathFront": {
+      "duration": 1.2333,
+      "frames": 38,
+      "loop": false
+    },
+    "idle": {
+      "duration": 2.5,
+      "frames": 75,
+      "loop": true
+    },
+    "jog": {
+      "duration": 0.9333,
+      "frames": 28,
+      "loop": true,
+      "speed": 3.115,
+      "strike": 0.893
+    },
+    "run": {
+      "duration": 0.9333,
+      "frames": 28,
+      "loop": true,
+      "speed": 4.259,
+      "strike": 0.893
+    },
+    "walk": {
+      "duration": 1.3333,
+      "frames": 40,
+      "loop": true,
+      "speed": 1.282,
+      "strike": 0
+    }
+  },
+  "death": {
+    "blendTime": 0.16,
+    "frontCone": 1.2217304763960306,
+    "ikRelease": 0.14,
+    "maxTurn": 1.2217304763960306,
+    "turnTime": 0.4,
+    "variants": {
+      "back": {
+        "clip": "death",
+        "rate": 1.35,
+        "start": 0.32
+      },
+      "front": {
+        "clip": "deathFront",
+        "rate": 1,
+        "start": 0
+      }
+    }
+  },
+  "lod": {
+    "farDistance": 60,
+    "farInterval": 3,
+    "hiddenAfterFrames": 3,
+    "hiddenInterval": 6,
+    "midDistance": 28,
+    "midInterval": 2
+  },
+  "sight": {
+    "height": 0.165,
+    "maxRaise": 0.05,
+    "maxShift": 0.03
+  }
+}

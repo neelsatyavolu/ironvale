@@ -1,4 +1,4 @@
-/// Placeholder for the IronvaleAssets module (M0 scaffolding). Real code lands in later milestones.
+/// IronvaleAssets: model containers and asset lookup (PLAN.md 2, 3.5).
 public enum IronvaleAssetsModule {
     public static let name = "IronvaleAssets"
 }

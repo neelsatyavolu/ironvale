@@ -1,0 +1,17 @@
+// Local relay with the production join limit (30 per minute per address, shared with /ice), for
+// the one interop scenario that checks the native client reports `rate-limited` (PLAN.md 5.4).
+// Otherwise identical to wrangler.interop.jsonc.
+{
+  "$schema": "../../../signaling/node_modules/wrangler/config-schema.json",
+  "name": "ironvale-signaling-interop-ratelimit",
+  "main": "../../../signaling/src/index.ts",
+  "compatibility_date": "2026-03-01",
+  "vars": {
+    "ALLOWED_ORIGINS": "http://localhost:5311,http://127.0.0.1:5311,https://ironvale.n3el.dev,app://ironvale"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "ROOMS", "class_name": "RoomObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RoomObject"] }],
+  "ratelimits": [{ "name": "JOIN_LIMITER", "namespace_id": "5311", "simple": { "limit": 30, "period": 60 } }]
+}

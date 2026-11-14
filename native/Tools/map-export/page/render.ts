@@ -8,6 +8,7 @@
 // render/textures/    canvas and image textures as PNG (t<index>.png), data textures as raw bytes
 import * as THREE from 'three/webgpu';
 import { ByteWriter, json, writeFile } from './io';
+import { aoProgramOf, instanceAttributeOf, nodeTexturesOf, programOf, type ProgramTable } from './programs';
 
 type Vec = number[];
 
@@ -33,6 +34,8 @@ interface RenderScene {
   meshes: unknown[];
   lights: unknown[];
   skipped: { type: string; name: string; path: string }[];
+  /** Plan numbers the map's surface programs read (programs.ts); absent for maps without programs. */
+  programParams?: Record<string, unknown>;
 }
 
 const TEXTURE_SLOTS = [
@@ -101,7 +104,7 @@ function pathOf(object: THREE.Object3D, root: THREE.Object3D): string {
   return names.reverse().join('/');
 }
 
-export async function exportRender(root: THREE.Object3D, mapId: string, dir: string): Promise<{ meshes: number; textures: number; bytes: number }> {
+export async function exportRender(root: THREE.Object3D, mapId: string, dir: string, programs: ProgramTable | null = null): Promise<{ meshes: number; textures: number; bytes: number }> {
   root.updateMatrixWorld(true);
   const bin = new ByteWriter();
   const scene: RenderScene = {
@@ -117,6 +120,7 @@ export async function exportRender(root: THREE.Object3D, mapId: string, dir: str
     meshes: [],
     lights: [],
     skipped: [],
+    ...(programs ? { programParams: programs.params } : {}),
   };
   const geometryIds = new Map<THREE.BufferGeometry, number>();
   const materialIds = new Map<THREE.Material, number>();
@@ -229,6 +233,14 @@ export async function exportRender(root: THREE.Object3D, mapId: string, dir: str
     record.nodes = Object.keys(any)
       .filter((key) => key.endsWith('Node') && any[key] != null)
       .sort();
+    // Hand-ported surface program (programs.ts); null when the node graph matches no reference.
+    if (programs) {
+      record.program = programOf(programs, m);
+      record.aoProgram = aoProgramOf(programs, m);
+      const nodeMaps: Record<string, number> = {};
+      for (const [slot, t] of Object.entries(nodeTexturesOf(m))) nodeMaps[slot] = texture(t);
+      record.nodeMaps = nodeMaps;
+    }
     if (m.userData && Object.keys(m.userData).length) record.userData = JSON.parse(JSON.stringify(m.userData));
     scene.materials.push(record);
     materialIds.set(m, scene.materials.length - 1);
@@ -291,6 +303,13 @@ export async function exportRender(root: THREE.Object3D, mapId: string, dir: str
         matrices: accessor(inst.instanceMatrix.array.slice(0, inst.count * 16) as Float32Array, 16, false),
         colors: inst.instanceColor ? accessor(inst.instanceColor.array.slice(0, inst.count * 3) as Float32Array, 3, false) : null,
       };
+      // Per-instance attributes read by the colour node (the container livery), named by role.
+      const own = Array.isArray(mesh.material) ? null : instanceAttributeOf(mesh.material);
+      if (own) {
+        (entry.instances as Record<string, unknown>).attributes = {
+          livery: accessor((own.array as Float32Array).slice(0, inst.count * own.itemSize), own.itemSize, false),
+        };
+      }
     }
     scene.meshes.push(entry);
   });

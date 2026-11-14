@@ -35,6 +35,11 @@ echo "built $APP"
   echo "FAIL: Railyard render export missing; run node native/Tools/map-export/run.mjs --maps railyard" >&2
   exit 1
 }
+# Surface-program labels and plan numbers (map-export programs.ts) arrived with M3b.
+grep -q '"programParams"' "$NATIVE/MapPackages/railyard/render/scene.json" || {
+  echo "FAIL: Railyard render export predates surface programs; rerun node native/Tools/map-export/run.mjs --maps railyard" >&2
+  exit 1
+}
 
 step "web captures (Chrome, WebGPU)"
 node "$TOOLS/capture-web.mjs" --out "$PARITY/web" --no grain,aa

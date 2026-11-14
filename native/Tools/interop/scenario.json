@@ -1,0 +1,21 @@
+{
+  "comment": "Layer 3 match script (PLAN.md 5.4), run by both ivpeer and node-peer.ts after go. Times are ms after the local go. \"$me\" and \"$peer\" are wire ids (host 0, guest 1). State streams at 30 Hz for durationMs; then each side sends chat \"fin\", and the guest ends with bye{ended}.",
+  "config": { "mapId": "range", "mode": "duel", "rules": "skirmish", "difficulty": "regular", "botCount": 1, "killTarget": 10, "duelBot": "none" },
+  "durationMs": 10000,
+  "timeline": [
+    { "at": 500, "event": { "t": "chat", "text": "hello from the other side" } },
+    { "at": 1000, "repeat": { "every": 200, "count": 25 }, "shot": { "actor": "$me", "weapon": "m4a1", "muzzle": [0.25, 1.52, -0.4], "direction": [0, 0, -1], "ends": [[0.25, 1.52, -18.5]] } },
+    { "at": 1010, "repeat": { "every": 200, "count": 25 }, "event": { "t": "hit", "target": "$peer", "attacker": "$me", "weapon": "m4a1", "zone": "torso", "amount": 27, "p": [0.25, 1.4, -18.5], "d": [0, 0, -1] } },
+    { "at": 3000, "event": { "t": "away", "away": true } },
+    { "at": 3500, "event": { "t": "away", "away": false } },
+    { "at": 6000, "event": { "t": "death", "victim": "$peer", "killer": "$me", "weapon": "m4a1", "headshot": false, "life": 0, "d": [0, 0, -1] } },
+    { "at": 6500, "event": { "t": "switch", "weapon": "mp5" } },
+    { "at": 6600, "event": { "t": "action", "actor": "$me", "weapon": "mp5", "stage": "magOut" } },
+    { "at": 6900, "event": { "t": "action", "actor": "$me", "weapon": "mp5", "stage": "magIn" } },
+    { "at": 7000, "event": { "t": "nade", "p": [1, 1.5, 2], "v": [0, 5.5, -14.2] } },
+    { "at": 7200, "repeat": { "every": 100, "count": 5 }, "shot": { "actor": "$me", "weapon": "mp5", "muzzle": [0.2, 1.5, -0.3], "direction": [0.6, 0, -0.8], "ends": [[6.2, 1.5, -8.3]] } },
+    { "at": 7210, "repeat": { "every": 100, "count": 5 }, "event": { "t": "hit", "target": "$peer", "attacker": "$me", "weapon": "mp5", "zone": "head", "amount": 50.4, "p": [6.2, 1.62, -8.3], "d": [0.6, 0, -0.8] } },
+    { "at": 9500, "event": { "t": "boom", "p": [1, 0.05, -9.4] } },
+    { "at": 9600, "event": { "t": "hit", "target": "$peer", "attacker": "$me", "weapon": "grenade", "zone": "torso", "amount": 63.25, "p": [1.4, 0.9, -9], "d": [0.3, 0.2, 0.93] } }
+  ]
+}

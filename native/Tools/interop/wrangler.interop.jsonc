@@ -1,0 +1,20 @@
+// Local relay for the native-port interop tests (PLAN.md 5.4 layer 3). Runs the unchanged
+// signaling/src code under `wrangler dev`; only binding values differ from signaling/wrangler.jsonc:
+//   - ALLOWED_ORIGINS admits the web dev page and the native client's origin `app://ironvale`
+//     (owner decision W6; the deployed relay does not accept it yet).
+//   - JOIN_LIMITER is raised far above the production 30 per minute, because the scenario suite
+//     opens many rooms from one address. wrangler.interop-ratelimit.jsonc keeps the production limit.
+{
+  "$schema": "../../../signaling/node_modules/wrangler/config-schema.json",
+  "name": "ironvale-signaling-interop",
+  "main": "../../../signaling/src/index.ts",
+  "compatibility_date": "2026-03-01",
+  "vars": {
+    "ALLOWED_ORIGINS": "http://localhost:5311,http://127.0.0.1:5311,https://ironvale.n3el.dev,app://ironvale"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "ROOMS", "class_name": "RoomObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RoomObject"] }],
+  "ratelimits": [{ "name": "JOIN_LIMITER", "namespace_id": "5311", "simple": { "limit": 100000, "period": 60 } }]
+}

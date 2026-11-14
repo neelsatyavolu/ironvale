@@ -143,4 +143,7 @@ typedef struct {
     uint32_t level;
 } IVPrefilterUniforms;
 
+// M7a soldier types.
+#include "SoldierTypes.h"
+
 #endif

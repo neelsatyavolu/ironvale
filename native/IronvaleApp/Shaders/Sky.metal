@@ -1,6 +1,6 @@
 // Background: the scene backdrop of engine.ts setLighting (equirect panorama, rotated by
 // hdriRotation, scaled by backgroundIntensity), drawn where nothing else wrote depth.
-// The Railyard cloud-deck dome (src/maps/railyard/sky.ts) is a map program and comes in M9.
+// Maps with a sky program use their own fragment instead (Railyard: SkyRailyard.metal).
 #include <metal_stdlib>
 #include "ShaderTypes.h"
 #include "Common.h"

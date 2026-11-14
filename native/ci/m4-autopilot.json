@@ -1,0 +1,29 @@
+{
+  "difficulty": "veteran",
+  "preset": "mouse",
+  "steps": [
+    { "mark": "spawn", "seconds": 0.5 },
+    { "mark": "walk", "seconds": 1.6, "hold": ["KeyW"] },
+    { "mark": "crouch", "seconds": 1.0, "hold": ["KeyC", "KeyW"] },
+    { "mark": "stand", "seconds": 0.8 },
+    { "mark": "jump", "seconds": 1.2, "press": ["Space"] },
+    { "mark": "weapon m4a1", "seconds": 0.3, "press": ["Digit1"] },
+    { "mark": "fire m4a1", "seconds": 0.6, "press": ["Mouse0"], "hold": ["Mouse0"] },
+    { "mark": "weapon mp5", "seconds": 1.4, "press": ["Digit2"] },
+    { "mark": "fire mp5", "seconds": 0.6, "press": ["Mouse0"], "hold": ["Mouse0"] },
+    { "mark": "weapon m24", "seconds": 1.4, "press": ["Digit3"] },
+    { "mark": "fire m24", "seconds": 1.6, "press": ["Mouse0"], "hold": ["Mouse0"] },
+    { "mark": "weapon m249", "seconds": 1.4, "press": ["Digit4"] },
+    { "mark": "fire m249", "seconds": 0.6, "press": ["Mouse0"], "hold": ["Mouse0"] },
+    { "mark": "weapon m7", "seconds": 1.4, "press": ["Digit5"] },
+    { "mark": "fire m7", "seconds": 0.6, "press": ["Mouse0"], "hold": ["Mouse0"] },
+    { "mark": "weapon scarh", "seconds": 1.4, "press": ["Digit6"] },
+    { "mark": "fire scarh", "seconds": 0.6, "press": ["Mouse0"], "hold": ["Mouse0"] },
+    { "mark": "reload", "seconds": 3.5, "press": ["KeyR"] },
+    { "mark": "look down", "seconds": 0.3, "look": [0, 120] },
+    { "mark": "grenade aim", "seconds": 0.6, "hold": ["KeyG"] },
+    { "mark": "grenade throw", "seconds": 4.0 },
+    { "mark": "respawn", "seconds": 6.0, "untilAlive": true },
+    { "mark": "done", "seconds": 0.5 }
+  ]
+}

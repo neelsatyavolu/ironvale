@@ -59,12 +59,14 @@ public final class MapRenderer {
     private let draws: [Draw]
     private var lights: [IVLight]
     private let lighting: Lighting
+    /// float4 rows the surface programs read (Shaders/MapSurface.h IV_RY_*); one zero row when unused.
+    private let programParams: [SIMD4<Float>]
 
     private struct Pipelines {
-        let opaque: any MTLRenderPipelineState
-        let alphaTest: any MTLRenderPipelineState
-        let transparent: any MTLRenderPipelineState
+        let scene: [PipelineKey: any MTLRenderPipelineState]
         let shadow: any MTLRenderPipelineState
+        /// Depth-only pass over the plain opaque draws, so the surface programs shade each pixel once.
+        let depthPrepass: any MTLRenderPipelineState
         let sky: any MTLRenderPipelineState
         let depthStates: [Int: any MTLDepthStencilState]
         let shadowDepth: any MTLDepthStencilState
@@ -87,11 +89,22 @@ public final class MapRenderer {
         var fogBaseHeight: Float
     }
 
-    private enum Pass { case opaque, alphaTest, transparent }
+    private enum Pass: Hashable { case opaque, alphaTest, transparent }
+
+    /// One specialisation of ivMapVertex / ivMapFragment (function constants 0 - 4 of MapPBR.metal).
+    private struct PipelineKey: Hashable {
+        var pass: Pass
+        var program: SurfaceProgram
+        var skyVisibility: Bool
+        var lampLit: Bool
+        var livery: Bool
+    }
 
     private struct Draw {
         let path: String
         let pass: Pass
+        let key: PipelineKey
+        let livery: Int?
         let renderOrder: Int
         let castShadow: Bool
         let position: Int
@@ -108,6 +121,9 @@ public final class MapRenderer {
         let depthKey: Int
         let depthBias: (units: Float, slope: Float)?
         let center: SIMD3<Float>
+
+        /// Plain opaque draws that write depth without a bias take part in the depth prepass.
+        var prepass: Bool { pass == .opaque && depthBias == nil && depthKey == MapRenderer.depthKey(test: true, write: true) }
     }
 
     public init(assets: MapAssets, device: any MTLDevice, library: any MTLLibrary, settings: Settings = .high) throws {
@@ -177,7 +193,11 @@ public final class MapRenderer {
         self.lights = lights
         self.lighting = lighting
 
-        pipelines = try Self.makePipelines(device: device, library: library)
+        programParams = scene.programParams.map(RailyardProgramParams.pack) ?? [.zero]
+        let railyardSky = scene.materials.contains { $0.program.flatMap(SurfaceProgram.init(name:)) == .railyardSky }
+        if railyardSky, scene.programParams == nil {
+            throw MapRenderScene.LoadError.wrongFormat("scene.json has the railyard sky but no programParams", 1)
+        }
         post = try PostPass(device: device, library: library, outputFormat: .bgra8Unorm, exposure: Float(setup.exposure))
         (hdrTarget, depthTarget, shadowMap) = try Self.makeTargets(device: device, settings: settings)
 
@@ -191,6 +211,7 @@ public final class MapRenderer {
                 continue
             }
             let material = scene.materials[materialIndex]
+            if material.program.flatMap(SurfaceProgram.init(name:)) == .railyardSky { continue }  // the sky pass draws it
             if let reason = material.genericSkipReason {
                 skipped.append((mesh.path, reason))
                 continue
@@ -200,6 +221,7 @@ public final class MapRenderer {
             triangles += draw.elementCount / 3 * (draw.instances?.count ?? 1)
             draws.append(draw)
         }
+        pipelines = try Self.makePipelines(device: device, library: library, keys: Set(draws.map(\.key)), railyardSky: railyardSky)
         // Opaque first in renderOrder, then alpha-tested; transparent ones are sorted per frame.
         self.draws = draws.sorted { ($0.pass == .transparent ? 1 : 0, $0.renderOrder) < ($1.pass == .transparent ? 1 : 0, $1.renderOrder) }
         self.skipped = skipped
@@ -312,9 +334,21 @@ public final class MapRenderer {
         encoder.setFragmentBytes(&frame, length: MemoryLayout<IVFrameUniforms>.stride, index: Int(IV_BUFFER_FRAME))
         var lightData = lights.isEmpty ? [IVLight](repeating: IVLight(), count: 1) : lights
         encoder.setFragmentBytes(&lightData, length: MemoryLayout<IVLight>.stride * lightData.count, index: Int(IV_BUFFER_LIGHTS))
+        var params = programParams
+        encoder.setFragmentBytes(&params, length: MemoryLayout<SIMD4<Float>>.stride * params.count, index: Self.programParamsIndex)
         encoder.setFragmentTexture(environment.texture, index: Int(IV_TEXTURE_ENVIRONMENT))
         encoder.setFragmentTexture(shadowMap, index: Int(IV_TEXTURE_SHADOW))
 
+        // Depth prepass: the same vertex function, no fragment stage. The colour pass then passes on
+        // equal depth (greaterEqual), so only the front surface runs its program.
+        encoder.setRenderPipelineState(pipelines.depthPrepass)
+        for draw in draws where draw.prepass {
+            encoder.setDepthStencilState(pipelines.depthStates[draw.depthKey])
+            encoder.setCullMode(draw.cull)
+            encoder.setDepthBias(0, slopeScale: 0, clamp: 0)
+            bindGeometry(encoder, draw, positionsOnly: false)
+            issue(encoder, draw)
+        }
         let opaque = draws.filter { $0.pass != .transparent }
         for draw in opaque { encodeDraw(encoder, draw) }
 
@@ -333,11 +367,8 @@ public final class MapRenderer {
     }
 
     private func encodeDraw(_ encoder: any MTLRenderCommandEncoder, _ draw: Draw) {
-        switch draw.pass {
-        case .opaque: encoder.setRenderPipelineState(pipelines.opaque)
-        case .alphaTest: encoder.setRenderPipelineState(pipelines.alphaTest)
-        case .transparent: encoder.setRenderPipelineState(pipelines.transparent)
-        }
+        guard let pipeline = pipelines.scene[draw.key] else { return }
+        encoder.setRenderPipelineState(pipeline)
         encoder.setDepthStencilState(pipelines.depthStates[draw.depthKey])
         encoder.setCullMode(draw.cull)
         if let bias = draw.depthBias {
@@ -348,7 +379,10 @@ public final class MapRenderer {
         bindGeometry(encoder, draw, positionsOnly: false)
         var material = draw.material
         encoder.setFragmentBytes(&material, length: MemoryLayout<IVMaterialUniforms>.stride, index: Int(IV_BUFFER_MATERIAL))
-        for (slot, texture) in draw.textures.enumerated() { encoder.setFragmentTexture(texture, index: slot) }
+        for (slot, texture) in draw.textures.enumerated() {
+            encoder.setFragmentTexture(texture, index: slot < 6 ? slot : Self.programTextureIndex)
+        }
+        if let livery = draw.livery { encoder.setVertexBuffer(buffer, offset: livery, index: Self.liveryIndex) }
         issue(encoder, draw)
     }
 
@@ -369,22 +403,37 @@ public final class MapRenderer {
                 try make(.depth32Float, size, size, "sun shadow map"))
     }
 
-    private static func makePipelines(device: any MTLDevice, library: any MTLLibrary) throws -> Pipelines {
-        func function(_ name: String, alphaTest: Bool? = nil) throws -> any MTLFunction {
-            if let alphaTest {
-                let constants = MTLFunctionConstantValues()
-                var value = alphaTest
-                constants.setConstantValue(&value, type: .bool, index: 0)
-                return try library.makeFunction(name: name, constantValues: constants)
-            }
+    /// Slots beyond ShaderTypes.h, shared with Shaders/MapSurface.h.
+    static let liveryIndex = 9
+    static let programParamsIndex = 10
+    static let programTextureIndex = 8
+
+    private static func makePipelines(device: any MTLDevice, library: any MTLLibrary, keys: Set<PipelineKey>,
+                                      railyardSky: Bool) throws -> Pipelines {
+        func function(_ name: String) throws -> any MTLFunction {
             guard let f = library.makeFunction(name: name) else { throw RenderError.missingFunction(name) }
             return f
         }
-        func scene(_ label: String, alphaTest: Bool, blend: Bool) throws -> any MTLRenderPipelineState {
+        func specialised(_ name: String, _ key: PipelineKey) throws -> any MTLFunction {
+            let constants = MTLFunctionConstantValues()
+            var alphaTest = key.pass == .alphaTest
+            var program = key.program.rawValue
+            var skyVisibility = key.skyVisibility
+            var lampLit = key.lampLit
+            var livery = key.livery
+            constants.setConstantValue(&alphaTest, type: .bool, index: 0)
+            constants.setConstantValue(&program, type: .uint, index: 1)
+            constants.setConstantValue(&skyVisibility, type: .bool, index: 2)
+            constants.setConstantValue(&lampLit, type: .bool, index: 3)
+            constants.setConstantValue(&livery, type: .bool, index: 4)
+            return try library.makeFunction(name: name, constantValues: constants)
+        }
+        func scene(_ key: PipelineKey) throws -> any MTLRenderPipelineState {
             let d = MTLRenderPipelineDescriptor()
-            d.label = label
-            d.vertexFunction = try function("ivMapVertex")
-            d.fragmentFunction = try function("ivMapFragment", alphaTest: alphaTest)
+            let blend = key.pass == .transparent
+            d.label = "map \(key.pass) program \(key.program)"
+            d.vertexFunction = try specialised("ivMapVertex", key)
+            d.fragmentFunction = try specialised("ivMapFragment", key)
             d.colorAttachments[0].pixelFormat = .rgba16Float
             d.depthAttachmentPixelFormat = .depth32Float
             if blend {
@@ -405,7 +454,7 @@ public final class MapRenderer {
         let skyDescriptor = MTLRenderPipelineDescriptor()
         skyDescriptor.label = "sky"
         skyDescriptor.vertexFunction = try function("ivSkyVertex")
-        skyDescriptor.fragmentFunction = try function("ivSkyFragment")
+        skyDescriptor.fragmentFunction = try function(railyardSky ? "ivSkyRailyardFragment" : "ivSkyFragment")
         skyDescriptor.colorAttachments[0].pixelFormat = .rgba16Float
         skyDescriptor.depthAttachmentPixelFormat = .depth32Float
 
@@ -422,11 +471,21 @@ public final class MapRenderer {
                 states[depthKey(test: test, write: write)] = try depth(test: test, write: write, compare: .greaterEqual)
             }
         }
+        var scenePipelines: [PipelineKey: any MTLRenderPipelineState] = [:]
+        for key in keys { scenePipelines[key] = try scene(key) }
         return Pipelines(
-            opaque: try scene("map opaque", alphaTest: false, blend: false),
-            alphaTest: try scene("map alpha-test", alphaTest: true, blend: false),
-            transparent: try scene("map transparent", alphaTest: false, blend: true),
+            scene: scenePipelines,
             shadow: try device.makeRenderPipelineState(descriptor: shadowDescriptor),
+            depthPrepass: try {
+                let d = MTLRenderPipelineDescriptor()
+                d.label = "map depth prepass"
+                d.vertexFunction = try specialised("ivMapVertex", PipelineKey(pass: .opaque, program: .none, skyVisibility: false,
+                                                                                lampLit: false, livery: false))
+                d.colorAttachments[0].pixelFormat = .rgba16Float
+                d.colorAttachments[0].writeMask = []
+                d.depthAttachmentPixelFormat = .depth32Float
+                return try device.makeRenderPipelineState(descriptor: d)
+            }(),
             sky: try device.makeRenderPipelineState(descriptor: skyDescriptor),
             depthStates: states,
             shadowDepth: try depth(test: true, write: true, compare: .lessEqual),
@@ -434,7 +493,7 @@ public final class MapRenderer {
         )
     }
 
-    private static func depthKey(test: Bool, write: Bool) -> Int { (test ? 2 : 0) | (write ? 1 : 0) }
+    nonisolated private static func depthKey(test: Bool, write: Bool) -> Int { (test ? 2 : 0) | (write ? 1 : 0) }
 
     private static func makeDraw(mesh: MapRenderScene.Mesh, material: MapRenderScene.Material, scene: MapRenderScene,
                                  bytes: Data, assets: MapAssets, textures: TextureLoader, white: any MTLTexture) throws -> Draw {
@@ -461,6 +520,11 @@ public final class MapRenderer {
         let model = simd_float4x4(columns: (SIMD4(m[0], m[1], m[2], m[3]), SIMD4(m[4], m[5], m[6], m[7]),
                                             SIMD4(m[8], m[9], m[10], m[11]), SIMD4(m[12], m[13], m[14], m[15])))
         let instances = mesh.instances.map { (scene.accessors[$0.matrices].offset, $0.count) }
+        let livery = mesh.instances?.attributes?["livery"].map { scene.accessors[$0] }
+        if let livery, livery.type != "f32" || livery.itemSize != 3 || livery.count < (mesh.instances?.count ?? 0) {
+            throw MapRenderScene.LoadError.wrongFormat("mesh \(mesh.path) livery is not f32 x3 per instance", 1)
+        }
+        let program = material.program.flatMap(SurfaceProgram.init(name:)) ?? .none
         let center = Self.center(position: position, bytes: bytes, model: model)
 
         // Textures, in IV_TEXTURE_* slot order.
@@ -480,6 +544,14 @@ public final class MapRenderer {
             if t.repeatUV != [1, 1] || t.offset != [0, 0] || t.rotation != 0 {
                 logger.error("Texture transform on \(uri, privacy: .public) ignored (generic path)")
             }
+        }
+        if let slot = program.nodeTextureSlot {
+            guard let t = material.nodeMaps?[slot].map({ scene.textures[$0] }), let uri = t.uri, t.kind == "url" || t.kind == "png" else {
+                throw MapRenderScene.LoadError.wrongFormat("mesh \(mesh.path): program \(program) needs its \(slot) texture", 1)
+            }
+            let base = t.kind == "url" ? assets.publicRoot : assets.package.appending(path: "render")
+            bound.append(try textures.load(base.appending(path: uri), srgb: t.colorSpace == "srgb"))
+            flipY = t.flipY
         }
         if material.isUnlit { flags |= IV_MAT_UNLIT }
         if material.vertexColors == true, color != nil { flags |= IV_MAT_VERTEX_COLORS }
@@ -506,11 +578,13 @@ public final class MapRenderer {
             _pad0: 0
         )
         let pass: Pass = material.transparent == true ? .transparent : (material.alphaTest ?? 0) > 0 ? .alphaTest : .opaque
+        let key = PipelineKey(pass: pass, program: program, skyVisibility: material.aoProgram == "skyVisibility",
+                              lampLit: program.lampLit, livery: livery != nil)
         let bias: (Float, Float)? = material.polygonOffset == true
             // Reverse-Z: toward the camera is larger depth, so three's negative offsets become positive.
             ? (Float(-(material.polygonOffsetUnits ?? 0)), Float(-(material.polygonOffsetFactor ?? 0))) : nil
         return Draw(
-            path: mesh.path, pass: pass, renderOrder: mesh.renderOrder, castShadow: mesh.castShadow,
+            path: mesh.path, pass: pass, key: key, livery: livery?.offset, renderOrder: mesh.renderOrder, castShadow: mesh.castShadow,
             position: position.offset, normal: normal.offset, uv: uv.offset, color: color?.offset,
             index: index, elementCount: elementCount, instances: instances,
             uniforms: IVDrawUniforms(model: model, normalMatrix: RenderMath.normalMatrix(model),

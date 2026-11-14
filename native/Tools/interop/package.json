@@ -1,0 +1,9 @@
+{
+  "name": "ironvale-interop",
+  "private": true,
+  "type": "module",
+  "description": "Node reference peer for native-port interop tests (PLAN.md 5.4 layer 3). Runs under the repo's Vitest; this package only adds the WebRTC polyfill.",
+  "devDependencies": {
+    "node-datachannel": "0.33.6"
+  }
+}

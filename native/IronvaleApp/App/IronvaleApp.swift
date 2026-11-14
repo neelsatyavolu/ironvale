@@ -1,6 +1,7 @@
 // Composition root: parses launch options, opens the window and starts the frame loop.
 // Everything beyond wiring lives in the IronvaleKit package (PLAN.md section 2).
 import AppKit
+import IronvaleCharacters
 import IronvaleCore
 import IronvaleMapRender
 import IronvaleRender
@@ -39,6 +40,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         frameLoop?.stop()
+        GameLauncher.stop()
     }
 
     private func launch(options: LaunchOptions, map: MapRenderOptions) throws {
@@ -47,6 +49,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         guard let library = device.makeDefaultLibrary() else {
             throw AppError.noDefaultLibrary
+        }
+        // M7a: offscreen soldier benchmark (IronvaleCharacters/Render/SoldierBenchmark.swift).
+        if let bench = SoldierBenchmark.Options.parse(CommandLine.arguments.dropFirst()) {
+            guard let repo = map.repositoryRoot.map({ URL(fileURLWithPath: $0) })
+                ?? MapAssets.findRepositoryRoot(from: Bundle.main.bundleURL) else { throw AppError.noRepository }
+            let assets = try MapAssets(package: repo.appending(path: "native/MapPackages/\(bench.mapId)"), repositoryRoot: repo)
+            let result = try SoldierBenchmark.run(options: bench, repositoryRoot: repo, lighting: assets.meta.lighting,
+                                                  environmentHDR: assets.assetFile(id: assets.meta.lighting.hdri, key: "hdr@2k"),
+                                                  device: device, library: library)
+            print("soldier bench: \(result.soldiers) soldiers, \(result.frames) frames, GPU mean \(result.gpuMs.mean) ms, p95 \(result.gpuMs.p95) ms")
+            exit(0)
+        }
+        // M4: the game itself (menu, --play, --autopilot); see GameSession.swift.
+        if try GameLauncher.launchIfRequested(arguments: CommandLine.arguments.dropFirst(), launch: options,
+                                              repositoryRoot: map.repositoryRoot, device: device, library: library) {
+            return
         }
         var encoder: MapFrameEncoder?
         let gpuLog = map.gpuLogPath.map { _ in GPUFrameLog() }

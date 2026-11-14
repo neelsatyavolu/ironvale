@@ -38,7 +38,9 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Resources/Ironvale.entitlements
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGN_STYLE: Manual
-        ENABLE_HARDENED_RUNTIME: YES
+        # Off while builds are ad-hoc signed: library validation rejects the
+        # Google-signed WebRTC.framework. M12 turns it on with Developer ID signing.
+        ENABLE_HARDENED_RUNTIME: NO
         GENERATE_INFOPLIST_FILE: NO
         # Shaders include ShaderTypes.h from the package's C target.
         MTL_HEADER_SEARCH_PATHS: $(SRCROOT)/../IronvaleKit/Sources/ShaderTypes/include

@@ -64,14 +64,22 @@ public struct MapRenderScene: Decodable, Sendable {
         public let visible: Bool?
         public let colorWrite: Bool?
         public let maps: [String: Int]
-        /// TSL node slots the web material overrides; each is a map-specific surface program (M9).
+        /// TSL node slots the web material overrides; each is a map-specific surface program (SurfacePrograms.swift).
         public let nodes: [String]
+        /// Hand-ported surface program the exporter matched this material to (programs.ts), if any.
+        public let program: String?
+        /// Hand-ported occlusion program of the material's aoNode, if any.
+        public let aoProgram: String?
+        /// Texture index each node slot samples, for textures not in a material slot.
+        public let nodeMaps: [String: Int]?
     }
 
     public struct Instances: Decodable, Sendable {
         public let count: Int
         public let matrices: Int
         public let colors: Int?
+        /// Per-instance attributes a colour node reads, by role ("livery").
+        public let attributes: [String: Int]?
     }
 
     public struct Mesh: Decodable, Sendable {
@@ -121,6 +129,29 @@ public struct MapRenderScene: Decodable, Sendable {
     public let materials: [Material]
     public let meshes: [Mesh]
     public let lights: [Light]
+    /// Plan numbers the map's surface programs read (see RailyardProgramParams).
+    public let programParams: ProgramParams?
+
+    public struct ProgramParams: Decodable, Sendable {
+        public struct Warehouse: Decodable, Sendable {
+            public struct Mezzanine: Decodable, Sendable { public let east, north, south, top: Double }
+            public let west, east, north, south, eaves, ridge, doorWest, doorEast: Double
+            public let mezzanine: Mezzanine
+        }
+        public struct Office: Decodable, Sendable { public let west, east, north, south, height: Double }
+        public struct Glow: Decodable, Sendable {
+            public let at: [Double]
+            public let linear: [Double]
+            public let strength: Double
+            public let reach: Double
+            public let down: Bool?
+            public let facing: [Double]?
+        }
+        public let sunInSky: [Double]
+        public let warehouse: Warehouse
+        public let office: Office
+        public let glows: [Glow]
+    }
 
     public enum LoadError: Error, CustomStringConvertible {
         case wrongFormat(String, Int)
@@ -147,7 +178,7 @@ public struct MapRenderScene: Decodable, Sendable {
     }
 }
 
-/// Why the generic PBR path leaves a mesh out (each is a map-specific program, PLAN.md M9).
+/// Why the generic PBR path leaves a mesh out (a map-specific program not ported yet).
 public enum GenericSkipReason: String, Sendable {
     /// Custom vertex program, such as the Railyard sky dome (src/maps/railyard/sky.ts).
     case customVertex = "vertexNode"
@@ -159,6 +190,8 @@ public enum GenericSkipReason: String, Sendable {
 extension MapRenderScene.Material {
     public var genericSkipReason: GenericSkipReason? {
         if visible == false || colorWrite == false { return .invisible }
+        // A hand-ported program draws what the generic path cannot (the sky dome is drawn by the sky pass).
+        if let program, SurfaceProgram(name: program) != nil { return nil }
         if nodes.contains("vertexNode") || nodes.contains("positionNode") { return .customVertex }
         if nodes.contains("opacityNode"), maps["map"] == nil, maps["alphaMap"] == nil { return .nodeOpacity }
         return nil
@@ -168,9 +201,12 @@ extension MapRenderScene.Material {
 
     /// The albedo comes from a TSL colour program and no colour texture was exported, so
     /// `color` says nothing about it (three replaces `color * map` with `colorNode`; vertex and
-    /// instance colours still multiply in). Until M9 ports the program, such surfaces are drawn
+    /// instance colours still multiply in). Until its program is ported, such a surface is drawn
     /// with `placeholderAlbedo` rather than the meaningless white `color`.
-    public var hasNodeAlbedo: Bool { nodes.contains("colorNode") && maps["map"] == nil }
+    public var hasNodeAlbedo: Bool {
+        if let program, SurfaceProgram(name: program) != nil { return false }
+        return nodes.contains("colorNode") && maps["map"] == nil
+    }
 
     /// sRGB 0.5 grey, in linear.
     public static let placeholderAlbedo = SIMD3<Float>(repeating: 0.214)

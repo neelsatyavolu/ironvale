@@ -11,6 +11,7 @@ import { captureCollision, SURFACES } from './collision';
 import { exportGun, GUN_IDS } from './guns';
 import { json, sha256Hex, writeFile } from './io';
 import { COUNTS, recordQueries } from './queries';
+import { programTable } from './programs';
 import { exportRender } from './render';
 
 /** Every package is exported at full detail (PLAN.md 3.7, owner decision Q3). */
@@ -102,7 +103,9 @@ async function exportMap(id: string, options: { sourceCommit: string; render: bo
   let render = null;
   if (options.render) {
     settle(map);
-    render = await exportRender(map.root, id, `${id}/render`);
+    // Reference materials are built on a fresh seeded stream so they never shift the map's own.
+    const programs = programTable(id, { assets, world: new CollisionWorld(), detailDensity: DETAIL_DENSITY, random: seededRandom(hashString(id)) });
+    render = await exportRender(map.root, id, `${id}/render`, programs);
   }
   map.dispose();
   return { id, collisionSha256, triangles: files.triangleCount, boundaryTriangles: files.boundaryTriangleCount, render };
