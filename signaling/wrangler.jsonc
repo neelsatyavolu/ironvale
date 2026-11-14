@@ -8,7 +8,7 @@
   "observability": { "enabled": true },
   "vars": {
     // Comma-separated origins allowed to open a room. Add the site's origin before deploying.
-    "ALLOWED_ORIGINS": "https://ironvale.n3el.dev"
+    "ALLOWED_ORIGINS": "https://ironvale.n3el.dev,app://ironvale"
   },
   "durable_objects": {
     "bindings": [{ "name": "ROOMS", "class_name": "RoomObject" }]
