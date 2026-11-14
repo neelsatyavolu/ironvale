@@ -1,3 +1,4 @@
+import { visualsFrozen } from '../core/freeze';
 import type { EffectsSystem, GameContext } from '../game/contracts';
 import { Blood } from './blood';
 import { Casings } from './casings';
@@ -57,7 +58,7 @@ export function createEffects(ctx: GameContext): EffectsSystem {
   let drivenByGame = false;
 
   const update = (dt: number): void => {
-    const step = dt * config.timeScale;
+    const step = visualsFrozen ? 0 : dt * config.timeScale;
     env.advance(step);
     for (const module of modules) module.update(step);
     lit.flush();

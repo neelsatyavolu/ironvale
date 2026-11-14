@@ -4,6 +4,7 @@ import { soldierAssets } from '../characters/index';
 import { createAudio } from '../audio/index';
 import { Assets } from '../core/assets';
 import { EventBus } from '../core/events';
+import { visualsFrozen } from '../core/freeze';
 import { Input } from '../core/input';
 import { hashString, seededRandom } from '../core/random';
 import { SettingsStore } from '../core/settings';
@@ -335,7 +336,7 @@ export class Game implements GameContext, GameCommands {
       if (!frozen) this.grenades.update(dt);
       if (!frozen) this.bots.update(dt);
       this.effects.update(dt);
-      this.map?.update?.(dt, this.time, this.engine.camera.position);
+      this.map?.update?.(dt, visualsFrozen ? 0 : this.time, this.engine.camera.position);
       this.engine.setSkyLight(this.interiorSkyLight(), dt);
       if (!frozen) this.updateRules(dt);
       if (this.phase === 'playing' && this.input.wasPressed('pause')) this.pause();
