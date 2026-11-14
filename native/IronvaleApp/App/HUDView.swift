@@ -1,99 +1,117 @@
-// Placeholder in-match HUD for M4 (the Metal HUD with MSDF text is M10): health, weapon and ammo,
-// grenade, crosshair and the respawn count. Shown only while a match is playing.
+// M10b: the in-match HUD. The Metal pass (IronvaleUI HUDRenderer, Shaders/Hud.metal) draws every element
+// over the finished frame from the running Game; SwiftUI shows only the weapon picker and the chat box,
+// and only while they are open (PLAN.md 3.9). Replaces M4's placeholder SwiftUI HUD.
+import AppKit
+import IronvaleAI
+import IronvaleSim
+import IronvaleUI
+import Metal
 import Observation
+import os
 import SwiftUI
+
+extension Bot: HUDHealthSource {}
 
 @MainActor
 @Observable
 final class HUDModel {
-    var visible = false
-    var health = 100
-    var weaponName = ""
-    var fireMode = ""
-    var magazine = 0
-    var reserve = 0
-    var reloading = false
-    var grenades = 0
-    var grenadeAiming = false
-    var scopedIn = false
-    var aiming = false
-    var respawnIn = 0.0
-    var alive = true
-    var livesRemaining = 0
+    private static let logger = Logger(subsystem: "dev.n3el.ironvale", category: "hud")
+
+    /// The map's display name, for the end screen.
     var mapName = ""
-    var spread = 0.0
+    let chat = HUDChat()
+    private(set) var picker: WeaponPicker?
+    @ObservationIgnored private(set) var pictures: URL?
+    @ObservationIgnored private var gameHUD: GameHUD?
+    @ObservationIgnored private var renderer: HUDRenderer?
+    @ObservationIgnored private var settings: SettingsStore?
+    @ObservationIgnored private weak var view: NSView?
+    @ObservationIgnored private var matchKey: String?
+    @ObservationIgnored private var lastTime = 0.0
+    @ObservationIgnored private var frameMs = 0.0
+    @ObservationIgnored private var perfAge = 0.0
+    /// Two-player state and round trip, set by the net session when a friend is connected.
+    @ObservationIgnored var net: () -> HUDState.Net? = { nil }
+    @ObservationIgnored var roundTripMs: () -> Int = { -1 }
+
+    /// Connects the HUD to the game; a missing shader or atlas is logged and the match plays without a HUD.
+    func attach(game: Game, device: any MTLDevice, library: any MTLLibrary, settings: SettingsStore, view: NSView, repositoryRoot: URL) {
+        self.settings = settings
+        self.view = view
+        let hud = GameHUD(game: game)
+        hud.net = { [weak self] in self?.net() }
+        hud.chatLines = { [weak self] in self?.chat.visible(now: GameHUD.wallClock()) ?? [] }
+        gameHUD = hud
+        picker = WeaponPicker(defs: game.data.weapons)
+        pictures = repositoryRoot.appending(path: "public/assets/weapons")
+        guard let atlas = Bundle.main.url(forResource: "hud-atlas", withExtension: "json") else {
+            Self.logger.error("hud-atlas.json is missing from the app bundle")
+            return
+        }
+        let resources = atlas.deletingLastPathComponent()
+        let failed = BundledFonts.register(in: resources)
+        if !failed.isEmpty { Self.logger.error("Could not register fonts: \(failed.joined(separator: ", "), privacy: .public)") }
+        do {
+            renderer = try HUDRenderer(device: device, library: library, colorFormat: .bgra8Unorm, resources: resources)
+        } catch {
+            Self.logger.error("HUD unavailable: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Before the frame's input reaches the game: true while the chat box has the keyboard.
+    var takesKeyboard: Bool { chat.inputOpen }
+
+    /// After the game's frame: perf toggle (Backquote), chat key (T), the picker, and a new match's reset.
+    func frame(_ dt: Double, game: Game, pressed: Set<String>) {
+        guard let gameHUD else { return }
+        // A new match: another map, or the match clock started again.
+        let key = game.map == nil ? nil : game.config?.mapId
+        if key != matchKey || game.time < lastTime {
+            matchKey = key
+            gameHUD.matchStarted()
+            chat.clear()
+            renderer?.setMap(game.config?.mapId)
+        }
+        lastTime = game.time
+        let playing = game.phase == .playing
+        if playing, pressed.contains("Backquote") { gameHUD.perfVisible.toggle() }
+        if playing, !chat.inputOpen, net()?.peerConnected == true, pressed.contains(HUDConstants.shared.chatOpenKey) { chat.openInput() }
+        if !playing && chat.inputOpen { chat.close() }
+        gameHUD.chatInputOpen = chat.inputOpen
+        frameMs = frameMs == 0 ? dt * 1000 : frameMs * 0.9 + dt * 100
+        perfAge += dt
+        if gameHUD.perfVisible, perfAge >= HUDConstants.shared.perfRefreshSeconds || gameHUD.perfText.isEmpty {
+            perfAge = 0
+            let fps = frameMs > 0 ? Int((1000 / frameMs).rounded()) : 0
+            let rtt = roundTripMs()
+            gameHUD.perfText = "\(HUDMath.toFixed(frameMs, 1)) ms  \(fps) fps  scale 1.00  Metal\(rtt >= 0 ? "  rtt \(rtt) ms" : "")"
+        }
+        let weapons = game.weapons
+        picker?.frame(held: playing && game.net?.inMatch != true && game.input.isDown(.scores), alive: game.player.alive,
+                      pressed: { game.input.wasPressed($0) }, currentId: weapons.current.def.id, carries: { weapons.carries($0) },
+                      ammo: { id in weapons.machines.first { $0.def.id == id }.map { ($0.magazine, $0.reserve) } },
+                      equip: { weapons.equip(slot: $0) })
+    }
+
+    /// The Metal HUD over the finished frame.
+    func encode(commandBuffer: any MTLCommandBuffer, target: any MTLTexture) {
+        guard let gameHUD, let renderer, let settings, let view else { return }
+        let scale = Double(target.width) / max(1, Double(view.bounds.width))
+        let width = Double(target.width) / scale, height = Double(target.height) / scale
+        let state = gameHUD.state(settings: settings.value, width: width, height: height, pointScale: scale)
+        let scene = HUDScene.build(state: state, tracker: gameHUD.tracker, font: renderer.font, layout: renderer.layout, wall: GameHUD.wallClock())
+        renderer.encode(commandBuffer: commandBuffer, target: target, scene: scene, viewport: (width, height))
+    }
 }
 
+/// SwiftUI over the Metal view during a match: the picker and the chat box, each only while open.
 struct HUDView: View {
     let model: HUDModel
 
     var body: some View {
-        if model.visible {
-            ZStack {
-                if model.alive, !model.scopedIn, !model.aiming {
-                    Crosshair(gap: 6 + model.spread * 4)
-                }
-                if model.scopedIn {
-                    Rectangle().fill(.black).mask {
-                        ZStack {
-                            Rectangle()
-                            Circle().frame(width: 560, height: 560).blendMode(.destinationOut)
-                        }
-                        .compositingGroup()
-                    }
-                    Rectangle().fill(.black).frame(width: 1, height: 200)
-                    Rectangle().fill(.black).frame(width: 200, height: 1)
-                }
-                VStack {
-                    HStack {
-                        Text(model.mapName.uppercased())
-                        Spacer()
-                        Text("LIVES \(model.livesRemaining)")
-                    }
-                    Spacer()
-                    if !model.alive {
-                        Text(String(format: "RESPAWN IN %.1f", model.respawnIn))
-                            .font(.system(size: 22, weight: .semibold, design: .monospaced))
-                        Spacer()
-                    }
-                    HStack(alignment: .bottom) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("HEALTH").font(.system(size: 11, weight: .medium, design: .monospaced)).opacity(0.7)
-                            Text("\(model.health)").font(.system(size: 34, weight: .semibold, design: .monospaced))
-                        }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text("\(model.weaponName) · \(model.fireMode.uppercased())")
-                                .font(.system(size: 13, weight: .medium, design: .monospaced))
-                            Text(model.reloading ? "RELOADING" : "\(model.magazine) / \(model.reserve)")
-                                .font(.system(size: 30, weight: .semibold, design: .monospaced))
-                            Text("GRENADE \(model.grenades)\(model.grenadeAiming ? " · AIMING" : "")")
-                                .font(.system(size: 11, weight: .medium, design: .monospaced)).opacity(0.7)
-                        }
-                    }
-                }
-                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .padding(24)
-            }
-            .foregroundStyle(Color(red: 0.97, green: 0.96, blue: 0.94))
-            .shadow(color: .black.opacity(0.6), radius: 2)
-            .allowsHitTesting(false)
-        }
-    }
-}
-
-private struct Crosshair: View {
-    let gap: Double
-
-    var body: some View {
         ZStack {
-            ForEach(0 ..< 4, id: \.self) { i in
-                Rectangle()
-                    .frame(width: 2, height: 8)
-                    .offset(y: -(gap + 4))
-                    .rotationEffect(.degrees(Double(i) * 90))
-            }
-            Circle().frame(width: 2, height: 2)
+            if let picker = model.picker { WeaponPickerView(picker: picker, pictures: model.pictures) }
+            ChatInputView(chat: model.chat)
         }
     }
 }

@@ -25,7 +25,7 @@ import Testing
         try #require(session.library.failures.isEmpty, "\(session.library.failures)")
         if env["IRONVALE_AUDIO_AUDIBLE"] != "1" { session.core.setOutputGain(0) }
 
-        let mallocsBefore = MallocHook.count
+        let mallocsBefore = MallocHook.count(.live)
         try session.startOutput(bufferFrames: 128, device: device, probe: MallocProbe())
         defer { session.output?.stop() }
         let buffer = session.output?.bufferFrames
@@ -47,7 +47,7 @@ import Testing
             frames += 1
         }
         session.output?.stop()
-        let mallocs = MallocHook.count - mallocsBefore
+        let mallocs = MallocHook.count(.live) - mallocsBefore
         let core = session.core
         let report: [String: Any] = [
             "seconds": SoakTests.seconds,
@@ -74,7 +74,7 @@ import Testing
         #expect(Double(session.engine.sampleRate) == rate)
         #expect(core.renderCalls.load(ordering: .relaxed) > Int(SoakTests.seconds * rate / 128 * 0.9))
         #expect(session.output?.overloads == 0)
-        #expect(mallocs == 0)
+        #expect(mallocs == 0, "\(mallocs) allocations on the render thread\n\(mallocHookReport(.live, since: mallocsBefore))")
         #expect(core.commands.droppedCount == 0)
         #expect(core.ended.droppedCount == 0)
         #expect(maxVoices > 8)

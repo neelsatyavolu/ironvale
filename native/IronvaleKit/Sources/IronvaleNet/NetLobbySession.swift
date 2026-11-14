@@ -232,6 +232,16 @@ public final class NetLobbySession {
         maybeGo()
     }
 
+    /// The game left the match's map (`leaveMap` in session.ts, M6): the match is over here.
+    public func leaveMatch() {
+        guard match != nil else { return }
+        match = nil
+        queued = []
+        matchAttached = false
+        goAt = .infinity
+        state.inMatch = false
+    }
+
     /// The match is ready to take events: deliver what arrived while it was loading.
     public func attachMatch() {
         guard match != nil, !matchAttached else { return }

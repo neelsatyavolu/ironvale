@@ -45,6 +45,14 @@ public final class MapRenderer {
     public private(set) var skipped: [(path: String, reason: GenericSkipReason)] = []
     public var drawCount: Int { draws.count }
     public private(set) var triangleCount = 0
+    /// Drawn inside the shadow and scene passes (M7a: the match's soldiers, IronvaleCharacters SoldierLayer).
+    public var layers: [any SceneLayer] = []
+    /// M9 post chain (IronvaleRender/Post); when set, the scene pass writes its MRT at the chain's scene
+    /// size and the chain replaces PostPass. Layer pipelines must then declare `sceneColorFormats`.
+    public let postChain: PostChain?
+    /// Colour attachment formats of the scene pass with the post chain (PostTypes.h IV_SCENE_ATTACHMENT_*).
+    public static let sceneColorFormats: [MTLPixelFormat] = [.rgba16Float, .rgba8Unorm, .rg8Unorm]
+    private var lastFrameTime: Double?
 
     private let device: any MTLDevice
     private let buffer: any MTLBuffer
@@ -126,7 +134,8 @@ public final class MapRenderer {
         var prepass: Bool { pass == .opaque && depthBias == nil && depthKey == MapRenderer.depthKey(test: true, write: true) }
     }
 
-    public init(assets: MapAssets, device: any MTLDevice, library: any MTLLibrary, settings: Settings = .high) throws {
+    public init(assets: MapAssets, device: any MTLDevice, library: any MTLLibrary, settings: Settings = .high,
+                post postSettings: PostSettings? = nil) throws {
         self.assets = assets
         self.settings = settings
         self.device = device
@@ -199,6 +208,12 @@ public final class MapRenderer {
             throw MapRenderScene.LoadError.wrongFormat("scene.json has the railyard sky but no programParams", 1)
         }
         post = try PostPass(device: device, library: library, outputFormat: .bgra8Unorm, exposure: Float(setup.exposure))
+        postChain = try postSettings.map {
+            try PostChain(device: device, library: library, settings: $0, lighting: PostChain.Lighting(
+                exposure: Float(setup.exposure), sunColor: RenderMath.linearFromSRGBHex(setup.sunColor),
+                sunIntensity: Float(setup.sunIntensity), fogDensity: Float(setup.fog.density),
+                volumetric: Float(setup.volumetric), shaftDensity: Float(setup.shaftDensity ?? 1), bloom: Float(setup.bloom)))
+        }
         (hdrTarget, depthTarget, shadowMap) = try Self.makeTargets(device: device, settings: settings)
 
         var skipped: [(String, GenericSkipReason)] = []
@@ -221,7 +236,8 @@ public final class MapRenderer {
             triangles += draw.elementCount / 3 * (draw.instances?.count ?? 1)
             draws.append(draw)
         }
-        pipelines = try Self.makePipelines(device: device, library: library, keys: Set(draws.map(\.key)), railyardSky: railyardSky)
+        pipelines = try Self.makePipelines(device: device, library: library, keys: Set(draws.map(\.key)), railyardSky: railyardSky,
+                                           mrt: postSettings != nil)
         // Opaque first in renderOrder, then alpha-tested; transparent ones are sorted per frame.
         self.draws = draws.sorted { ($0.pass == .transparent ? 1 : 0, $0.renderOrder) < ($1.pass == .transparent ? 1 : 0, $1.renderOrder) }
         self.skipped = skipped
@@ -233,12 +249,50 @@ public final class MapRenderer {
 
     /// Encodes one frame for `pose` and tone maps it into `output` (a bgra8Unorm texture).
     public func encode(commandBuffer: any MTLCommandBuffer, pose: CameraPose, time: Double, output: any MTLTexture) {
+        if let postChain {
+            do {
+                try encodeWithPostChain(postChain, commandBuffer: commandBuffer, pose: pose, time: time, output: output)
+            } catch {
+                Self.logger.error("Post chain frame failed: \(String(describing: error), privacy: .public)")
+            }
+            return
+        }
         let aspect = Float(settings.internalWidth) / Float(settings.internalHeight)
         let projection = RenderMath.perspectiveReverseZ(fovYRadians: settings.fovDegrees * .pi / 180, aspect: aspect,
                                                         near: Self.near, far: Self.far)
+        var frame = frameUniforms(pose: pose, time: time, projection: projection)
+        for layer in layers { layer.prepare(viewProjection: frame.viewProjection, eye: pose.eye) }
+        if settings.shadowMapSize > 0 { encodeShadow(commandBuffer: commandBuffer, frame: &frame) }
+        encodeScene(commandBuffer: commandBuffer, frame: &frame, eye: pose.eye,
+                    targets: (hdrTarget, nil, nil, depthTarget))
+        post.encode(commandBuffer: commandBuffer, source: hdrTarget, target: output)
+    }
+
+    /// The M9 frame: scene MRT at the chain's (dynamic) scene size with a jittered projection, then
+    /// every post pass of pipeline.ts into `output`.
+    private func encodeWithPostChain(_ chain: PostChain, commandBuffer: any MTLCommandBuffer, pose: CameraPose,
+                                     time: Double, output: any MTLTexture) throws {
+        if let last = lastFrameTime { chain.recordFrameInterval(time - last) }
+        lastFrameTime = time
+        let post = try chain.beginFrame(outputWidth: output.width, outputHeight: output.height)
+        let aspect = Float(output.width) / Float(output.height)
+        let projection = RenderMath.perspectiveReverseZ(fovYRadians: settings.fovDegrees * .pi / 180, aspect: aspect,
+                                                        near: Self.near, far: Self.far)
+        var frame = frameUniforms(pose: pose, time: time, projection: post.jittered(projection))
+        for layer in layers { layer.prepare(viewProjection: frame.viewProjection, eye: pose.eye) }
+        if settings.shadowMapSize > 0 { encodeShadow(commandBuffer: commandBuffer, frame: &frame) }
+        let t = post.targets
+        encodeScene(commandBuffer: commandBuffer, frame: &frame, eye: pose.eye, targets: (t.color, t.normal, t.metalRough, t.depth))
+        let camera = PostChain.Camera(projection: projection, view: pose.view, position: pose.eye, near: Self.near, far: Self.far,
+                                      shadowViewProjection: frame.shadowViewProjection,
+                                      shadowMap: settings.shadowMapSize > 0 ? shadowMap : nil, time: Float(time))
+        try chain.encode(commandBuffer: commandBuffer, frame: post, camera: camera, output: output)
+    }
+
+    private func frameUniforms(pose: CameraPose, time: Double, projection: simd_float4x4) -> IVFrameUniforms {
         let view = pose.view
         let viewProjection = projection * view
-        var frame = IVFrameUniforms(
+        return IVFrameUniforms(
             viewProjection: viewProjection,
             view: view,
             inverseViewProjection: viewProjection.inverse,
@@ -266,9 +320,6 @@ public final class MapRenderer {
             lightCount: UInt32(lights.count),
             _pad0: 0
         )
-        if settings.shadowMapSize > 0 { encodeShadow(commandBuffer: commandBuffer, frame: &frame) }
-        encodeScene(commandBuffer: commandBuffer, frame: &frame, eye: pose.eye)
-        post.encode(commandBuffer: commandBuffer, source: hdrTarget, target: output)
     }
 
     private func bindGeometry(_ encoder: any MTLRenderCommandEncoder, _ draw: Draw, positionsOnly: Bool) {
@@ -314,19 +365,30 @@ public final class MapRenderer {
             bindGeometry(encoder, draw, positionsOnly: true)
             issue(encoder, draw)
         }
+        for layer in layers { layer.encodeShadow(encoder) }
         encoder.endEncoding()
     }
 
-    private func encodeScene(commandBuffer: any MTLCommandBuffer, frame: inout IVFrameUniforms, eye: SIMD3<Float>) {
+    private func encodeScene(commandBuffer: any MTLCommandBuffer, frame: inout IVFrameUniforms, eye: SIMD3<Float>,
+                             targets: (color: any MTLTexture, normal: (any MTLTexture)?, metalRough: (any MTLTexture)?,
+                                       depth: any MTLTexture)) {
         let pass = MTLRenderPassDescriptor()
-        pass.colorAttachments[0].texture = hdrTarget
+        pass.colorAttachments[0].texture = targets.color
         pass.colorAttachments[0].loadAction = .clear
         pass.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 1)
         pass.colorAttachments[0].storeAction = .store
-        pass.depthAttachment.texture = depthTarget
+        for (index, texture) in [(Int(IV_SCENE_ATTACHMENT_NORMAL), targets.normal), (Int(IV_SCENE_ATTACHMENT_METALROUGH), targets.metalRough)] {
+            guard let texture else { continue }
+            pass.colorAttachments[index].texture = texture
+            pass.colorAttachments[index].loadAction = .clear
+            pass.colorAttachments[index].clearColor = MTLClearColor(red: 0.5, green: 0.5, blue: 1, alpha: 1)
+            pass.colorAttachments[index].storeAction = .store
+        }
+        pass.depthAttachment.texture = targets.depth
         pass.depthAttachment.loadAction = .clear
         pass.depthAttachment.clearDepth = 0
-        pass.depthAttachment.storeAction = .dontCare
+        // The post chain reads the scene depth.
+        pass.depthAttachment.storeAction = targets.normal == nil ? .dontCare : .store
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else { return }
         encoder.label = "scene"
         encoder.setFrontFacing(.counterClockwise)
@@ -351,6 +413,7 @@ public final class MapRenderer {
         }
         let opaque = draws.filter { $0.pass != .transparent }
         for draw in opaque { encodeDraw(encoder, draw) }
+        for layer in layers { layer.encodeScene(encoder) }
 
         encoder.setRenderPipelineState(pipelines.sky)
         encoder.setDepthStencilState(pipelines.skyDepth)
@@ -409,7 +472,15 @@ public final class MapRenderer {
     static let programTextureIndex = 8
 
     private static func makePipelines(device: any MTLDevice, library: any MTLLibrary, keys: Set<PipelineKey>,
-                                      railyardSky: Bool) throws -> Pipelines {
+                                      railyardSky: Bool, mrt: Bool) throws -> Pipelines {
+        /// With the post chain: the MRT formats; `surfaceData` false masks the normal and metal/rough writes.
+        func attachments(_ d: MTLRenderPipelineDescriptor, surfaceData: Bool) {
+            guard mrt else { return }
+            for i in 1..<sceneColorFormats.count {
+                d.colorAttachments[i].pixelFormat = sceneColorFormats[i]
+                if !surfaceData { d.colorAttachments[i].writeMask = [] }
+            }
+        }
         func function(_ name: String) throws -> any MTLFunction {
             guard let f = library.makeFunction(name: name) else { throw RenderError.missingFunction(name) }
             return f
@@ -436,6 +507,7 @@ public final class MapRenderer {
             d.fragmentFunction = try specialised("ivMapFragment", key)
             d.colorAttachments[0].pixelFormat = .rgba16Float
             d.depthAttachmentPixelFormat = .depth32Float
+            attachments(d, surfaceData: true)
             if blend {
                 // three NormalBlending, premultipliedAlpha false.
                 let a: MTLRenderPipelineColorAttachmentDescriptor = d.colorAttachments[0]
@@ -457,6 +529,7 @@ public final class MapRenderer {
         skyDescriptor.fragmentFunction = try function(railyardSky ? "ivSkyRailyardFragment" : "ivSkyFragment")
         skyDescriptor.colorAttachments[0].pixelFormat = .rgba16Float
         skyDescriptor.depthAttachmentPixelFormat = .depth32Float
+        attachments(skyDescriptor, surfaceData: false)
 
         func depth(test: Bool, write: Bool, compare: MTLCompareFunction) throws -> any MTLDepthStencilState {
             let d = MTLDepthStencilDescriptor()
@@ -484,6 +557,7 @@ public final class MapRenderer {
                 d.colorAttachments[0].pixelFormat = .rgba16Float
                 d.colorAttachments[0].writeMask = []
                 d.depthAttachmentPixelFormat = .depth32Float
+                attachments(d, surfaceData: false)
                 return try device.makeRenderPipelineState(descriptor: d)
             }(),
             sky: try device.makeRenderPipelineState(descriptor: skyDescriptor),

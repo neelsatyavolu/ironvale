@@ -77,6 +77,12 @@ public final class InterfaceModel {
         self.storage = storage
         self.maps = maps
         menuChoices = MenuChoices.load(storage, maps: maps)
+        lobby.setName(PlayerName.read(storage))
+    }
+
+    /// The name field: clean it, keep it for next time (`ironvale.net.v1`) and tell the lobby.
+    public func setPlayerName(_ raw: String) {
+        lobby.setName(PlayerName.save(raw, to: storage))
     }
 
     /// A model with in-memory storage and the mock lobby, for tests and for the app before M5.
@@ -257,6 +263,22 @@ public final class InterfaceModel {
     }
 
     public func declineInvite() { invitedCode = "" }
+
+    /// macOS opened `ironvale://join?code=` (or a web invite link): show the invite. False when the URL is not one.
+    @discardableResult
+    public func openInviteURL(_ url: URL) -> Bool {
+        guard let code = InviteLink.code(from: url) else { return false }
+        openInvite(code)
+        return true
+    }
+
+    /// Text pasted outside a field: an invite link opens the invite. False when it holds none.
+    @discardableResult
+    public func pasteInvite(_ text: String) -> Bool {
+        guard let code = InviteLink.code(fromText: text) else { return false }
+        openInvite(code)
+        return true
+    }
 
     public func acceptInvite() {
         let code = invitedCode

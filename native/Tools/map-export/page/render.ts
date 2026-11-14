@@ -150,6 +150,12 @@ export async function exportRender(root: THREE.Object3D, mapId: string, dir: str
         attributes[name] = accessor(a.array as Float32Array, a.itemSize, a.normalized);
       }
     }
+    // A geometry without uv (Headworks' mountain range is built from raw positions and normals)
+    // reads uv as (0, 0) on the web, the default for a missing vertex attribute. Export that
+    // explicitly so the native renderer's fixed vertex layout always has a uv stream.
+    if (!('uv' in attributes) && g.attributes.position) {
+      attributes.uv = accessor(new Float32Array(g.attributes.position.count * 2), 2, false);
+    }
     const entry = {
       name: g.name,
       attributes,

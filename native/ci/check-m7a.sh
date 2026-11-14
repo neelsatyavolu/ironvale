@@ -18,7 +18,7 @@ set -euo pipefail
 NATIVE="$(cd "$(dirname "$0")/.." && pwd)"
 REPO="$(cd "$NATIVE/.." && pwd)"
 OUT="$NATIVE/Parity/m7a"
-SCRATCH="$NATIVE/IronvaleKit/.build-m7a"
+SCRATCH="${SCRATCH:-$NATIVE/IronvaleKit/.build-m7a}"
 GPU_TARGET_MS="${GPU_TARGET_MS:-2}"
 SOLDIERS="${SOLDIERS:-32}"
 SECONDS_BENCH="${SECONDS_BENCH:-20}"
@@ -47,7 +47,8 @@ echo "built $APP"
 
 step "soldier benchmark: $SOLDIERS soldiers, ${SECONDS_BENCH}s, offscreen"
 "$APP/Contents/MacOS/Ironvale" --soldier-bench "$SECONDS_BENCH" --soldiers "$SOLDIERS" --map railyard --repo "$REPO" \
-  --bench-json "$OUT/bench.json" --gpu-log "$OUT/gpu.csv" --capture "$OUT/soldiers.png"
+  --bench-json "$OUT/bench.json" --gpu-log "$OUT/gpu.csv" --capture "$OUT/soldiers.png" \
+  -ApplePersistenceIgnoreState YES  # never wait on AppKit's "reopen windows?" alert after a killed run
 cat "$OUT/bench.json"
 
 step "result"

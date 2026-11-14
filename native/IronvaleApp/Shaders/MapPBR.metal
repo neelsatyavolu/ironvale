@@ -215,7 +215,15 @@ static void runSurfaceProgram(thread IVSurface &s) {
     }
 }
 
-fragment float4 ivMapFragment(MapVaryings in [[stage_in]],
+/// Scene MRT of pipeline.ts (PostTypes.h): HDR colour, packNormalToRGB(normalView), (metalness, roughness).
+/// Without the M9 post chain only attachment 0 has a format and the other two writes are dropped.
+struct MapFragmentOut {
+    float4 color [[color(0)]];
+    float4 normal [[color(IV_SCENE_ATTACHMENT_NORMAL)]];
+    float2 metalRough [[color(IV_SCENE_ATTACHMENT_METALROUGH)]];
+};
+
+fragment MapFragmentOut ivMapFragment(MapVaryings in [[stage_in]],
                               bool frontFacing [[front_facing]],
                               constant IVFrameUniforms &frame [[buffer(IV_BUFFER_FRAME)]],
                               constant IVMaterialUniforms &mat [[buffer(IV_BUFFER_MATERIAL)]],
@@ -287,12 +295,17 @@ fragment float4 ivMapFragment(MapVaryings in [[stage_in]],
 
     float3 toCamera = frame.cameraPosition - in.worldPosition;
     float3 color;
+    // MRT surface data: MeshBasicMaterial has the geometry normal and no metalness or roughness.
+    float3 surfaceNormal = geometryNormal;
+    float metalness = 0.0;
     if ((flags & IV_MAT_UNLIT) != 0) {
         color = base.rgb;
+        roughness = 0.0;
     } else {
         float3 v = normalize(toCamera);
+        surfaceNormal = n;
 
-        float metalness = mat.metalness;
+        metalness = mat.metalness;
         if ((flags & IV_MAT_METALNESS_MAP) != 0) metalness *= metalTex.sample(material, uv).b;
         // three: max(roughness, 0.0525) + geometryRoughness, capped at 1.
         float3 dxy = max(abs(dfdx(geometryNormal)), abs(dfdy(geometryNormal)));
@@ -386,5 +399,9 @@ fragment float4 ivMapFragment(MapVaryings in [[stage_in]],
         }
         color = mix(color, fogColor, factor);
     }
-    return float4(color, base.a);
+    MapFragmentOut out;
+    out.color = float4(color, base.a);
+    out.normal = float4(normalize((frame.view * float4(surfaceNormal, 0.0)).xyz) * 0.5 + 0.5, 1.0);
+    out.metalRough = float2(metalness, roughness);
+    return out;
 }

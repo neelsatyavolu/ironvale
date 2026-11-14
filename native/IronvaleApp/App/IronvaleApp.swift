@@ -15,7 +15,7 @@ enum IronvaleMain {
         let app = NSApplication.shared
         let delegate = AppDelegate()
         app.delegate = delegate
-        app.setActivationPolicy(.regular)
+        app.setActivationPolicy(Presentation.activationPolicy)
         withExtendedLifetime(delegate) { app.run() }
     }
 }
@@ -37,6 +37,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+
+    /// M10: `ironvale://join?code=CODE` invites (CFBundleURLTypes in Info.plist).
+    func application(_ application: NSApplication, open urls: [URL]) { GameLauncher.open(urls) }
 
     func applicationWillTerminate(_ notification: Notification) {
         frameLoop?.stop()
@@ -102,8 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.level = .floating
             window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         }
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate()
+        Presentation.present(window)
         self.window = window
 
         let configuration = FrameLoop.Configuration(
@@ -136,7 +138,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings.internalWidth = options.internalWidth
         settings.internalHeight = options.internalHeight
         let started = Date()
-        let renderer = try MapRenderer(assets: assets, device: device, library: library, settings: settings)
+        // M9: --q TIER / --no LIST (the web's ?q= / ?no=) turn on the post chain at that preset.
+        let post = PostSettings.parse(CommandLine.arguments.dropFirst())
+        let renderer = try MapRenderer(assets: assets, device: device, library: library, settings: settings, post: post)
         let skipped = renderer.skipped.map { "\($0.path) (\($0.reason.rawValue))" }.joined(separator: ", ")
         Self.logger.info("Loaded \(mapId, privacy: .public) in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s: \(renderer.drawCount) draws, \(renderer.triangleCount) triangles; skipped: \(skipped, privacy: .public)")
         return renderer
@@ -152,7 +156,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let output = device.makeTexture(descriptor: descriptor), let queue = device.makeCommandQueue() else {
             throw AppError.noMetalDevice
         }
-        for frame in 0..<3 {
+        // With the post chain, enough frames for MetalFX Temporal to converge (two jitter cycles), as
+        // the web capture lets TRAA settle.
+        let frames = renderer.postChain == nil ? 3 : 2 * PostChain.jitterPhases
+        for frame in 0..<frames {
             guard let commands = queue.makeCommandBuffer() else { throw AppError.noMetalDevice }
             renderer.encode(commandBuffer: commands, pose: pose, time: Double(frame) / 60, output: output)
             commands.commit()

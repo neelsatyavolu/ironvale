@@ -2,6 +2,7 @@
 // lobby wording in src/ui/screens/friend.ts at cbe0add. The real session arrives with IronvaleNet (M5);
 // until then the screens run against `MockLobby`.
 import Foundation
+import IronvaleWire
 import Observation
 
 public enum NetRole: String, Sendable { case host, guest }
@@ -97,14 +98,8 @@ public enum LobbyText {
         return parts.string ?? inviteBase
     }
 
-    /// The mock lobby's stand-in for `sanitizeName` (src/net/limits.ts). The real one belongs to IronvaleWire
-    /// and replaces this when the session lands; the screen only shows whatever name the session reports.
-    public static func mockSanitizeName(_ raw: String) -> String {
-        let kept = raw.unicodeScalars.filter { CharacterSet.letters.contains($0) || CharacterSet.decimalDigits.contains($0) || " _.'-".unicodeScalars.contains($0) || CharacterSet.whitespaces.contains($0) }
-        let collapsed = String(String.UnicodeScalarView(kept)).split(whereSeparator: \.isWhitespace).joined(separator: " ")
-        let cut = String(collapsed.prefix(nameLength)).trimmingCharacters(in: .whitespaces)
-        return cut.isEmpty ? "Player" : cut
-    }
+    /// `sanitizeName` (src/net/limits.ts), from IronvaleWire.
+    public static func mockSanitizeName(_ raw: String) -> String { Sanitize.name(raw) }
 
     public static func modeNote(_ mode: NetMode) -> String {
         switch mode {

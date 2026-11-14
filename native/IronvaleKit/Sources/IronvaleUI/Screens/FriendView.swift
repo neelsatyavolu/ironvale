@@ -66,7 +66,7 @@ struct FriendScreen: View {
     }
 
     private func commitName() {
-        lobby.setName(name)
+        model.setPlayerName(name)
         name = lobby.state.localName
     }
 

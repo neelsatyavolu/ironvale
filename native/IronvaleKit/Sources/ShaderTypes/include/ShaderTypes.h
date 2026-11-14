@@ -146,4 +146,7 @@ typedef struct {
 // M7a soldier types.
 #include "SoldierTypes.h"
 
+// M9 post chain types.
+#include "PostTypes.h"
+
 #endif

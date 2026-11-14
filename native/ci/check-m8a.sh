@@ -15,11 +15,12 @@ set -euo pipefail
 NATIVE="$(cd "$(dirname "$0")/.." && pwd)"
 REPO="$(cd "$NATIVE/.." && pwd)"
 KIT="$NATIVE/IronvaleKit"
-DEBUG_SCRATCH="$KIT/.build-m8a"
-RELEASE_SCRATCH="$KIT/.build-m8a-rel"
+DEBUG_SCRATCH="${SCRATCH:-$KIT/.build-m8a}"
+RELEASE_SCRATCH="${RELEASE_SCRATCH:-${SCRATCH:+$SCRATCH-rel}}"
+RELEASE_SCRATCH="${RELEASE_SCRATCH:-$KIT/.build-m8a-rel}"
 FIXTURES="$NATIVE/Tools/audio-trace/fixtures"
 SOAK_SECONDS="${M8A_SOAK_SECONDS:-30}"
-REPORT="${TMPDIR:-/tmp}/ironvale-m8a-soak.json"
+REPORT="${M8A_REPORT:-${TMPDIR:-/tmp}/ironvale-m8a-soak.json}"
 
 step() { printf '\n== %s\n' "$*"; }
 sums() { (cd "$FIXTURES" && find . -type f -name '*.json' | sort | xargs shasum); }

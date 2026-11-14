@@ -1,6 +1,9 @@
 // Counts heap allocations made on threads that are inside a marked region, through libmalloc's
 // `malloc_logger` hook (the same hook MallocStackLogging uses). Used to prove MixCore.render
 // allocates nothing, offline and on the real Core Audio render thread.
+//
+// Each region kind has its own counter and stack ring, so tests that run in parallel (the offline
+// check's deliberate positive-control allocation, the live soak) never see each other's counts.
 
 import Darwin
 import Foundation
@@ -9,34 +12,70 @@ import Synchronization
 
 typealias MallocLogger = @convention(c) (UInt32, UInt, UInt, UInt, UInt, UInt32) -> Void
 
-/// Allocations seen inside marked regions.
-let mallocHookCount = Atomic<Int>(0)
+/// Which marked region a thread is in. The raw value is stored in the thread's hook key.
+enum MallocRegion: Int, CaseIterable {
+    /// MixCoreTests: render calls made directly by the test thread.
+    case offline = 1
+    /// SoakTests: the Core Audio render thread, marked by `MallocProbe`.
+    case live = 2
+}
+
+/// Allocations seen inside marked regions, per region.
+private let offlineCount = Atomic<Int>(0)
+private let liveCount = Atomic<Int>(0)
 nonisolated(unsafe) var mallocHookKey = pthread_key_t()
 private let installLock = Mutex<Bool>(false)
 
-/// libmalloc's logger types: 2 = allocate (malloc, calloc, realloc's new block), 4 = deallocate.
-private let mallocHookCallback: MallocLogger = { type, _, _, _, _, _ in
-    if type & 2 != 0, pthread_getspecific(mallocHookKey) != nil {
-        let n = mallocHookCount.add(1, ordering: .relaxed).newValue
-        if n <= 4 {
-            // Keep the first few call stacks (no allocation: a fixed buffer) for the failure message.
-            pthread_setspecific(mallocHookKey, nil)
-            _ = backtrace(mallocHookStacks.advanced(by: (n - 1) * 24), 24)
-            pthread_setspecific(mallocHookKey, UnsafeRawPointer(bitPattern: 1))
-        }
-    }
+private let mallocHookSlots = 8
+private let mallocHookDepth = 32
+/// Latest call stacks per region (fixed rings; the hook must not allocate).
+nonisolated(unsafe) private let mallocHookStacks: UnsafeMutablePointer<UnsafeMutableRawPointer?> = {
+    let size = (MallocRegion.allCases.count + 1) * mallocHookSlots * mallocHookDepth
+    let p = UnsafeMutablePointer<UnsafeMutableRawPointer?>.allocate(capacity: size)
+    p.initialize(repeating: nil, count: size)
+    return p
+}()
+
+private func stackSlot(_ tag: Int, _ n: Int) -> UnsafeMutablePointer<UnsafeMutableRawPointer?> {
+    mallocHookStacks.advanced(by: (tag * mallocHookSlots + (n - 1) % mallocHookSlots) * mallocHookDepth)
 }
 
-nonisolated(unsafe) let mallocHookStacks = UnsafeMutablePointer<UnsafeMutableRawPointer?>.allocate(capacity: 4 * 24)
+/// libmalloc's logger types: 2 = allocate (malloc, calloc, realloc's new block), 4 = deallocate.
+private let mallocHookCallback: MallocLogger = { type, _, _, _, _, _ in
+    guard type & 2 != 0, let marked = pthread_getspecific(mallocHookKey) else { return }
+    let tag = Int(bitPattern: marked)
+    let n: Int
+    switch tag {
+    case MallocRegion.offline.rawValue: n = offlineCount.add(1, ordering: .relaxed).newValue
+    case MallocRegion.live.rawValue: n = liveCount.add(1, ordering: .relaxed).newValue
+    default: return
+    }
+    // Keep the latest call stacks for the failure message (unmarked while walking the stack).
+    pthread_setspecific(mallocHookKey, nil)
+    let slot = stackSlot(tag, n)
+    slot.update(repeating: nil, count: mallocHookDepth)
+    _ = backtrace(slot, Int32(mallocHookDepth))
+    pthread_setspecific(mallocHookKey, marked)
+}
 
-/// Symbol names of the first recorded allocation stacks.
-func mallocHookReport() -> String {
+/// Symbolized call stacks of the `region` allocations counted after `since` (the latest few).
+func mallocHookReport(_ region: MallocRegion, since: Int) -> String {
+    let count = MallocHook.count(region)
+    guard count > since else { return "" }
     var lines: [String] = []
-    for s in 0..<min(4, mallocHookCount.load(ordering: .relaxed)) {
-        for f in 0..<24 {
-            guard let address = mallocHookStacks[s * 24 + f] else { break }
+    for n in max(since + 1, count - mallocHookSlots + 1)...count {
+        lines.append(" allocation \(n):")
+        let slot = stackSlot(region.rawValue, n)
+        for f in 0..<mallocHookDepth {
+            guard let address = slot[f] else { break }
             var info = Dl_info()
-            if dladdr(address, &info) != 0, let name = info.dli_sname { lines.append("  \(s): \(String(cString: name))") }
+            var line = "    \(address)"
+            if dladdr(address, &info) != 0 {
+                let image = info.dli_fname.map { String(cString: $0).split(separator: "/").last.map(String.init) ?? "" } ?? "?"
+                let symbol = info.dli_sname.map { String(cString: $0) } ?? "?"
+                line += " \(image) \(symbol)"
+            }
+            lines.append(line)
         }
     }
     return lines.joined(separator: "\n")
@@ -55,16 +94,21 @@ enum MallocHook {
         }
     }
 
-    /// Mark the current thread as counted (true) or not.
-    @inline(__always) static func counting(_ on: Bool) {
-        pthread_setspecific(mallocHookKey, on ? UnsafeRawPointer(bitPattern: 1) : nil)
+    /// Mark the current thread as counted in `region`, or unmark it (nil).
+    @inline(__always) static func counting(_ region: MallocRegion?) {
+        pthread_setspecific(mallocHookKey, region.flatMap { UnsafeRawPointer(bitPattern: $0.rawValue) })
     }
 
-    static var count: Int { mallocHookCount.load(ordering: .relaxed) }
+    static func count(_ region: MallocRegion) -> Int {
+        switch region {
+        case .offline: offlineCount.load(ordering: .relaxed)
+        case .live: liveCount.load(ordering: .relaxed)
+        }
+    }
 }
 
 /// Marks the render thread for the duration of each render call.
 final class MallocProbe: RenderProbe {
-    func enter() { MallocHook.counting(true) }
-    func leave() { MallocHook.counting(false) }
+    func enter() { MallocHook.counting(.live) }
+    func leave() { MallocHook.counting(nil) }
 }

@@ -1,0 +1,15 @@
+{
+  "difficulty": "veteran",
+  "preset": "mouse",
+  "steps": [
+    { "mark": "spawn", "seconds": 0.5 },
+    { "mark": "hold the spawn, scanning", "seconds": 20, "look": [2, 0] },
+    { "mark": "advance", "seconds": 4, "hold": ["KeyW"] },
+    { "mark": "fire toward the bots", "seconds": 6, "hold": ["Mouse0"], "look": [4, 0] },
+    { "mark": "reload", "seconds": 3, "press": ["KeyR"] },
+    { "mark": "scan again", "seconds": 25, "look": [-2, 0] },
+    { "mark": "respawn", "seconds": 10, "untilAlive": true },
+    { "mark": "last stand", "seconds": 20, "hold": ["Mouse0"], "look": [3, 0] },
+    { "mark": "done", "seconds": 0.5 }
+  ]
+}

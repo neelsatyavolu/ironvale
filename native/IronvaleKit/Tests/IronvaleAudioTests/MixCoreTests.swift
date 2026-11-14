@@ -146,12 +146,12 @@ import Testing
     func renderDoesNotAllocate() throws {
         try #require(MallocHook.install(), "malloc_logger is not available")
         // Positive control: an allocation inside a counted region is seen.
-        let before = MallocHook.count
-        MallocHook.counting(true)
+        let before = MallocHook.count(.offline)
+        MallocHook.counting(.offline)
         let leak = UnsafeMutableRawPointer.allocate(byteCount: 64, alignment: 16)
-        MallocHook.counting(false)
+        MallocHook.counting(nil)
         leak.deallocate()
-        #expect(MallocHook.count > before, "the malloc hook did not see a deliberate allocation")
+        #expect(MallocHook.count(.offline) > before, "the malloc hook did not see a deliberate allocation")
 
         let host = StubFirefight(seed: 11)
         let session = try AudioSession(repo: Fixtures.repo, host: host, sampleRate: 48000)
@@ -162,22 +162,23 @@ import Testing
         defer { left.deallocate(); right.deallocate() }
         var counted = 0
         var renders = 0
+        let firstCounted = MallocHook.count(.offline)
         // 30 s of game; 6.25 render calls of 128 frames per 60 Hz frame.
         var owed = 0.0
         for _ in 0..<1800 {
             session.frame(dt: 1.0 / 60, events: host.step(1.0 / 60))
             owed += 48000.0 / 60
             while owed >= Double(frames) {
-                let start = MallocHook.count
-                MallocHook.counting(true)
+                let start = MallocHook.count(.offline)
+                MallocHook.counting(.offline)
                 session.core.render(frames: frames, left: left, right: right)
-                MallocHook.counting(false)
-                counted += MallocHook.count - start
+                MallocHook.counting(nil)
+                counted += MallocHook.count(.offline) - start
                 owed -= Double(frames)
                 renders += 1
             }
         }
         #expect(renders >= 11250)
-        #expect(counted == 0, "\(counted) allocations in \(renders) render calls\n\(mallocHookReport())")
+        #expect(counted == 0, "\(counted) allocations in \(renders) render calls\n\(mallocHookReport(.offline, since: firstCounted))")
     }
 }

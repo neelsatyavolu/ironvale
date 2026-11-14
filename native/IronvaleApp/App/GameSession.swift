@@ -1,8 +1,10 @@
 // M4 composition: the offline sim (IronvaleSim), device input and pointer capture (IronvalePlatform),
 // the map renderer (IronvaleMapRender), the stand-in gun (IronvaleViewModel) and the interface
-// (IronvaleUI RootView) with a placeholder HUD, in an NSHostingView over the Metal view.
+// (IronvaleUI RootView) and the Metal HUD (HUDView.swift), in an NSHostingView over the Metal view.
 import AppKit
+import IronvaleAI
 import IronvaleContract
+import IronvaleCharacters
 import IronvaleCore
 import IronvaleMapData
 import IronvaleMapRender
@@ -30,6 +32,8 @@ final class GameSession {
     let deviceInput: DeviceInput
     let input: BoundInput
     let game: Game
+    /// M7b: the bots of every match (IronvaleAI), drawn through `actorSources`.
+    let bots: BotManager
     let viewModel: ViewModelRenderer
     let hud = HUDModel()
     let interface: InterfaceModel
@@ -39,7 +43,14 @@ final class GameSession {
     private var eventLog: EventLog?
     private var recorder: GameRecorder?
     private var lastConfig: MatchConfig?
-    private var hudTimer = 0.0
+    /// M7a: the third-person soldiers, drawn inside the map's passes; nil when the baked soldier is missing.
+    private var soldiers: SoldierLayer?
+    /// Everything that contributes soldiers to draw each frame (the two-player match, bots).
+    var actorSources: [any ActorSource] = []
+    /// M6: a scripted duel against another machine (NetDuel.swift).
+    private var netDuel: NetDuel?
+    /// M7b: `--autopilot --bots N` checks the bot scenario instead of the M4 event sequence.
+    private var botMonitor: BotScenarioMonitor?
 
     init(options: GameOptions, launch: LaunchOptions, device: any MTLDevice, library: any MTLLibrary, repositoryRoot: URL) throws {
         self.options = options
@@ -54,6 +65,8 @@ final class GameSession {
         let settings = Self.playerSettings(interface.settings.value)
         input = BoundInput(settings: settings, data: data)
         game = Game(input: input, settings: settings, data: data)
+        bots = BotManager(game: game)
+        game.bots = bots
         viewModel = try ViewModelRenderer(device: device, library: library, colorFormat: .bgra8Unorm,
                                           guns: FallbackGunData.loadAll(contractDirectory: data.contract.directory))
 
@@ -75,6 +88,9 @@ final class GameSession {
         window.center()
 
         wire()
+        hud.attach(game: game, device: device, library: library, settings: interface.settings, view: metalView, repositoryRoot: repositoryRoot)
+        actorSources.append(bots)
+        soldiers = Self.makeSoldiers(device: device, library: library, repositoryRoot: repositoryRoot)
         let configuration = FrameLoop.Configuration(uncapped: launch.uncapped, frameLimit: launch.frameLimit,
                                                     collectFrameTimes: launch.frameLogPath != nil)
         let encoder = GameFrameEncoder()
@@ -129,9 +145,19 @@ final class GameSession {
 
     func start() throws {
         let headless = options.autopilotPath != nil && options.offscreen
+        if let duel = NetDuelOptions.parse(CommandLine.arguments.dropFirst()) {
+            let created = try NetDuel(options: duel, game: game, input: input) { [weak self] config in self?.startMatch(config) ?? false }
+            netDuel = created
+            actorSources.append(created.match)
+            // Keep the window above others: macOS stops the display link for a covered window.
+            window.level = .floating
+            Presentation.present(window, activate: false)
+            created.start(window: window) { [weak self] on in on ? self?.frameLoop?.start() : self?.frameLoop?.stop() }
+            frameLoop?.start()
+            return
+        }
         if !headless {
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate()
+            Presentation.present(window)
             deviceInput.attach(to: window)
         }
         if let path = options.autopilotPath {
@@ -145,7 +171,8 @@ final class GameSession {
             input.setPreset(settings)
             game.applySettings(settings)
             runner = AutopilotRunner(script: script, game: game, input: input, log: log)
-            startMatch(MatchConfig(mapId: mapId, mode: .skirmish, difficulty: script.difficulty ?? "veteran", botCount: 0))
+            if options.botCount > 0 { botMonitor = BotScenarioMonitor(game: game, bots: bots) }
+            startMatch(MatchConfig(mapId: mapId, mode: .skirmish, difficulty: script.difficulty ?? "veteran", botCount: options.botCount))
             if options.offscreen {
                 try runOffscreen()
                 return
@@ -157,7 +184,7 @@ final class GameSession {
                 recorder = GameRecorder(game: game, log: log)
             }
             startMatch(MatchConfig(mapId: options.mapId ?? "range", mode: .skirmish,
-                                   difficulty: interface.settings.value.gameplay.difficulty.rawValue, botCount: 0))
+                                   difficulty: interface.settings.value.gameplay.difficulty.rawValue, botCount: options.botCount))
         }
         frameLoop?.start()
     }
@@ -194,7 +221,8 @@ final class GameSession {
         startMatch(MatchConfig(mapId: request.mapId, mode: mode, difficulty: request.difficulty.rawValue, botCount: request.botCount))
     }
 
-    private func startMatch(_ config: MatchConfig) {
+    @discardableResult
+    private func startMatch(_ config: MatchConfig) -> Bool {
         // The developer map (range) is not in the menu's list; it loads without a loading screen.
         let info = interface.maps.first { $0.id == config.mapId }
         let mapName = info?.name ?? config.mapId.capitalized
@@ -214,13 +242,15 @@ final class GameSession {
             lastConfig = config
             game.start(map: package, config: config)
             interface.showPlaying()
-            if runner == nil { deviceInput.capture() }
+            if runner == nil, netDuel == nil { deviceInput.capture() }
             Self.logger.info("Match started on \(config.mapId, privacy: .public)")
+            return true
         } catch {
             Self.logger.error("Could not start the match: \(error, privacy: .public)")
             interface.menuError = "Could not load \(mapName): \(error)"
             interface.showMenu()
             if runner != nil { finishAutopilot(failure: "load failed: \(error)") }
+            return false
         }
     }
 
@@ -234,7 +264,9 @@ final class GameSession {
             renderSettings.internalWidth = options.offscreen ? 1280 : max(640, Int(size.width))
             renderSettings.internalHeight = options.offscreen ? 800 : max(400, Int(size.height))
             renderSettings.fovDegrees = Float(game.settings.fov)
-            return try MapRenderer(assets: assets, device: device, library: library, settings: renderSettings)
+            let renderer = try MapRenderer(assets: assets, device: device, library: library, settings: renderSettings)
+            if let soldiers { renderer.layers.append(soldiers) }
+            return renderer
         } catch {
             Self.logger.error("Map renderer unavailable: \(error, privacy: .public)")
             FileHandle.standardError.write(Data("warning: map renderer unavailable, playing without map geometry: \(error)\n".utf8))
@@ -272,9 +304,12 @@ final class GameSession {
     func frame(commandBuffer: any MTLCommandBuffer, target: any MTLTexture, dt: Double) {
         if let runner {
             runner.frame(dt)
+            botMonitor?.frame(dt)
             if runner.finished { finishAutopilot(failure: nil) }
+        } else if let netDuel {
+            netDuel.tick(dt)
         } else {
-            deviceInput.gameHasKeyboard = game.phase == .playing
+            deviceInput.gameHasKeyboard = game.phase == .playing && !hud.takesKeyboard
             let device = deviceInput.takeFrame()
             input.frame = InputFrame(held: device.held, pressed: device.pressed, lookX: device.lookX, lookY: device.lookY, locked: device.locked)
             game.frame(dt)
@@ -282,6 +317,7 @@ final class GameSession {
         }
         updateViewModel(dt)
         updateHUD(dt)
+        soldiers?.update(SoldierDrawList.build(from: actorSources), dt: dt)
         guard let renderer, game.map != nil else {
             clear(commandBuffer: commandBuffer, target: target)
             return
@@ -291,6 +327,20 @@ final class GameSession {
                               yaw: Float(camera.yaw), pitch: Float(camera.pitch))
         renderer.encode(commandBuffer: commandBuffer, pose: pose, time: game.time, output: target)
         if game.player.alive { viewModel.encode(commandBuffer: commandBuffer, target: target, camera: camera) }
+        hud.encode(commandBuffer: commandBuffer, target: target)
+        if let path = netDuel?.takeShotRequest() { NetDuel.capture(renderer: renderer, pose: pose, time: game.time, device: device, to: path) }
+    }
+
+    /// The soldier renderer for every match, or nil (logged) when the baked soldier cannot be loaded.
+    private static func makeSoldiers(device: any MTLDevice, library: any MTLLibrary, repositoryRoot: URL) -> SoldierLayer? {
+        do {
+            let baked = SoldierRig.bakedDirectory(repositoryRoot: repositoryRoot)
+            let rig = try SoldierRig(directory: baked)
+            return SoldierLayer(renderer: try SoldierRenderer(rig: rig, bakedDirectory: baked, device: device, library: library))
+        } catch {
+            logger.error("Soldier renderer unavailable: \(error, privacy: .public)")
+            return nil
+        }
     }
 
     private func updateViewModel(_ dt: Double) {
@@ -306,26 +356,7 @@ final class GameSession {
     }
 
     private func updateHUD(_ dt: Double) {
-        hudTimer += dt
-        let playing = game.phase == .playing
-        if hud.visible != playing { hud.visible = playing }
-        guard playing, hudTimer >= 1.0 / 20 else { return }
-        hudTimer = 0
-        let s = game.snapshot
-        hud.health = s.health
-        hud.weaponName = s.weaponName
-        hud.fireMode = s.fireMode
-        hud.magazine = s.magazine
-        hud.reserve = s.reserve
-        hud.reloading = s.reloading
-        hud.grenades = s.grenades
-        hud.grenadeAiming = s.grenadeAiming
-        hud.scopedIn = s.scopedIn
-        hud.aiming = s.aiming
-        hud.respawnIn = s.respawnIn
-        hud.alive = game.player.alive
-        hud.livesRemaining = s.livesRemaining
-        hud.spread = s.spread
+        hud.frame(dt, game: game, pressed: input.frame.pressed)
     }
 
     private func clear(commandBuffer: any MTLCommandBuffer, target: any MTLTexture) {
@@ -342,11 +373,24 @@ final class GameSession {
     private func finishAutopilot(failure: String?) {
         guard let runner else { return }
         self.runner = nil
-        let missing = failure.map { [$0] } ?? AutopilotRunner.missing(in: runner.recorder.log.lines, weapons: data.contract.weapons.weaponIds)
+        var missing = failure.map { [$0] } ?? AutopilotRunner.missing(in: runner.recorder.log.lines, weapons: data.contract.weapons.weaponIds)
+        if let botMonitor, failure == nil {
+            let report = botMonitor.report
+            missing = report.failures(expectEnemies: options.botCount)
+            runner.recorder.log.write(time: game.time, kind: "botScenario", fields: [
+                "spawned": "\(report.spawned)", "botShots": "\(report.botShots)", "botsThatFired": "\(report.botsThatFired)",
+                "hitsOnPlayer": "\(report.hitsOnPlayer)", "playerDeaths": "\(report.playerDeaths)", "botKills": "\(report.botKills)",
+                "leastTravel": String(format: "%.2f", report.leastTravel), "botFootsteps": "\(report.botFootsteps)",
+                "outOfWorld": "\(report.outOfWorld)", "rateViolations": "\(report.rateViolations)",
+                "navNodes": "\(bots.stats.navNodes)", "botUpdateMeanMs": String(format: "%.3f", bots.stats.updateMs),
+                "botUpdateMaxMs": String(format: "%.3f", bots.stats.updateMaxMs),
+            ])
+        }
         runner.recorder.log.write(time: game.time, kind: missing.isEmpty ? "autopilotPassed" : "autopilotFailed",
                                   fields: ["missing": missing.joined(separator: "; ")])
         stop()
-        let message = missing.isEmpty ? "autopilot: every M4 event in order" : "autopilot: missing \(missing.joined(separator: ", "))"
+        let passed = botMonitor == nil ? "autopilot: every M4 event in order" : "autopilot: the \(options.botCount)-bot skirmish passed"
+        let message = missing.isEmpty ? passed : "autopilot: missing \(missing.joined(separator: ", "))"
         FileHandle.standardError.write(Data((message + "\n").utf8))
         Self.logger.info("\(message, privacy: .public)")
         exit(missing.isEmpty ? 0 : 1)
@@ -384,4 +428,9 @@ enum GameLauncher {
     }
 
     static func stop() { session?.stop() }
+
+    /// `ironvale://join?code=` (or a web invite link) opened by macOS: show the invite in the menu.
+    static func open(_ urls: [URL]) {
+        for url in urls where session?.interface.openInviteURL(url) == true { return }
+    }
 }

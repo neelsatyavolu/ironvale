@@ -236,6 +236,12 @@ final class PeerController {
 }
 
 do {
+    // `--game MAP`: a real headless match with bots (M7b, CoopGame.swift) instead of the layer 3 script.
+    if let game = try CoopGameOptions.parse(Array(CommandLine.arguments.dropFirst())) {
+        let runner = try MainActor.assumeIsolated { try CoopGame(options: game) }
+        MainActor.assumeIsolated { runner.run() }
+        dispatchMain()
+    }
     let options = try PeerOptions.parse(Array(CommandLine.arguments.dropFirst()))
     let controller = try MainActor.assumeIsolated { try PeerController(options: options) }
     MainActor.assumeIsolated { controller.run() }

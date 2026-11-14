@@ -24,7 +24,7 @@ SECONDS_FLY="${SECONDS_FLY:-60}"
 step() { printf '\n== %s\n' "$*"; }
 
 step "swift test (renderer targets)"
-(cd "$NATIVE/IronvaleKit" && swift test --scratch-path .build-m3 --filter 'IronvaleRenderTests|IronvaleMapRenderTests|ShaderTypesTests')
+(cd "$NATIVE/IronvaleKit" && swift test --scratch-path "${SCRATCH:-$NATIVE/IronvaleKit/.build-m3}" --filter 'IronvaleRenderTests|IronvaleMapRenderTests|ShaderTypesTests')
 
 step "xcodegen + xcodebuild (Release)"
 APP="$(CONFIGURATION=Release "$NATIVE/ci/build-app.sh" | tail -n 1)"
@@ -41,6 +41,10 @@ grep -q '"programParams"' "$NATIVE/MapPackages/railyard/render/scene.json" || {
   exit 1
 }
 
+# A killed earlier run (or another agent's) makes AppKit block launch on its "reopen windows?" alert;
+# launch without restoring saved state so captures never wait on that modal.
+NO_RESTORE=(-ApplePersistenceIgnoreState YES)
+
 step "web captures (Chrome, WebGPU)"
 node "$TOOLS/capture-web.mjs" --out "$PARITY/web" --no grain,aa
 WEB_DIRS=(--web "$PARITY/web")
@@ -50,20 +54,20 @@ if [[ "${M3_DIAGNOSTIC:-0}" == 1 ]]; then
 fi
 
 step "native captures + SSIM"
-node "$TOOLS/compare.mjs" --app "$APP" --out "$PARITY/native" "${WEB_DIRS[@]}"
+node "$TOOLS/compare.mjs" --app "$APP" --app-args "${NO_RESTORE[*]}" --out "$PARITY/native" "${WEB_DIRS[@]}"
 SSIM_MIN="$(node -e "console.log(require('$PARITY/native/ssim.json').min.web)")"
 SSIM_MEAN="$(node -e "console.log(require('$PARITY/native/ssim.json').mean.web)")"
 
 step "flythrough ${SECONDS_FLY}s, offscreen, uncapped, 2560x1600 internal"
 "$BIN" --map railyard --flythrough "$SECONDS_FLY" --offscreen --repo "$REPO" \
-  --frame-log "$PARITY/native/frames.csv" --gpu-log "$PARITY/native/gpu.csv"
+  --frame-log "$PARITY/native/frames.csv" --gpu-log "$PARITY/native/gpu.csv" "${NO_RESTORE[@]}"
 node "$TOOLS/frame-stats.mjs" "$PARITY/native/frames.csv" "$PARITY/native/gpu.csv" --json "$PARITY/native/frames.json"
 LOW="$(node -e "console.log(require('$PARITY/native/frames.json').present.onePercentLowFps)")"
 
 if [[ "${M3_WINDOWED:-0}" == 1 ]]; then
   step "flythrough ${SECONDS_FLY}s, windowed, display-linked"
   "$BIN" --map railyard --flythrough "$SECONDS_FLY" --repo "$REPO" \
-    --frame-log "$PARITY/native/frames-window.csv" --gpu-log "$PARITY/native/gpu-window.csv"
+    --frame-log "$PARITY/native/frames-window.csv" --gpu-log "$PARITY/native/gpu-window.csv" "${NO_RESTORE[@]}"
   node "$TOOLS/frame-stats.mjs" "$PARITY/native/frames-window.csv" "$PARITY/native/gpu-window.csv"
   STALLS="$(awk -F, 'NR > 2 && $3 > 250' "$PARITY/native/frames-window.csv" | wc -l | tr -d ' ')"
   echo "display-link stalls over 250 ms (window covered or on another Space): $STALLS"

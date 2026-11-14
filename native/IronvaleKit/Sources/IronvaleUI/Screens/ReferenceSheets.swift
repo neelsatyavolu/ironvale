@@ -68,16 +68,8 @@ struct CreditsView: View {
     /// Distance one press of an arrow key scrolls the list.
     static let lineScroll: CGFloat = 80
 
-    /// The groups to show: the web's, with the library list replaced by what the native build links.
-    static var groups: [CreditGroup] {
-        WebData.shared.credits.map { group in
-            guard group.id == "libraries" else { return group }
-            return CreditGroup(id: group.id, title: group.title, count: nativeLibraries.count, credited: [], thanks: nativeLibraries)
-        }
-    }
-
-    /// Third-party code the native app links. Empty until WebRTC arrives with M5; it is listed here then.
-    static let nativeLibraries: [CreditThanks] = []
+    /// The groups to show: built from the shipped manifest by the credits model, with the libraries the native app links.
+    static var groups: [CreditGroup] { CreditsModel.screenGroups }
 
     var body: some View {
         SheetPanelScroll(solid: model.sheetIsSolid, onBack: { model.open(nil) }) {

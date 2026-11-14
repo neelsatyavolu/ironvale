@@ -9,7 +9,7 @@ import Testing
 /// Two links joined in memory. An offer names its link, so the answer can find it.
 @MainActor
 final class LoopbackLink: PeerLink {
-    nonisolated(unsafe) static var registry: [String: LoopbackLink] = [:]
+    static var registry: [String: LoopbackLink] = [:]
     private static var next = 0
     let id: String
     let handlers: PeerLinkHandlers
@@ -22,13 +22,16 @@ final class LoopbackLink: PeerLink {
         id = "link\(Self.next)"
         self.handlers = handlers
         Self.registry[id] = self
-        Self.latest = self
     }
 
-    nonisolated(unsafe) static weak var latest: LoopbackLink?
-
-    static func make(_ options: PeerLinkOptions, _ handlers: PeerLinkHandlers) -> PeerLink {
-        LoopbackLink(handlers: handlers)
+    /// A factory for one session. Each test keeps its own list of the links a session made,
+    /// so parallel tests never share a "last link" global.
+    static func factory(recording made: LinkList? = nil) -> PeerLinkFactory {
+        { _, handlers in
+            let link = LoopbackLink(handlers: handlers)
+            made?.links.append(link)
+            return link
+        }
     }
 
     func makeOffer() { later { self.handlers.onSignal(.offer(sdp: "v=0\r\no=\(self.id)\r\n")) } }
@@ -96,6 +99,12 @@ final class LoopbackLink: PeerLink {
     }
 }
 
+/// The links one session made, in order.
+@MainActor
+final class LinkList {
+    var links: [LoopbackLink] = []
+}
+
 @MainActor
 private final class Recorder {
     var began: [(NetMatchConfig, PeerRole)] = []
@@ -105,7 +114,7 @@ private final class Recorder {
 }
 
 @MainActor
-private func makeSession(_ recorder: Recorder, name: String) -> NetLobbySession {
+private func makeSession(_ recorder: Recorder, name: String, links: LinkList? = nil) -> NetLobbySession {
     let hooks = MatchHooks(
         knownMaps: { ["railyard", "range"] },
         beginMatch: { config, role in recorder.began.append((config, role)) },
@@ -113,7 +122,7 @@ private func makeSession(_ recorder: Recorder, name: String) -> NetLobbySession 
         matchBinary: { message, _ in recorder.binaries.append(message) },
         chat: { name, text, _ in recorder.chat.append("\(name): \(text)") }
     )
-    return NetLobbySession(relay: nil, makeLink: LoopbackLink.make, hooks: hooks, localName: name)
+    return NetLobbySession(relay: nil, makeLink: LoopbackLink.factory(recording: links), hooks: hooks, localName: name)
 }
 
 @MainActor
@@ -197,7 +206,8 @@ private func waitUntil(_ what: String, _ condition: () -> Bool) async throws {
 @MainActor
 @Test func versionMismatchEndsTheConnection() async throws {
     let host = makeSession(Recorder(), name: "A")
-    let guest = makeSession(Recorder(), name: "B")
+    let guestLinks = LinkList()
+    let guest = makeSession(Recorder(), name: "B", links: guestLinks)
     host.host(.manual)
     try await waitUntil("invite") { !host.state.code.isEmpty }
     guest.join(.manual, code: host.state.code)
@@ -205,8 +215,7 @@ private func waitUntil(_ what: String, _ condition: () -> Bool) async throws {
     host.acceptReply(guest.state.code)
     try await waitUntil("connected") { host.state.phase == .connected && guest.state.phase == .connected }
     // An old peer says hello with another protocol version.
-    // The guest's link is the one made last (the host makes its offer first).
-    let guestLink = try #require(LoopbackLink.latest)
+    let guestLink = try #require(guestLinks.links.last)
     _ = guestLink.sendEvent(text: #"{"t":"hello","v":3,"name":"Old"}"#)
     try await waitUntil("version error") { host.state.error == .version || guest.state.error == .version }
 }
