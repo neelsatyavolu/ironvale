@@ -163,12 +163,14 @@ function leaning(kit: Kit, [x, z, facing, y = 0]: Leaning, length: number, out: 
   };
 }
 
-function addOars(kit: Kit, spot: Leaning): void {
+/** With `show` false nothing is placed but the same random numbers are drawn. */
+function addOars(kit: Kit, spot: Leaning, show: boolean): void {
   const { mats, random } = kit;
   const count = 2 + Math.floor(random() * 2);
   for (let i = 0; i < count; i++) {
     const length = 2.5 + random() * 0.4;
     const part = leaning(kit, [spot[0] + i * 0.16, spot[1], spot[2], spot[3] ?? 0], length + 0.6, 0.35 + random() * 0.2);
+    if (!show) continue;
     part(mats.planksPale, 0.045, length, 0.045, 0, length / 2);
     part(i === 0 ? mats.paint[4]! : mats.planksPale, 0.15, 0.62, 0.022, 0, length + 0.3);
   }
@@ -278,8 +280,10 @@ export function addScatter(kit: Kit): void {
   for (const spot of LADDERS) addLadder(kit, spot);
 
   for (const spot of keep(LIFE_RINGS, 2)) addLifeRing(kit, spot);
-  for (const spot of keep(OARS, 3)) addOars(kit, spot);
-  for (const [x, z, yaw, y = 0] of keep(BUCKET_GROUPS, 5)) addBucketGroup(kit, x, y, z, yaw);
+  // Oars thin out but still draw their random numbers, so the bucket rows after them keep their size.
+  const oars = keep(OARS, 3);
+  OARS.forEach((spot, i) => addOars(kit, spot, i < oars.length));
+  for (const [x, z, yaw, y = 0] of BUCKET_GROUPS) addBucketGroup(kit, x, y, z, yaw);
   addAnchor(kit, 12.2, 10, 1);
   addMoleLight(kit);
 

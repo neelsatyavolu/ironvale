@@ -3,7 +3,7 @@
 // Runtime types generated with workerd@1.20261110.1 2026-03-01
 interface __BaseEnv_Env {
 	JOIN_LIMITER: RateLimit;
-	ALLOWED_ORIGINS: "https://ironvale.n3el.dev";
+	ALLOWED_ORIGINS: "https://ironvale.n3el.dev,app://ironvale";
 	ROOMS: DurableObjectNamespace<import("./src/index").RoomObject>;
 }
 declare namespace Cloudflare {

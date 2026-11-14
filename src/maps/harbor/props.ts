@@ -165,6 +165,7 @@ export function addProps(kit: Kit, root: THREE.Object3D, assets: Assets): { disp
     const mesh = instanced(root, geometry, shadowOnly, transforms);
     if (mesh) mesh.receiveShadow = false;
   };
+  // Only decoration without colliders thins out at lower detail, and it still draws its random numbers.
   const keep = <T>(list: readonly T[], min: number): readonly T[] =>
     list.slice(0, Math.max(min, Math.round(list.length * Math.min(1, density + 0.15))));
 
@@ -198,7 +199,7 @@ export function addProps(kit: Kit, root: THREE.Object3D, assets: Assets): { disp
   const barrels: THREE.Matrix4[] = [];
   const barrelModel = assets.model('mdl-harbor-barrel');
   const diameter = 0.74 * BARREL_SCALE;
-  for (const [x, z, yaw, y = 0] of keep(BARREL_CLUSTERS, 4)) {
+  for (const [x, z, yaw, y = 0] of BARREL_CLUSTERS) {
     const cluster: THREE.Matrix4[] = [];
     const count = 2 + Math.floor(random() * 2);
     for (let i = 0; i < count; i++) {
@@ -234,7 +235,7 @@ export function addProps(kit: Kit, root: THREE.Object3D, assets: Assets): { disp
   const pot = lobsterPot();
   owned.push(pot.wood, pot.net);
   const pots: THREE.Matrix4[] = [];
-  for (const [x, z, yaw, y = 0] of keep(POT_HEAPS, 4)) {
+  for (const [x, z, yaw, y = 0] of POT_HEAPS) {
     const cos = Math.cos(yaw);
     const sin = Math.sin(yaw);
     const place = (lx: number, ly: number, lz: number): void => {
@@ -256,7 +257,7 @@ export function addProps(kit: Kit, root: THREE.Object3D, assets: Assets): { disp
     root,
     coil,
     mats.rope,
-    keep(ROPE_COILS, 5).map(([x, z]) => transform(x, 0, z, random() * 6, 0.9 + random() * 0.3)),
+    keep(ROPE_COILS.map(([x, z]) => transform(x, 0, z, random() * 6, 0.9 + random() * 0.3)), 5),
   );
 
   // Mooring bollards along the open quay edge, the mole and beside each jetty.

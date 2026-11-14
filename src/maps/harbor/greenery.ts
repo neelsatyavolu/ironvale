@@ -39,8 +39,10 @@ export function addGreenery(kit: Kit): void {
 
   for (const vine of VINES) {
     const yaw = Math.atan2(vine.nx, vine.nz);
+    // Every card draws its random numbers at any detail setting, so nothing placed after the vines moves.
+    const all = Math.round(vine.width * vine.height * 3.2) + 6;
     const count = Math.round(vine.width * vine.height * 3.2 * Math.max(0.5, density)) + 6;
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < all; i++) {
       // Climbers start narrow at the root and fan out; hanging growth is widest at the top.
       const t = random();
       const v = vine.hanging ? vine.height * (1 - t * t) : 0.35 + (vine.height - 0.35) * Math.sqrt(t);
@@ -48,12 +50,14 @@ export function addGreenery(kit: Kit): void {
       const u = (random() * 2 - 1) * (vine.width / 2) * spread;
       const out = 0.04 + random() * 0.16;
       const size = 0.8 + random() * 0.9;
-      const card = new THREE.PlaneGeometry(size, size);
       const flowering = vine.flowers && random() < 0.6;
+      // Spin in its own plane, lean a little off the wall, then turn to face out of it.
+      euler.set((random() - 0.5) * 0.5, (random() - 0.5) * 0.5, random() * Math.PI * 2, 'XYZ');
+      if (i >= count) continue;
+      const card = new THREE.PlaneGeometry(size, size);
       const uv = card.getAttribute('uv');
       for (let k = 0; k < uv.count; k++) uv.setX(k, (uv.getX(k) + (flowering ? 1 : 0)) / 2);
-      // Spin in its own plane, lean a little off the wall, then turn to face out of it.
-      matrix.makeRotationFromEuler(euler.set((random() - 0.5) * 0.5, (random() - 0.5) * 0.5, random() * Math.PI * 2, 'XYZ'));
+      matrix.makeRotationFromEuler(euler);
       matrix.premultiply(turn.makeRotationY(yaw));
       matrix.setPosition(vine.x + vine.nz * u + vine.nx * out, vine.base + v, vine.z - vine.nx * u + vine.nz * out);
       card.applyMatrix4(matrix);

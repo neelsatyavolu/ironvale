@@ -283,14 +283,17 @@ export function buildRacking(kit: Kit, m: Materials, props: Props): void {
           const height = kit.range(0.6, 1.15);
           const tint = kit.pick(cartons);
           const skew = kit.range(-0.06, 0.06);
-          // The top shelves thin out at low detail; the floor row always stays.
-          if (roll < 0.22 || (level > 2 && roll > 0.22 + 0.78 * kit.detail)) continue;
-          kit.add(m.wood, props.pallet, kit.transform(run.x, level, z, skew + Math.PI / 2));
+          if (roll < 0.22) continue;
+          // The top shelves thin out at low detail; the floor row always stays. A thinned load
+          // still takes its random numbers so nothing placed after the racking moves.
+          const show = level <= 2 || roll <= 0.22 + 0.78 * kit.detail;
+          if (show) kit.add(m.wood, props.pallet, kit.transform(run.x, level, z, skew + Math.PI / 2));
           if (roll > 0.72) {
+            if (!show) continue;
             kit.box(m.wrap, 1.0, height, 1.1, run.x, level + 0.145, z, { yaw: skew });
             kit.box(m.matte, 1.01, 0.03, 1.11, run.x, level + 0.145 + height * 0.5, z, { yaw: skew, color: 0x2b2d2e });
           } else {
-            props.cartons(run.x, level + 0.145, z, skew, 0.96, height, 1.12, tint);
+            props.cartons(run.x, level + 0.145, z, skew, 0.96, height, 1.12, tint, show);
           }
         }
       }

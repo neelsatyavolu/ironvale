@@ -1,3 +1,4 @@
+import { freezeVisuals } from './core/freeze';
 import { graphicsForTier, SettingsStore, type GraphicsSettings, type QualityTier } from './core/settings';
 import { Game } from './game/game';
 
@@ -20,6 +21,7 @@ async function boot(): Promise<void> {
     window.__ironvale = { game: { engine } as unknown as Game, ready: true, error: null };
     return;
   }
+  debugFreeze();
   const game = await Game.create(canvas, debugSettings());
   const hook = { game, ready: false, error: null as string | null };
   window.__ironvale = hook;
@@ -71,6 +73,16 @@ function debugSettings(): SettingsStore | undefined {
     shadowMapSize: off.has('shadows') ? 0 : base.shadowMapSize,
   });
   return store;
+}
+
+/**
+ * Developer switch for screenshot parity captures: ?freeze holds everything
+ * animated for looks (shader clocks, water, lamp flicker, boats, weather and
+ * other effects, the view model's breathing) at time 0, so two captures of the
+ * same pose match. Gameplay and networking run as normal.
+ */
+function debugFreeze(): void {
+  if (new URLSearchParams(location.search).has('freeze')) freezeVisuals();
 }
 
 boot().catch((error: unknown) => {

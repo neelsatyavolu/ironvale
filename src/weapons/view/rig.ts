@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { visualsFrozen } from '../../core/freeze';
 import type { ArmsRig, WeaponActionStage } from '../../game/contracts';
 import type { World } from '../../world/types';
 import type { WeaponMachine } from '../machine';
@@ -181,7 +182,7 @@ export class ViewRig {
     if (!gun) return;
     const dt = frame.dt;
     this.root.visible = !frame.hidden;
-    this.time += dt;
+    if (!visualsFrozen) this.time += dt;
     gun.parts.update(dt, frame.machine);
 
     const aimed = smoothstep(frame.aim);

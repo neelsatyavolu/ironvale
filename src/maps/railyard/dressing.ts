@@ -226,8 +226,10 @@ export function scatterDetail(kit: Kit, m: Materials): void {
     const z = inShed ? kit.range(-22, 18) : kit.range(-42, 47);
     const yaw = kit.range(0, Math.PI);
     const board = kit.random() < 0.35;
+    const width = board ? 0.1 : kit.range(0.4, 0.9);
+    const length = board ? kit.range(0.8, 1.2) : kit.range(0.3, 0.7);
     if (i >= scraps) continue;
-    if (board) kit.box(m.wood, 0.1, 0.022, kit.range(0.8, 1.2), x, 0.004, z, { yaw });
-    else kit.box(m.matte, kit.range(0.4, 0.9), 0.012, kit.range(0.3, 0.7), x, 0.004, z, { yaw, color: 0x8a6f4c });
+    if (board) kit.box(m.wood, width, 0.022, length, x, 0.004, z, { yaw });
+    else kit.box(m.matte, width, 0.012, length, x, 0.004, z, { yaw, color: 0x8a6f4c });
   }
 }

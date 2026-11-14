@@ -87,9 +87,11 @@ export class Props {
 
   /**
    * Cartons stacked in courses on a footprint, each box drawn separately with a
-   * hairline gap so the load reads as boxes and not as one block.
+   * hairline gap so the load reads as boxes and not as one block. With `show`
+   * false nothing is drawn but the same random numbers are used, so a load
+   * thinned out by the detail setting does not move anything placed after it.
    */
-  cartons(x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint: number): void {
+  cartons(x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint: number, show = true): void {
     const { kit, m } = this;
     const columns = Math.max(1, Math.round(width / 0.56));
     const rows = Math.max(1, Math.round(depth / 0.48));
@@ -101,6 +103,7 @@ export class Props {
           const lx = ((column + 0.5) / columns - 0.5) * width;
           const lz = ((row + 0.5) / rows - 0.5) * depth;
           shade.setHex(tint).multiplyScalar(kit.range(0.82, 1.08));
+          if (!show) continue;
           kit.box(m.carton, width / columns - 0.012, height / courses - 0.008, depth / rows - 0.012,
             x + lx * Math.cos(yaw) + lz * Math.sin(yaw), y + (course * height) / courses, z - lx * Math.sin(yaw) + lz * Math.cos(yaw),
             { yaw, color: shade.getHex() });
