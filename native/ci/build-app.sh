@@ -4,11 +4,16 @@
 set -euo pipefail
 NATIVE="$(cd "$(dirname "$0")/.." && pwd)"
 APP_DIR="$NATIVE/IronvaleApp"
-DERIVED="$NATIVE/DerivedData"
+DERIVED="${DERIVED_DATA:-$NATIVE/DerivedData}"
 CONFIG="${CONFIGURATION:-Debug}"
 
 XCODEGEN="$(command -v xcodegen || echo /opt/homebrew/bin/xcodegen)"
 [[ -x "$XCODEGEN" ]] || { echo "xcodegen not found (brew install xcodegen)" >&2; exit 1; }
+
+# Serialize generate+build: parallel agents share one project.yml/.xcodeproj.
+LOCK="$NATIVE/.build-app.lock"
+until mkdir "$LOCK" 2>/dev/null; do sleep 2; done
+trap 'rmdir "$LOCK"' EXIT
 
 (cd "$APP_DIR" && "$XCODEGEN" generate --quiet) >&2
 xcodebuild \

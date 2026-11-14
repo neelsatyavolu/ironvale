@@ -6,3 +6,4 @@ build/
 IronvaleApp/IronvaleApp.xcodeproj/
 *.xcuserstate
 xcuserdata/
+.build-app.lock/
