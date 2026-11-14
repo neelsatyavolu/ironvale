@@ -2,6 +2,12 @@
 
 This covers M12 (PLAN.md section 7): a Developer ID signed, notarized, Sparkle-updating build. Everything that needs no Apple credentials is done and checked by `native/ci/check-m12-prep.sh`. The steps that need credentials are written out below. They have not been run, and no key, certificate or password has been created or stored.
 
+## Signing and notarization: done
+
+`native/ci/release.sh` builds Release, re-signs it inside out with the Developer ID Application identity and the hardened runtime, runs it once, notarizes it with the `ironvale-notary` keychain profile, staples it and zips it into `native/dist/` (gitignored). The first run (build 38) came back Accepted, and `spctl` reports `source=Notarized Developer ID`.
+
+The identity and the profile came from 1Password: the "Apple Developer ID Certificate" item (.p12) and the App Store Connect API key in "Xanom Apple Dev Creds" (same team, VTQW687WBQ). Both are in this Mac's login keychain. `project.yml` stays ad-hoc so the check scripts can re-sign their test copies. Sections 1 to 3 below describe the same steps by hand. Sparkle (item 3 and step 4) is still open.
+
 ## Ready now
 
 - **Self-contained bundle.** The build phase "Stage runtime data" (`native/IronvaleApp/project.yml`, running `native/ci/stage-runtime.py`) copies everything the app opens at run time into `Ironvale.app/Contents/Resources`:

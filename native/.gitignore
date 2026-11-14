@@ -9,3 +9,4 @@ IronvaleApp/IronvaleApp.xcodeproj/
 xcuserdata/
 .build-app.lock/
 .wrangler/
+dist/
