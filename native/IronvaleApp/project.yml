@@ -49,6 +49,8 @@ targets:
         # Google-signed WebRTC.framework. M12 turns it on with Developer ID signing.
         ENABLE_HARDENED_RUNTIME: NO
         GENERATE_INFOPLIST_FILE: NO
+        # Resources/Assets.xcassets: the site's reticle favicon as the app icon.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # Shaders include ShaderTypes.h from the package's C target.
         MTL_HEADER_SEARCH_PATHS: $(SRCROOT)/../IronvaleKit/Sources/ShaderTypes/include
         MTL_LANGUAGE_REVISION: Metal32
