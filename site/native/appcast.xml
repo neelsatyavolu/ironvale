@@ -9,6 +9,15 @@
     <language>en</language>
     <!-- items: newest first -->
     <item>
+      <title>0.1.1 (47)</title>
+      <pubDate>Sun, 15 Nov 2026 03:31:49 +0000</pubDate>
+      <sparkle:version>47</sparkle:version>
+      <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>Game sound, through the output you choose in macOS. Map pictures in the menu. No more system beep when pressing game keys in the menus.</p>]]></description>
+      <enclosure url="https://github.com/neelsatyavolu/ironvale/releases/download/native-v0.1.1-47/Ironvale-mac.zip" type="application/octet-stream" sparkle:edSignature="dIhSaRBm3XnBsyuj++fyvXcALp8emKK8xlW7atI/Gm5WD4XKLWYEZxmTjEYrS0vu+c3lhUXBUUVgtRsMn+fsDQ==" length="301349202" />
+    </item>
+    <item>
       <title>0.1.0 (44)</title>
       <pubDate>Sun, 15 Nov 2026 01:12:25 +0000</pubDate>
       <sparkle:version>44</sparkle:version>
