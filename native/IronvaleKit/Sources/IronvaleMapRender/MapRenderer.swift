@@ -40,6 +40,13 @@ public final class MapRenderer {
     private static let logger = Logger(subsystem: "dev.n3el.ironvale", category: "map-render")
 
     public let settings: Settings
+    /// Vertical field of view this frame. Starts at `settings.fovDegrees`; the game sets it every frame
+    /// from the player camera, which narrows while aiming (PlayerController.applyCamera, engine.setFov).
+    public var fovDegrees: Float {
+        didSet { postChain?.scoped = fovDegrees < Self.scopedFov }
+    }
+    /// engine.ts SCOPED_FOV: below this the camera is looking through a magnifying scope.
+    static let scopedFov: Float = 25
     public let assets: MapAssets
     public let post: PostPass
     public private(set) var skipped: [(path: String, reason: GenericSkipReason)] = []
@@ -161,6 +168,7 @@ public final class MapRenderer {
                 post postSettings: PostSettings? = nil) throws {
         self.assets = assets
         self.settings = settings
+        fovDegrees = settings.fovDegrees
         self.device = device
         guard let queue = device.makeCommandQueue() else { throw RenderError.allocation("load queue") }
         let renderDir = assets.package.appending(path: "render")
@@ -291,7 +299,7 @@ public final class MapRenderer {
             return
         }
         let aspect = Float(settings.internalWidth) / Float(settings.internalHeight)
-        let projection = RenderMath.perspectiveReverseZ(fovYRadians: settings.fovDegrees * .pi / 180, aspect: aspect,
+        let projection = RenderMath.perspectiveReverseZ(fovYRadians: fovDegrees * .pi / 180, aspect: aspect,
                                                         near: Self.near, far: Self.far)
         var frame = frameUniforms(pose: pose, time: time, projection: projection)
         for layer in layers { layer.prepare(viewProjection: frame.viewProjection, eye: pose.eye) }
@@ -313,7 +321,7 @@ public final class MapRenderer {
         lastFrameTime = time
         let post = try chain.beginFrame(outputWidth: output.width, outputHeight: output.height)
         let aspect = Float(output.width) / Float(output.height)
-        let projection = RenderMath.perspectiveReverseZ(fovYRadians: settings.fovDegrees * .pi / 180, aspect: aspect,
+        let projection = RenderMath.perspectiveReverseZ(fovYRadians: fovDegrees * .pi / 180, aspect: aspect,
                                                         near: Self.near, far: Self.far)
         var frame = frameUniforms(pose: pose, time: time, projection: post.jittered(projection))
         for layer in layers { layer.prepare(viewProjection: frame.viewProjection, eye: pose.eye) }

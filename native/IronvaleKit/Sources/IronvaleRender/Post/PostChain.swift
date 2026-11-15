@@ -129,8 +129,13 @@ public final class PostChain {
 
     /// Scene size for an output size: the web's floor(css size x devicePixelRatio x renderScale x dynamic).
     public func sceneSize(outputWidth: Int, outputHeight: Int) -> (width: Int, height: Int) {
-        Self.size(outputWidth, outputHeight, scale: Double(settings.renderScale) * dynamicResolution.scale)
+        let scale = Double(settings.renderScale) * dynamicResolution.scale
+        // engine.ts renderScale: through a magnifying scope a reduced scale reads as haze, so draw at full size.
+        return Self.size(outputWidth, outputHeight, scale: scoped ? max(1, scale) : scale)
     }
+
+    /// Set while the camera looks through a magnifying scope (field of view under engine.ts SCOPED_FOV).
+    public var scoped = false
 
     private static func size(_ width: Int, _ height: Int, scale: Double) -> (width: Int, height: Int) {
         (max(1, Int((Double(width) * scale).rounded(.down))), max(1, Int((Double(height) * scale).rounded(.down))))

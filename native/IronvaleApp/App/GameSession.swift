@@ -385,6 +385,7 @@ final class GameSession {
         let pose = CameraPose(eye: SIMD3(Float(camera.position.x), Float(camera.position.y), Float(camera.position.z)),
                               yaw: Float(camera.yaw), pitch: Float(camera.pitch))
         viewModelLayer?.cameraPose = pose
+        renderer.fovDegrees = Float(camera.fov)
         let shaken = effects?.frame(dt, game: game, renderer: renderer, pose: pose) ?? pose
         renderer.encode(commandBuffer: commandBuffer, pose: shaken, time: game.time, output: target)
         if game.player.alive, viewModelLayer == nil { viewModel.encode(commandBuffer: commandBuffer, target: target, camera: camera) }
