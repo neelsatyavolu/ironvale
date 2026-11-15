@@ -56,7 +56,7 @@ targets:
         MTL_LANGUAGE_REVISION: Metal32
         # Version numbering (Info.plist reads these). build-app.sh sets CURRENT_PROJECT_VERSION from
         # BUILD_NUMBER for release builds; bump MARKETING_VERSION per release (docs/native-port/RELEASE.md).
-        MARKETING_VERSION: "0.1.1"
+        MARKETING_VERSION: "0.1.2"
         CURRENT_PROJECT_VERSION: "1"
         # The "Stage runtime data" phase reads the repository (map packages, assets) at build time.
         ENABLE_USER_SCRIPT_SANDBOXING: NO
