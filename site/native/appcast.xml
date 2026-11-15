@@ -8,5 +8,14 @@
     <description>Updates for the native macOS build of Ironvale.</description>
     <language>en</language>
     <!-- items: newest first -->
+    <item>
+      <title>0.1.0 (44)</title>
+      <pubDate>Sun, 15 Nov 2026 01:12:25 +0000</pubDate>
+      <sparkle:version>44</sparkle:version>
+      <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>First release of Ironvale for Mac. Needs macOS 26 on Apple silicon. Plays online with people in the browser.</p>]]></description>
+      <enclosure url="https://github.com/neelsatyavolu/ironvale/releases/download/native-v0.1.0-44/Ironvale-mac.zip" type="application/octet-stream" sparkle:edSignature="jxul2TB3k1B4bmOjnNgZu1S/bABEpeC1DdhUZ976AB+SZLqJiGlK4V17FXyxjMB2u0+2pnCGhV2E6ISUb5fnAA==" length="300683489" />
+    </item>
   </channel>
 </rss>
