@@ -9,6 +9,15 @@
     <language>en</language>
     <!-- items: newest first -->
     <item>
+      <title>0.1.2 (50)</title>
+      <pubDate>Sun, 15 Nov 2026 05:00:59 +0000</pubDate>
+      <sparkle:version>50</sparkle:version>
+      <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>Scopes and iron sights now zoom the view. New app icon.</p>]]></description>
+      <enclosure url="https://github.com/neelsatyavolu/ironvale/releases/download/native-v0.1.2-50/Ironvale-mac.zip" type="application/octet-stream" sparkle:edSignature="G3ylHRoZ2NGHr1qLLbKd+neaa+kOpUxCe28Ad2FLo5Tali9WK69Yl8ILU8O7yzKQFLt7sxn7bY6oqpSqzJV1CQ==" length="301585312" />
+    </item>
+    <item>
       <title>0.1.1 (47)</title>
       <pubDate>Sun, 15 Nov 2026 03:31:49 +0000</pubDate>
       <sparkle:version>47</sparkle:version>
