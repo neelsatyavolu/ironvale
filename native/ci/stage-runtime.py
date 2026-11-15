@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 ALLOWED_LICENCES = {"CC0", "CC-BY 4.0"}
-FIRST_PARTY = ("assets/weapons/",)  # PLAN.md 3.5: explicit allowlist next to the manifests
+FIRST_PARTY = ("assets/weapons/", "assets/thumbs/")  # PLAN.md 3.5: explicit allowlist next to the manifests
 MANAGED = ("Contract", "Runtime", "Licenses")
 
 
@@ -96,6 +96,9 @@ def public_files(repo, by_id):
     # HUDView: the weapon picker's pictures.
     for path in files_under(repo / "public/assets/weapons"):
         wanted[str(path.relative_to(repo))] = "weapon picture"
+    # MenuView: the map cards' pictures (first-party screenshots, as on the web).
+    for path in files_under(repo / "public/assets/thumbs"):
+        wanted[str(path.relative_to(repo))] = "map picture"
     return wanted
 
 

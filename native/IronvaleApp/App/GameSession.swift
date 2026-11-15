@@ -84,13 +84,13 @@ final class GameSession {
         let frame = NSRect(x: 0, y: 0, width: 1280, height: 800)
         metalView = MetalView(frame: frame, device: device, pixelFormat: .bgra8Unorm)
         metalView.autoresizingMask = [.width, .height]
-        window = NSWindow(contentRect: frame, styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
+        window = GameWindow(contentRect: frame, styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
         window.title = "Ironvale"
         let container = NSView(frame: frame)
         container.addSubview(metalView)
         let overlay = NSHostingView(rootView: ZStack {
             HUDView(model: hud)
-            RootView(model: interface)
+            RootView(model: interface, thumbnail: MapThumbnails(repositoryRoot: repositoryRoot).image)
         })
         overlay.frame = frame
         overlay.autoresizingMask = [.width, .height]
