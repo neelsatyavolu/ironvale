@@ -7,6 +7,8 @@
 //   --offscreen        with --autopilot: no window or display link; fixed 1/120 s frames rendered offscreen
 //   --bots N           with --autopilot or --play: a skirmish against N bots (M7b); with --autopilot the run
 //                      checks the bot scenario (BotScenarioMonitor) instead of the M4 event sequence
+//   --audio-report S   every S seconds, log the output device, AudioEvents, voices started and peak level
+//                      (AudioReport.swift); audio plays only outside automated runs, or with IRONVALE_AUDIO=1
 // With neither --autopilot nor --play nor --map, the app opens the menu (IronvaleUI RootView).
 import Foundation
 
@@ -17,6 +19,7 @@ struct GameOptions {
     var mapId: String?
     var offscreen = false
     var botCount = 0
+    var audioReportSeconds: Double?
     /// Any argument that selects an M3 renderer mode (capture, flythrough, benchmark).
     var rendererMode = false
 
@@ -31,6 +34,7 @@ struct GameOptions {
             case "--map": options.mapId = iterator.next()
             case "--offscreen": options.offscreen = true
             case "--bots": options.botCount = iterator.next().flatMap { Int($0) } ?? 0
+            case "--audio-report": options.audioReportSeconds = iterator.next().flatMap { Double($0) }
             case "--capture", "--flythrough": options.rendererMode = true
             default: continue
             }

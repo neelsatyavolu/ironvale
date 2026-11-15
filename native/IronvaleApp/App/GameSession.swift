@@ -1,6 +1,7 @@
 // M4 composition: the offline sim (IronvaleSim), device input and pointer capture (IronvalePlatform),
 // the map renderer (IronvaleMapRender), the stand-in gun (IronvaleViewModel) and the interface
 // (IronvaleUI RootView) and the Metal HUD (HUDView.swift), in an NSHostingView over the Metal view.
+// M8: the match's sound (GameAudio.swift).
 import AppKit
 import IronvaleAI
 import IronvaleContract
@@ -52,6 +53,8 @@ final class GameSession {
     private var soldiers: SoldierLayer?
     /// M9: the match's effects and weather (GameEffects.swift); nil without a renderer or atlases.
     private var effects: GameEffects?
+    /// M8: the match's sound; nil in automated runs (GameAudio.make).
+    private var audio: GameAudio?
     /// Everything that contributes soldiers to draw each frame (the two-player match, bots).
     var actorSources: [any ActorSource] = []
     /// M6: a scripted duel against another machine (NetDuel.swift).
@@ -99,6 +102,7 @@ final class GameSession {
         window.center()
 
         wire()
+        audio = GameAudio.make(game: game, bots: bots, repositoryRoot: repositoryRoot, reportEvery: options.audioReportSeconds)
         hud.attach(game: game, device: device, library: library, settings: interface.settings, view: metalView, repositoryRoot: repositoryRoot)
         actorSources.append(bots)
         soldiers = Self.makeSoldiers(device: device, library: library, repositoryRoot: repositoryRoot)
@@ -252,6 +256,7 @@ final class GameSession {
     func stop() {
         frameLoop?.stop()
         eventLog?.close()
+        audio?.stop()
     }
 
     private func start(_ request: MatchRequest) {
@@ -279,9 +284,11 @@ final class GameSession {
             hud.mapName = mapName
             lastConfig = config
             game.start(map: package, config: config)
+            audio?.enterMap(package.meta)
             effects?.stop()
             effects = renderer.flatMap { GameEffects.make(game: game, renderer: $0, device: device, library: library,
                                                           repositoryRoot: repositoryRoot, contract: data.contract) }
+            if let effects { audio?.attach(effects) }
             interface.showPlaying()
             if runner == nil, netDuel == nil { deviceInput.capture() }
             Self.logger.info("Match started on \(config.mapId, privacy: .public)")
@@ -330,16 +337,22 @@ final class GameSession {
     private func phaseChanged(_ phase: GamePhase) {
         switch phase {
         case .paused:
+            // A match with a friend goes on behind the pause menu, and so does its sound.
+            if game.net?.inMatch != true { audio?.setPaused(true) }
             deviceInput.release()
             interface.showPause(detail: "Solo · offline", live: false)
         case .playing:
+            audio?.setPaused(false)
             interface.showPlaying()
         case .won, .lost:
+            audio?.setPaused(true)
             deviceInput.release()
             interface.showEnd(MatchResult(won: phase == .won, mode: lastConfig?.mode == .survival ? .survival : .skirmish,
                                           mapName: hud.mapName, kills: game.kills, deaths: game.deaths, elapsed: game.time,
                                           wave: 0, accuracy: game.shotsFired > 0 ? game.shotsHit * 100 / game.shotsFired : nil))
-        case .menu, .loading:
+        case .menu:
+            audio?.leaveMap()
+        case .loading:
             break
         }
     }
@@ -363,6 +376,7 @@ final class GameSession {
         updateViewModel(dt)
         updateHUD(dt)
         soldiers?.update(SoldierDrawList.build(from: actorSources), dt: dt)
+        audio?.frame(dt, settings: interface.settings.value)
         guard let renderer, game.map != nil else {
             clear(commandBuffer: commandBuffer, target: target)
             return

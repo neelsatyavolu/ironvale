@@ -82,8 +82,9 @@ public final class AudioOutput {
         return AudioObjectGetPropertyData(device, &address, 0, nil, &size, &frames) == noErr ? Int(frames) : nil
     }
 
-    /// Start rendering with the device I/O buffer set to `bufferFrames`, on `device` or the default output.
-    public func start(bufferFrames: UInt32 = 256, device chosen: AudioObjectID? = nil) throws {
+    /// Start rendering with the device I/O buffer set to `bufferFrames` (nil keeps the device's own),
+    /// on `device` or the default output.
+    public func start(bufferFrames: UInt32? = 256, device chosen: AudioObjectID? = nil) throws {
         if var chosen, let unit = engine.outputNode.audioUnit {
             let status = AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &chosen, UInt32(MemoryLayout<AudioObjectID>.size))
             if status != noErr { throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey: "could not select output device \(chosen)"]) }
@@ -98,7 +99,7 @@ public final class AudioOutput {
         engine.prepare()
         try engine.start()
         // AVAudioEngine picks its own I/O size when it starts; set ours afterwards.
-        try setBufferFrames(bufferFrames)
+        if let bufferFrames { try setBufferFrames(bufferFrames) }
     }
 
     public func setBufferFrames(_ bufferFrames: UInt32) throws {

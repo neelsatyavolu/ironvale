@@ -24,6 +24,8 @@ public final class SoundLibrary: SoundDecoder {
     private let core: MixCore
     public private(set) var decodedFrames = 0
     public private(set) var failures: [String] = []
+    /// Sound id of each MixCore table row this library registered.
+    public private(set) var tableIds: [Int32: String] = [:]
 
     /// `repo`: the repository root (assets/, public/, src/ are read from it).
     public init(repo: URL, core: MixCore) throws {
@@ -74,6 +76,7 @@ public final class SoundLibrary: SoundDecoder {
             }
         }
         let table = core.registerSound(samples: samples, frames: count, channels: channels, sampleRate: format.sampleRate)
+        tableIds[table] = id
         decodedFrames += count
         let duration = Double(count) / format.sampleRate
         return AudioEngine.describe(id: id, table: table, duration: duration, sampleRate: format.sampleRate,
@@ -82,6 +85,7 @@ public final class SoundLibrary: SoundDecoder {
 
     public func register(_ id: String, samples: [Float], sampleRate: Double) -> DecodedSound {
         let table = core.registerSound(samples: samples, frames: samples.count, channels: 1, sampleRate: sampleRate)
+        tableIds[table] = id
         let duration = Double(samples.count) / sampleRate
         return DecodedSound(id: id, table: table, duration: duration, offset: 0, loopStart: 0, loopEnd: duration)
     }
