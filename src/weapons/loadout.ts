@@ -6,6 +6,7 @@ import { WEAPON_IDS, type WeaponId } from './models/api';
 const RESERVED: Readonly<Partial<Record<WeaponId, readonly Difficulty[]>>> = {
   m7: ['veteran', 'elite'],
   scarh: ['veteran', 'elite'],
+  m82: ['veteran', 'elite'],
 };
 
 /** Shown in the weapon picker beside a weapon the player does not carry this match. */

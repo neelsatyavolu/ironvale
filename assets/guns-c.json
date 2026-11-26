@@ -53,6 +53,19 @@
       }
     },
     {
+      "id": "mdl-gun-m82",
+      "kind": "model",
+      "license": "CC-BY 4.0",
+      "source": "https://sketchfab.com/3d-models/barrett-m82-50-bmg-sniper-rifle-69d12bfd535248838e245afb66f94836",
+      "credit": "\"Barrett M82 .50 BMG sniper rifle.\" by aid2901 (https://sketchfab.com/aid2901), CC BY 4.0, https://sketchfab.com/3d-models/barrett-m82-50-bmg-sniper-rifle-69d12bfd535248838e245afb66f94836. Carry case and cartridges removed, occlusion maps dropped, textures recompressed, magazine, trigger and bolt carrier split into moving parts.",
+      "files": {
+        "gltf": {
+          "path": "guns/m82.glb",
+          "local": true
+        }
+      }
+    },
+    {
       "id": "mdl-fp-arms",
       "kind": "model",
       "license": "CC-BY 4.0",

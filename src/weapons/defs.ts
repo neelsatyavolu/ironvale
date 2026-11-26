@@ -200,4 +200,41 @@ export const WEAPON_DEFS: Readonly<Record<WeaponId, WeaponDef>> = {
     casing: 'rifle',
     loudness: 0.95,
   },
+  // 12.7 x 99 mm. One hit anywhere drops a target at any range (limb at the lowest falloff:
+  // 200 x 0.9 x 0.8 = 144), and unlike the M24 it fires again without working a bolt.
+  // In return: the hardest kick, the slowest aim and the slowest feet of any gun, and ten rounds.
+  // Velocity and capacity are the M82A1's; 120 rounds a minute is a game figure for a semi-automatic
+  // that has to come back down onto the target between shots.
+  // Only issued on the two highest difficulty levels (see loadout.ts).
+  m82: {
+    id: 'm82',
+    name: 'M82',
+    weaponClass: 'sniper',
+    slot: 7,
+    fireMode: 'semi',
+    roundsPerMinute: 120,
+    damage: 200,
+    headshotMultiplier: 3,
+    limbMultiplier: 0.8,
+    falloffStart: 200,
+    falloffEnd: 900,
+    falloffMin: 0.9,
+    range: 1200,
+    muzzleVelocity: 853,
+    pellets: 1,
+    spreadHip: 6.5,
+    spreadAim: 0.01,
+    spreadMoving: 3.5,
+    recoil: { vertical: 4.6, horizontal: 0.9, recovery: 0.8, kickback: 0.09 },
+    magazineSize: 10,
+    reserveAmmo: 30,
+    reloadStyle: 'magazine',
+    reloadTime: 3.6,
+    aimTime: 0.5,
+    aimZoom: 0.12,
+    scoped: true,
+    mobility: 0.78,
+    casing: 'rifle',
+    loudness: 1,
+  },
 };

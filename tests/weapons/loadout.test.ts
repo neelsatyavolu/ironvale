@@ -9,13 +9,17 @@ describe('issuedWeapons', () => {
     expect(issuedWeapons({ mode: 'coop', difficulty: 'elite' })).toContain('m7');
   });
   it('issues every weapon in a duel, whatever the difficulty', () => {
-    const all = ['m4a1', 'mp5', 'm24', 'm249', 'm7', 'scarh'];
+    const all = ['m4a1', 'mp5', 'm24', 'm249', 'm7', 'scarh', 'm82'];
     expect(issuedWeapons({ mode: 'duel', difficulty: 'recruit' })).toEqual(all);
     expect(issuedWeapons({ mode: 'duel', difficulty: 'elite' })).toEqual(all);
   });
   it('issues the SCAR-H alongside the M7, in slot order', () => {
     expect(issuedWeapons({ mode: 'skirmish', difficulty: 'regular' })).not.toContain('scarh');
-    expect(issuedWeapons({ mode: 'skirmish', difficulty: 'veteran' })).toEqual(['m4a1', 'mp5', 'm24', 'm249', 'm7', 'scarh']);
+    expect(issuedWeapons({ mode: 'skirmish', difficulty: 'veteran' })).toEqual(['m4a1', 'mp5', 'm24', 'm249', 'm7', 'scarh', 'm82']);
     expect(issuedWeapons({ mode: 'coop', difficulty: 'elite' })).toContain('scarh');
+  });
+  it('keeps the M82 for Veteran and Elite, last in slot order', () => {
+    expect(issuedWeapons({ mode: 'survival', difficulty: 'regular' })).not.toContain('m82');
+    expect(issuedWeapons({ mode: 'skirmish', difficulty: 'elite' }).at(-1)).toBe('m82');
   });
 });

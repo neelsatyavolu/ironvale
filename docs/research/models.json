@@ -205,6 +205,18 @@
       "notes": "Attribution: 'FN SCAR-H' by Alex_Z (https://sketchfab.com/Alex_Z), CC BY 4.0. Downloaded in full on 2026-11-12; licence confirmed the same day against the live Sketchfab API (label 'CC Attribution'). 23.9k tris in one baked low-poly gun (three meshes) plus a sling swivel; digital camouflage receivers, black furniture, suppressor, vertical foregrip and a holographic sight. Moving parts are not separate nodes, so scripts/process-gun-scarh.mjs cuts the magazine, trigger and left-side charging handle out by connected piece, drops the sight and foregrip, and converts the textures to metal/roughness. The colour texture carries a two-line maker's roll mark and a serial line, a few pixels tall; the script blurs both. One source unit is 0.023 m: the top rail is then 21.2 mm wide and the rifle 0.99 m long with the suppressor. Rejected alternatives: 'Low-Poly FN SCAR H' by Matrixxy (0eb62c0b4d584324a8a2242b7127d709, CC BY 4.0, 8.4k tris) is not in Objaverse; 'Low-Poly FN SCAR-H PR' by notcplkerry (336291d429fd40958d1e460d9f04cbc1) is the sniper variant."
     },
     {
+      "id": "gun-m82-aid2901",
+      "kind": "model",
+      "purpose": "M82 anti-materiel rifle, first-person and world model",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-070/69d12bfd535248838e245afb66f94836.glb",
+      "license": "CC-BY 4.0",
+      "format": "GLB (1024 px JPEG textures, metal/roughness)",
+      "size_bytes": 5450288,
+      "source_page": "https://sketchfab.com/3d-models/barrett-m82-50-bmg-sniper-rifle-69d12bfd535248838e245afb66f94836",
+      "verified": true,
+      "notes": "Attribution: 'Barrett M82 .50 BMG sniper rifle.' by aid2901 (https://sketchfab.com/aid2901), CC BY 4.0. Downloaded in full on 2026-11-25; licence confirmed the same day against the live Sketchfab API (label 'CC Attribution', downloadable). The author's description presents it as their own model (Blender 2.93, textured in Substance Painter). The rifle lies in an open carry case with loose cartridges, exported through Collada with sheared node transforms; scripts/process-gun-m82.mjs keeps the three rifle meshes (body and scope, bolt group, scope rings, 27.9k tris), finds the gun's axes from the principal axes of the body and bakes it into gun space. One source unit is 0.0827 m: the rifle is then 1.448 m long, the M82A1's length with the 29 in barrel. The occlusion channel of the packed texture is all but black and is dropped; the scope lenses, painted flat sky blue, are darkened to glass. No maker's marks are legible in the textures. Moving parts are not separate nodes, so the magazine, trigger and bolt carrier (with the knurled charging handle on its right) are cut out by connected piece. Considered: 'Low-Poly Barrett M82A1' by TastyTony (9c7027e5a64e40e9ae927adb0872b6d8, 7.3k faces) has no textures; 'Barrett 50.cal textured' by olofunot (6ad968a934b44294822259bba60b5a42, 44.9k faces) is coarser in the receiver and carries a bipod."
+    },
+    {
       "id": "arms-fp-bumstrum",
       "kind": "character",
       "purpose": "First-person arms and hands, rigged (primary pick for the viewmodel)",

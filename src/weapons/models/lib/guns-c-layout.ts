@@ -1,5 +1,5 @@
 /**
- * Measured points of the guns-c models (M4A1, M249, M7, SCAR-H) and the pure maths that
+ * Measured points of the guns-c models (M4A1, M249, M7, SCAR-H, M82) and the pure maths that
  * turns them into anchor poses. Kept free of meshes so it can be unit tested.
  * All coordinates are gun space: metres, barrel along -Z, up +Y, origin at the
  * centre of the pistol grip.
@@ -167,6 +167,41 @@ export const M7_LAYOUT: GunLayout = {
     trigger: { position: [0.012, 0.03, 0.014], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
     // Left palm cupping the slim handguard from below, ahead of the magazine.
     support: { position: [0.004, 0.067, -0.31], fingers: [0.42, 0.18, -0.89], thumb: [-0.72, 0.16, -0.67] },
+  },
+};
+
+/**
+ * The M82's own scope: the centres of its ocular and objective lens rings,
+ * which set the line of sight. The scope sits a few tenths of a degree
+ * nose-down on its rings, as the source has it.
+ */
+export const M82_SCOPE = {
+  ocular: [0, 0.1735, 0.005],
+  objective: [0, 0.1715, -0.395],
+} as const;
+
+export const M82_LAYOUT: GunLayout = {
+  asset: 'mdl-gun-m82',
+  // M82A1 with the 29 in barrel and muzzle brake.
+  realLength: 1.448,
+  // Front face of the muzzle brake, on the bore axis.
+  muzzle: [0, 0.097, -1.119],
+  // Mid ejection port on the right of the upper receiver, at the face of the bolt carrier showing through it.
+  ejection: [0.028, 0.11, -0.2],
+  ejectionTiltDeg: 15,
+  sightRear: M82_SCOPE.ocular,
+  sightFront: M82_SCOPE.objective,
+  // A rifle scope's eye relief, shortened as the M24's is so the eyepiece fills the view as it comes up.
+  eyeRelief: 0.09,
+  // The bolt part is the bolt carrier with the knurled charging handle on its right; they run back together.
+  parts: { bolt: 'bolt', magazine: 'magazine', trigger: 'trigger' },
+  // Run further, the charging handle would pass under the cheek rest on the stock.
+  cycleTravel: 0.04,
+  grips: {
+    // Right palm on the right side of the pistol grip.
+    trigger: { position: [0.012, 0.03, 0.012], fingers: [0, -0.35, -1], thumb: [0, 1, 0] },
+    // Left palm cupping the bottom of the receiver from below, ahead of the magazine.
+    support: { position: [0.004, 0.064, -0.32], fingers: [0.42, 0.18, -0.89], thumb: [-0.72, 0.16, -0.67] },
   },
 };
 
